@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selesaikan Pembayaran | ArenaBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        .form-input { 
+            background: rgba(255,255,255,.03); 
+            border: 1px solid rgba(255,255,255,.1); 
+            color: white; 
+            transition: all .3s ease; 
+        }
+        .form-input:focus { 
+            border-color: #AAFF00; 
+            box-shadow: 0 0 15px rgba(170, 255, 0, 0.2);
+            background: rgba(255,255,255,.05);
+            outline: none; 
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+
+    <nav class="fixed w-full z-50 bg-dark border-b border-dark-border">
+        <div class="max-w-3xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
+                <i data-lucide="activity" class="text-brand"></i>
+                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            </div>
+            <a href="my-bookings.html" class="text-xs text-gray-400 hover:text-white flex items-center gap-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Riwayat Pesanan
+            </a>
+        </div>
+    </nav>
+
+    <div class="pt-24 pb-20 max-w-3xl mx-auto px-4 sm:px-6">
+        <!-- Loading State -->
+        <div id="loadingState" class="flex justify-center items-center py-20">
+            <div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div>
+        </div>
+
+        <div id="pageContent" class="hidden">
+            <h1 class="text-3xl font-display uppercase tracking-widest mb-6">Selesaikan <span class="text-brand">Pembayaran</span></h1>
+
+            <!-- Timer Warning -->
+            <div class="bg-yellow-900/10 border border-yellow-500/30 rounded-xl p-5 mb-8 flex items-start gap-4 shadow-[0_0_20px_rgba(234,179,8,0.15)] relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
+                <i data-lucide="clock" class="text-yellow-500 w-6 h-6 flex-shrink-0 animate-pulse mt-0.5"></i>
+                <div>
+                    <p class="text-yellow-500 font-medium">Selesaikan pembayaran dalam <span id="timer" class="font-bold text-xl tracking-wider mx-1">15:00</span></p>
+                    <p class="text-yellow-600/80 text-sm mt-1">Slot dikunci untuk Anda. Jika waktu habis, pesanan dibatalkan otomatis.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Order Details -->
+                <div class="glass-panel rounded-xl p-6 h-max">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-dark-border pb-3 mb-4">Detail Pesanan</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Lapangan</p>
+                            <p id="bCourt" class="font-semibold text-white">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Tanggal</p>
+                            <p id="bDate" class="font-medium text-lg">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Waktu Main</p>
+                            <p id="bTime" class="font-medium text-lg text-brand">-</p>
+                        </div>
+                        <div class="border-t border-dark-border pt-5 mt-2">
+                            <p class="text-xs text-gray-500 mb-1">Total Tagihan</p>
+                            <p id="bTotal" class="font-display tracking-wider font-bold text-4xl bg-clip-text text-transparent bg-gradient-to-r from-brand to-green-400">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-dark-border pb-3 mb-4">Upload Bukti Pembayaran</h2>
+
+                    <div class="bg-dark/50 p-5 rounded-xl border border-white/5 mb-6 shadow-inner relative overflow-hidden group">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-brand/5 rounded-full blur-2xl group-hover:bg-brand/10 transition-colors"></div>
+                        <p class="text-xs text-gray-500 mb-2 uppercase tracking-widest">Rekening Tujuan</p>
+                        <p class="text-2xl font-display tracking-widest font-bold text-white flex items-center gap-3">
+                            <i data-lucide="building-2" class="w-5 h-5 text-gray-500"></i> BCA — 8723 1122 3344
+                        </p>
+                        <p class="text-xs text-brand uppercase tracking-wider mt-2 font-bold">A/N ARENA BOOKING</p>
+                    </div>
+
+                    <div id="errorMsg" class="hidden bg-red-900/30 border border-red-500/50 text-red-400 p-3 rounded text-sm mb-4"></div>
+
+                    <form id="paymentForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Metode Bayar *</label>
+                            <select id="method" required class="form-input w-full px-3 py-2.5 rounded">
+                                <option value="transfer">Bank Transfer</option>
+                                <option value="qris">QRIS</option>
+                                <option value="cash">Cash di Tempat</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Bukti Transfer (Foto)</label>
+                            <input type="file" id="proofImage" accept="image/*"
+                                class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-dark-border file:text-white hover:file:bg-gray-700 cursor-pointer">
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-brand text-black py-3 rounded font-bold uppercase tracking-widest hover:bg-white transition-colors mt-2">
+                            Kirim Bukti Pembayaran
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireAuth();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('id');
+        if (!bookingId) window.location.href = 'locations.html';
+
+        let bookingData = null;
+        let countdownInterval;
+        const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+
+        async function loadBooking() {
+            try {
+                // Gunakan endpoint GET /bookings/{id} — real, bukan dari list
+                bookingData = await api.get(`/bookings/${bookingId}`);
+
+                if (bookingData.status !== 'pending') {
+                    window.location.href = 'my-bookings.html';
+                    return;
+                }
+
+                document.getElementById('bCourt').textContent = bookingData.court?.name || '—';
+                document.getElementById('bDate').textContent = new Date(bookingData.booking_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                let bTypeLabel = bookingData.booking_type === 'monthly' ? ' <span class="text-xs ml-2 bg-brand/20 text-brand px-2 py-0.5 rounded uppercase tracking-widest">Sewa Bulanan</span>' : '';
+                document.getElementById('bTime').innerHTML = `${bookingData.start_time.substring(0, 5)} – ${bookingData.end_time.substring(0, 5)} WIB${bTypeLabel}`;
+                document.getElementById('bTotal').textContent = formatRp(bookingData.total_price);
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('pageContent').classList.remove('hidden');
+
+                if (bookingData.expires_at) startTimer(bookingData.expires_at);
+            } catch (error) {
+                alert(error.message || 'Booking tidak ditemukan');
+                window.location.href = 'my-bookings.html';
+            }
+        }
+
+        function startTimer(expiresAtIso) {
+            const expireDate = new Date(expiresAtIso.endsWith('Z') ? expiresAtIso : expiresAtIso + 'Z');
+            countdownInterval = setInterval(() => {
+                const diff = expireDate - new Date();
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer').textContent = '00:00';
+                    alert('Waktu pembayaran habis. Pesanan dibatalkan.');
+                    window.location.href = 'locations.html';
+                    return;
+                }
+                const m = Math.floor(diff / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                document.getElementById('timer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errEl = document.getElementById('errorMsg');
+            errEl.classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('method', document.getElementById('method').value);
+            formData.append('amount', bookingData.total_price);
+            const fileInput = document.getElementById('proofImage');
+            if (fileInput.files.length > 0) formData.append('file', fileInput.files[0]);
+
+            btn.textContent = 'Mengupload...';
+            btn.disabled = true;
+
+            try {
+                await api.post(`/payments/${bookingId}/upload-proof`, formData);
+                clearInterval(countdownInterval);
+                alert('Bukti pembayaran berhasil dikirim! Menunggu konfirmasi admin.');
+                window.location.href = 'my-bookings.html';
+            } catch (error) {
+                errEl.textContent = error.message;
+                errEl.classList.remove('hidden');
+                btn.textContent = 'Kirim Bukti Pembayaran';
+                btn.disabled = false;
+            }
+        });
+
+        loadBooking();
+    </script>
+</body>
+</html>

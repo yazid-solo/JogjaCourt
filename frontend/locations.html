@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Daerah | ArenaBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#080808', surface: '#111111', card: '#191919', border: '#2a2a2a' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: #080808; color: white; }
+        .area-card {
+            background: #111;
+            border: 1px solid #2a2a2a;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        .area-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top right, rgba(170,255,0,0.06), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .area-card:hover { transform: translateY(-8px); border-color: rgba(170,255,0,0.4); box-shadow: 0 20px 40px rgba(170,255,0,0.08); }
+        .area-card:hover::before { opacity: 1; }
+        .area-card:hover .arrow-icon { transform: translateX(4px); color: #AAFF00; }
+        .arrow-icon { transition: all 0.3s; }
+
+        .search-input {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #2a2a2a;
+            color: white;
+        }
+        .search-input:focus { border-color: #AAFF00; outline: none; }
+        .search-input::placeholder { color: #555; }
+
+        /* Skeleton */
+        .skeleton { background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%); background-size: 200%; animation: skeleton 1.5s infinite; border-radius: 16px; }
+        @keyframes skeleton { to { background-position: -200% center; } }
+    </style>
+</head>
+<body class="min-h-screen font-sans selection:bg-brand selection:text-black">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50" style="background: rgba(8,8,8,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid #2a2a2a;">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
+                <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
+                    <i data-lucide="activity" class="text-black w-4 h-4"></i>
+                </div>
+                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="userNameDisplay" class="text-sm text-gray-400 hidden md:block"></span>
+                <a href="profile.html" id="profileLink" class="hidden text-xs text-gray-400 hover:text-brand transition-colors border border-dark-border px-3 py-1.5 rounded-lg">Profil Akun</a>
+                <a href="my-bookings.html" id="myBookingsLink" class="hidden text-xs text-gray-400 hover:text-brand transition-colors border border-dark-border px-3 py-1.5 rounded-lg">Pesanan Saya</a>
+                <button id="logoutBtn" class="hidden text-xs text-red-400 hover:text-red-300 transition-colors">Keluar</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="pt-28 pb-12 relative">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-brand/3 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <span class="text-brand text-xs font-bold uppercase tracking-widest">Langkah 1 dari 3</span>
+            <h1 class="text-4xl md:text-6xl font-display tracking-widest uppercase mt-2 mb-3">Pilih <span class="text-brand">Daerah</span></h1>
+            <p class="text-gray-500 text-base mb-8">Temukan GOR terbaik di kotamu. Pilih daerah terlebih dahulu.</p>
+
+            <!-- Search -->
+            <div class="relative max-w-lg">
+                <i data-lucide="search" class="absolute left-4 top-3.5 text-gray-500 w-5 h-5"></i>
+                <input type="text" id="searchInput" placeholder="Cari nama daerah atau provinsi..."
+                    class="search-input w-full pl-12 pr-4 py-3 rounded-xl transition-all text-sm">
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <!-- Loading Skeletons -->
+        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="skeleton h-48"></div>
+            <div class="skeleton h-48"></div>
+            <div class="skeleton h-48"></div>
+        </div>
+
+        <!-- Areas Grid -->
+        <div id="areasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-24">
+            <div class="w-20 h-20 bg-dark-card border border-dark-border rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="map-off" class="w-8 h-8 text-gray-600"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-400 mb-2">Tidak ada daerah ditemukan</h3>
+            <p class="text-gray-600 text-sm">Coba kata kunci yang berbeda</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+        // Show user info if logged in
+        if (auth.isAuthenticated()) {
+            const user = auth.getUser();
+            document.getElementById('userNameDisplay').textContent = user.name;
+            document.getElementById('userNameDisplay').classList.remove('hidden');
+            document.getElementById('profileLink').classList.remove('hidden');
+            document.getElementById('myBookingsLink').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+        }
+        document.getElementById('logoutBtn')?.addEventListener('click', () => auth.logout());
+
+        let allAreas = [];
+
+        // Province icon map
+        const provinceColors = {
+            'D.I. Yogyakarta': '#AAFF00',
+            'Jawa Tengah': '#3b82f6',
+            'Jawa Barat': '#f97316',
+            'Jawa Timur': '#8b5cf6',
+            'DKI Jakarta': '#ef4444',
+        };
+
+        async function loadAreas() {
+            try {
+                allAreas = await api.get('/areas');
+                renderAreas(allAreas);
+            } catch (error) {
+                document.getElementById('loadingState').innerHTML =
+                    `<div class="col-span-3 text-center py-20"><p class="text-red-400 text-sm">Gagal memuat daerah: ${error.message}</p><button onclick="loadAreas()" class="mt-4 text-brand text-sm hover:underline">Coba Lagi</button></div>`;
+            }
+        }
+
+        function renderAreas(areas) {
+            document.getElementById('loadingState').classList.add('hidden');
+            const grid = document.getElementById('areasGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (areas.length === 0) {
+                grid.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            grid.innerHTML = areas.map((area, i) => {
+                const color = provinceColors[area.province] || '#AAFF00';
+                return `
+                <div class="area-card rounded-2xl p-7 relative"
+                     onclick="window.location.href='venues.html?area_id=${area.id}&area_name=${encodeURIComponent(area.name)}'">
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-lg flex items-center justify-center" style="background: ${color}20; border: 1px solid ${color}40;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="${color}" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-widest mb-3 block" style="color: ${color}">${area.province}</span>
+                    <h3 class="text-2xl font-bold text-white mb-2">${area.name}</h3>
+                    <p class="text-gray-500 text-sm line-clamp-2 leading-relaxed mb-6">${area.description || 'Temukan GOR terbaik di daerah ini.'}</p>
+
+                    <div class="flex items-center text-sm font-semibold text-gray-400 arrow-icon">
+                        <span>Lihat GOR tersedia</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', e => {
+            const term = e.target.value.toLowerCase();
+            renderAreas(allAreas.filter(a =>
+                a.name.toLowerCase().includes(term) || a.province.toLowerCase().includes(term)
+            ));
+        });
+
+        loadAreas();
+    </script>
+</body>
+</html>

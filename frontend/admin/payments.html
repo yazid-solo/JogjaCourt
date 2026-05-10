@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Pembayaran | ArenaBooking Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .payment-card { background:#151515; border:1px solid #333; transition: border-color 0.3s; }
+        .payment-card:hover { border-color: #555; }
+        .badge-pending { background:rgba(234,179,8,.15); color:#eab308; border:1px solid rgba(234,179,8,.3); }
+        .badge-paid    { background:rgba(170,255,0,.1); color:#AAFF00; border:1px solid rgba(170,255,0,.3); }
+        .badge-failed  { background:rgba(239,68,68,.1); color:#ef4444; border:1px solid rgba(239,68,68,.3); }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
+        <div class="h-20 flex items-center px-6 border-b border-dark-border shrink-0">
+            <i data-lucide="activity" class="text-brand w-6 h-6 mr-2"></i>
+            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
+        </div>
+        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
+            <a href="dashboard.html"  class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
+            <a href="bookings.html"   class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
+            <a href="payments.html"   class="flex items-center gap-3 px-4 py-3 rounded bg-brand/10 text-brand font-medium text-sm"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
+            <a href="court-blocks.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600 superadmin-only">Manajemen</p>
+            <a href="courts.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
+            <a href="areas.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
+            <a href="venues.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
+            <a href="users.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
+        </nav>
+        <div class="p-4 border-t border-dark-border shrink-0">
+            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded w-full hover:bg-red-900/20 text-red-400 transition-colors text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-64">
+        <header class="h-20 bg-dark border-b border-dark-border flex items-center px-8 sticky top-0 z-30">
+            <div>
+                <h1 class="text-lg font-semibold">Verifikasi Pembayaran</h1>
+                <p class="text-xs text-gray-500">Konfirmasi atau tolak bukti transfer dari customer</p>
+            </div>
+        </header>
+
+        <div class="p-6">
+            <div id="loadingState" class="flex justify-center py-20">
+                <div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div>
+            </div>
+
+            <div id="paymentsList" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+            <div id="emptyState" class="hidden text-center py-20 text-gray-500">Tidak ada pembayaran pending saat ini. 🎉</div>
+        </div>
+    </main>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-surface border border-dark-border rounded-xl p-6 w-full max-w-md">
+            <h2 class="text-lg font-bold mb-4 text-red-400">Tolak Pembayaran</h2>
+            <textarea id="rejectReason" rows="3" placeholder="Alasan penolakan (wajib diisi)..." class="w-full bg-dark border border-dark-border text-white p-3 rounded text-sm resize-none focus:border-red-500 focus:outline-none"></textarea>
+            <div class="flex gap-3 mt-4">
+                <button onclick="closeRejectModal()" class="flex-1 border border-dark-border text-gray-400 py-2 rounded hover:bg-dark-border transition-colors text-sm">Batal</button>
+                <button onclick="submitReject()" class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-500 transition-colors text-sm font-bold">Tolak</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireRole(['admin', 'super_admin']);
+        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+
+        if (!auth.isSuperAdmin()) {
+            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
+        }
+
+        const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+        let currentPaymentId = null;
+
+        async function loadPayments() {
+            try {
+                const payments = await api.get('/payments');
+                renderPayments(payments);
+            } catch (e) { alert(e.message); }
+        }
+
+        function renderPayments(payments) {
+            const list = document.getElementById('paymentsList');
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+            loading.classList.add('hidden');
+
+            if (!payments.length) { empty.classList.remove('hidden'); return; }
+            list.classList.remove('hidden');
+
+            list.innerHTML = payments.map(p => `
+                <div class="payment-card rounded-xl overflow-hidden flex flex-col">
+                    <!-- Proof Image -->
+                    <div class="h-52 bg-dark-border overflow-hidden relative">
+                        ${p.proof_image_url 
+                            ? `<img src="${p.proof_image_url}" alt="Bukti Transfer" class="w-full h-full object-cover">` 
+                            : `<div class="w-full h-full flex items-center justify-center text-gray-600 flex-col gap-2"><i data-lucide="image-off" class="w-12 h-12"></i><span class="text-sm">Belum ada bukti</span></div>`
+                        }
+                        <span class="absolute top-3 right-3 badge-${p.status} px-2 py-1 rounded text-[10px] uppercase font-bold tracking-widest">${p.status}</span>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="p-5 flex-grow">
+                        <div class="grid grid-cols-2 gap-y-3 text-sm mb-5">
+                            <div><p class="text-gray-500 text-xs mb-1">Booking ID</p><p class="font-mono text-xs text-gray-300">${p.booking_id.substring(0,16)}…</p></div>
+                            <div><p class="text-gray-500 text-xs mb-1">Metode</p><p class="font-medium uppercase">${p.method}</p></div>
+                            <div><p class="text-gray-500 text-xs mb-1">Jumlah</p><p class="font-bold text-brand">${formatRp(p.amount)}</p></div>
+                            <div><p class="text-gray-500 text-xs mb-1">Tanggal Upload</p><p class="text-gray-300">${new Date(p.created_at).toLocaleDateString('id-ID')}</p></div>
+                        </div>
+
+                        ${p.rejection_reason ? `<div class="bg-red-900/20 border border-red-800 rounded p-3 mb-4 text-xs text-red-300"><strong>Ditolak:</strong> ${p.rejection_reason}</div>` : ''}
+
+                        ${p.status === 'pending' ? `
+                            <div class="flex gap-3">
+                                <button onclick="confirmPayment('${p.id}')" class="flex-1 bg-brand text-black py-2 rounded font-bold text-sm hover:bg-white transition-colors">✓ Konfirmasi</button>
+                                <button onclick="openRejectModal('${p.id}')" class="flex-1 border border-red-600 text-red-400 py-2 rounded font-bold text-sm hover:bg-red-900/20 transition-colors">✗ Tolak</button>
+                            </div>
+                        ` : `<p class="text-center text-xs text-gray-600 uppercase tracking-widest">Sudah diproses</p>`}
+                    </div>
+                </div>
+            `).join('');
+
+            if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        }
+
+        window.confirmPayment = async function(paymentId) {
+            if (!confirm('Konfirmasi bahwa pembayaran ini valid?')) return;
+            try {
+                await api.put(`/payments/${paymentId}/confirm`, {});
+                alert('Pembayaran dikonfirmasi! ✅ Booking customer sekarang aktif.');
+                loadPayments();
+            } catch (e) { alert(e.message); }
+        };
+
+        window.openRejectModal = function(paymentId) {
+            currentPaymentId = paymentId;
+            document.getElementById('rejectReason').value = '';
+            document.getElementById('rejectModal').classList.remove('hidden');
+        };
+        window.closeRejectModal = function() { document.getElementById('rejectModal').classList.add('hidden'); };
+
+        window.submitReject = async function() {
+            const reason = document.getElementById('rejectReason').value.trim();
+            if (!reason) { alert('Alasan penolakan wajib diisi!'); return; }
+            try {
+                await api.put(`/payments/${currentPaymentId}/reject`, { rejection_reason: reason });
+                closeRejectModal();
+                alert('Pembayaran berhasil ditolak.');
+                loadPayments();
+            } catch (e) { alert(e.message); }
+        };
+
+        loadPayments();
+    </script>
+</body>
+</html>

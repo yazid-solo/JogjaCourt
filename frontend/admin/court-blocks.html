@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blokir Lapangan | ArenaBooking Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#2a2a2a' }
+                    },
+                    fontFamily: { sans: ['Inter','sans-serif'], display: ['Bebas Neue','cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color:#0A0A0A; color:white; }
+        .form-input { background:rgba(255,255,255,.04); border:1px solid #2a2a2a; color:white; transition:all .3s; }
+        .form-input:focus { border-color:#AAFF00; outline:none; box-shadow: 0 0 0 3px rgba(170,255,0,.08); }
+        th { color:#6b7280; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
+        tr:hover td { background:#1a1a1a; }
+        .role-badge-superadmin {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255,200,0,0.15); border: 1px solid rgba(255,200,0,0.3);
+            color: #FFC800; font-size: 9px; font-weight: 800; letter-spacing: .12em;
+            padding: 3px 8px; border-radius: 99px;
+        }
+        .role-badge-admin {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(170,255,0,0.08); border: 1px solid rgba(170,255,0,0.2);
+            color: #AAFF00; font-size: 9px; font-weight: 800; letter-spacing: .12em;
+            padding: 3px 8px; border-radius: 99px;
+        }
+        body.superadmin-mode aside { background: linear-gradient(180deg, #100e00 0%, #151515 100%); border-right-color: rgba(255,200,0,.15); }
+        body.superadmin-mode .sidebar-link.active { background: rgba(255,200,0,.12); color: #FFC800; }
+        body.superadmin-mode .sidebar-link:hover { background: rgba(255,200,0,.07); color: #FFC800; }
+        .sidebar-link { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:10px; font-size:14px; color:#9ca3af; transition:all .2s; }
+        .sidebar-link:hover { background:rgba(255,255,255,.05); color:white; }
+        .sidebar-link.active { background:rgba(170,255,0,.1); color:#AAFF00; font-weight:600; }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
+        <div id="sidebarLogo" class="h-16 flex items-center px-6 border-b border-dark-border shrink-0">
+            <div class="logo-dot w-8 h-8 bg-brand rounded-lg flex items-center justify-center mr-2">
+                <i data-lucide="activity" class="text-black w-4 h-4"></i>
+            </div>
+            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
+        </div>
+        <div class="px-5 py-4 border-b border-dark-border shrink-0 flex items-center gap-3">
+            <div id="sidebarAvatar" class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style="background:rgba(170,255,0,.15);color:#AAFF00;"></div>
+            <div class="overflow-hidden">
+                <p id="sidebarName" class="text-sm font-semibold text-white truncate"></p>
+                <span id="sidebarRoleBadge" class="role-badge-admin">✦ ADMIN</span>
+            </div>
+        </div>
+        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
+            <a href="dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
+            <a href="bookings.html" class="sidebar-link"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
+            <a href="payments.html" class="sidebar-link"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
+            <a href="court-blocks.html" class="sidebar-link active"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Manajemen</p>
+            <a href="courts.html" class="sidebar-link superadmin-only"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
+            <a href="areas.html" class="sidebar-link superadmin-only"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
+            <a href="venues.html" class="sidebar-link superadmin-only"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
+            <a href="users.html" class="sidebar-link superadmin-only"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
+        </nav>
+        <div class="p-4 border-t border-dark-border shrink-0">
+            <button id="logoutBtn" class="sidebar-link w-full text-red-400 hover:bg-red-900/10 hover:text-red-300">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-64">
+        <header class="h-16 sticky top-0 z-30 flex items-center justify-between px-8 border-b border-dark-border" style="background:rgba(10,10,10,.95);backdrop-filter:blur(12px);">
+            <div>
+                <h1 class="text-base font-semibold">Blokir Lapangan</h1>
+                <p class="text-xs text-gray-500">Blokir jadwal untuk maintenance atau event khusus</p>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 space-y-6">
+
+            <!-- Form Tambah Blokir -->
+            <div class="bg-dark-surface border border-dark-border rounded-2xl p-6">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-5">
+                    <i data-lucide="plus-circle" class="w-4 h-4 inline mr-2 text-brand"></i>Tambah Blokir Baru
+                </h2>
+                <div id="formError" class="hidden mb-4 bg-red-900/30 border border-red-500/50 text-red-400 p-3 rounded-lg text-sm"></div>
+                <div id="formSuccess" class="hidden mb-4 bg-green-900/30 border border-green-500/50 text-green-400 p-3 rounded-lg text-sm"></div>
+                <form id="blockForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Pilih GOR *</label>
+                        <select id="f_venue" required class="form-input w-full px-3 py-2.5 rounded-xl">
+                            <option value="">-- Pilih GOR --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Pilih Lapangan *</label>
+                        <select id="f_court" required class="form-input w-full px-3 py-2.5 rounded-xl" disabled>
+                            <option value="">-- Pilih Lapangan --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Tanggal Blokir *</label>
+                        <input type="date" id="f_date" required class="form-input w-full px-3 py-2.5 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Jam Mulai *</label>
+                        <select id="f_start" required class="form-input w-full px-3 py-2.5 rounded-xl">
+                            <option value="">-- Jam Mulai --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Jam Selesai *</label>
+                        <select id="f_end" required class="form-input w-full px-3 py-2.5 rounded-xl">
+                            <option value="">-- Jam Selesai --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-widest">Alasan Blokir *</label>
+                        <input type="text" id="f_reason" placeholder="cth: Maintenance Rutin / Event Tournament" required class="form-input w-full px-3 py-2.5 rounded-xl">
+                    </div>
+                    <div class="md:col-span-2 lg:col-span-3 flex justify-end">
+                        <button type="submit" id="submitBtn" class="bg-brand text-black px-6 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
+                            <i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Sekarang
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabel Daftar Blokir -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-600">Jadwal yang Sedang Diblokir</h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-gray-500">Filter GOR:</label>
+                        <select id="filterVenue" class="form-input text-sm px-3 py-1.5 rounded-lg">
+                            <option value="">Semua GOR</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="loadingState" class="flex justify-center py-16"><div class="w-8 h-8 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div></div>
+                <div id="emptyState" class="hidden text-center py-16 text-gray-600">
+                    <i data-lucide="shield-check" class="w-12 h-12 mx-auto mb-3"></i>
+                    <p>Tidak ada lapangan yang sedang diblokir.</p>
+                </div>
+                <div id="tableWrapper" class="hidden overflow-x-auto rounded-2xl border border-dark-border">
+                    <table class="w-full border-collapse">
+                        <thead class="border-b border-dark-border bg-dark-surface">
+                            <tr>
+                                <th class="px-6 py-4 text-left">Lapangan</th>
+                                <th class="px-6 py-4 text-left">GOR</th>
+                                <th class="px-6 py-4 text-left">Tanggal</th>
+                                <th class="px-6 py-4 text-left">Jam</th>
+                                <th class="px-6 py-4 text-left">Alasan</th>
+                                <th class="px-6 py-4 text-left">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // === Role Setup ===
+        auth.requireRole(['admin', 'super_admin']);
+        const user = auth.getUser();
+        const isSA = auth.isSuperAdmin();
+
+        document.getElementById('sidebarName').textContent = user.name;
+        document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
+        if (isSA) {
+            document.body.classList.add('superadmin-mode');
+            document.getElementById('sidebarAvatar').style.cssText = 'background:rgba(255,200,0,.15);color:#FFC800;';
+            const badge = document.getElementById('sidebarRoleBadge');
+            badge.textContent = '⭐ SUPER ADMIN'; badge.className = 'role-badge-superadmin';
+        } else {
+            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // === Logic ===
+        const hours = Array.from({length: 15}, (_, i) => i + 8); // 08:00 - 22:00
+        const startSel = document.getElementById('f_start');
+        const endSel   = document.getElementById('f_end');
+        hours.forEach(h => {
+            const label = `${String(h).padStart(2,'0')}:00`;
+            startSel.innerHTML += `<option value="${label}">${label}</option>`;
+        });
+
+        startSel.addEventListener('change', () => {
+            const start = parseInt(startSel.value);
+            endSel.innerHTML = '<option value="">-- Jam Selesai --</option>';
+            hours.filter(h => h > start).forEach(h => {
+                const label = `${String(h).padStart(2,'0')}:00`;
+                endSel.innerHTML += `<option value="${label}">${label}</option>`;
+            });
+        });
+
+        let allBlocks = [];
+        let courtsMap = {}; // court_id -> {name, venue_name}
+
+        async function loadVenues() {
+            const venues = await api.get('/venues');
+            const venuesSel = document.getElementById('f_venue');
+            const filterSel = document.getElementById('filterVenue');
+            venues.forEach(v => {
+                venuesSel.innerHTML += `<option value="${v.id}">${v.name}</option>`;
+                filterSel.innerHTML += `<option value="${v.id}">${v.name}</option>`;
+            });
+        }
+
+        document.getElementById('f_venue').addEventListener('change', async function() {
+            const courtSel = document.getElementById('f_court');
+            courtSel.innerHTML = '<option value="">-- Pilih Lapangan --</option>';
+            courtSel.disabled = !this.value;
+            if (!this.value) return;
+            const courts = await api.get(`/venues/${this.value}/courts`);
+            courts.forEach(c => { courtSel.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+        });
+
+        // Set min date to today
+        document.getElementById('f_date').min = new Date().toISOString().split('T')[0];
+
+        document.getElementById('blockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errEl = document.getElementById('formError');
+            const okEl = document.getElementById('formSuccess');
+            errEl.classList.add('hidden'); okEl.classList.add('hidden');
+
+            const courtId = document.getElementById('f_court').value;
+            const payload = {
+                block_date: document.getElementById('f_date').value,
+                start_time: document.getElementById('f_start').value,
+                end_time:   document.getElementById('f_end').value,
+                reason:     document.getElementById('f_reason').value,
+            };
+
+            if (parseInt(payload.end_time) <= parseInt(payload.start_time)) {
+                errEl.textContent = 'Jam selesai harus lebih besar dari jam mulai.';
+                errEl.classList.remove('hidden'); return;
+            }
+
+            btn.disabled = true; btn.textContent = 'Memblokir...';
+            try {
+                await api.post(`/courts/${courtId}/blocks`, payload);
+                okEl.textContent = 'Lapangan berhasil diblokir!';
+                okEl.classList.remove('hidden');
+                document.getElementById('blockForm').reset();
+                document.getElementById('f_court').disabled = true;
+                await loadBlocks();
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Sekarang';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+
+        async function loadBlocks() {
+            // We load blocks for ALL venues by fetching all courts then their blocks
+            const venues = await api.get('/venues');
+            allBlocks = [];
+            courtsMap = {};
+
+            for (const venue of venues) {
+                try {
+                    const courts = await api.get(`/venues/${venue.id}/courts`);
+                    for (const court of courts) {
+                        courtsMap[court.id] = { name: court.name, venue_name: venue.name, venue_id: venue.id };
+                        try {
+                            const blocks = await api.get(`/courts/${court.id}/blocks`);
+                            blocks.forEach(b => allBlocks.push({ ...b, court_name: court.name, venue_name: venue.name, venue_id: venue.id }));
+                        } catch(_) {}
+                    }
+                } catch(_) {}
+            }
+            renderTable(allBlocks);
+        }
+
+        document.getElementById('filterVenue').addEventListener('change', function() {
+            if (!this.value) return renderTable(allBlocks);
+            renderTable(allBlocks.filter(b => b.venue_id === this.value));
+        });
+
+        function renderTable(blocks) {
+            document.getElementById('loadingState').classList.add('hidden');
+            const tbody = document.getElementById('tableBody');
+            if (blocks.length === 0) {
+                document.getElementById('tableWrapper').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('tableWrapper').classList.remove('hidden');
+            tbody.innerHTML = blocks.map(b => `
+                <tr class="border-b border-dark-border">
+                    <td class="px-6 py-4 font-medium text-white">${b.court_name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${b.venue_name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-300">${new Date(b.block_date + 'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</td>
+                    <td class="px-6 py-4 text-sm font-mono">
+                        <span class="bg-dark-border px-2 py-1 rounded text-yellow-400">${b.start_time.substring(0,5)} – ${b.end_time.substring(0,5)}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${b.reason || '—'}</td>
+                    <td class="px-6 py-4">
+                        <button onclick="unblock('${b.court_id || b.court_name}', '${b.id}', this)" 
+                            data-court-id="${b.id}"
+                            class="text-xs px-3 py-1.5 border border-red-600 text-red-400 hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-1">
+                            <i data-lucide="unlock" class="w-3 h-3"></i> Buka Blokir
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // We need court_id from the block data. Let's re-query with court_id embedded.
+        async function loadBlocksWithCourtId() {
+            const venues = await api.get('/venues');
+            allBlocks = [];
+            courtsMap = {};
+
+            for (const venue of venues) {
+                try {
+                    const courts = await api.get(`/venues/${venue.id}/courts`);
+                    for (const court of courts) {
+                        courtsMap[court.id] = { name: court.name, venue_name: venue.name, venue_id: venue.id };
+                        try {
+                            const blocks = await api.get(`/courts/${court.id}/blocks`);
+                            blocks.forEach(b => allBlocks.push({ ...b, court_name: court.name, venue_name: venue.name, venue_id: venue.id, court_id: court.id }));
+                        } catch(_) {}
+                    }
+                } catch(_) {}
+            }
+            renderTable(allBlocks);
+        }
+
+        window.unblock = async function(_, blockId, btn) {
+            if (!confirm('Yakin ingin membuka blokir jadwal ini?')) return;
+            const block = allBlocks.find(b => b.id === blockId);
+            if (!block) return;
+            btn.disabled = true; btn.textContent = '...';
+            try {
+                await api.delete(`/courts/${block.court_id}/blocks/${blockId}`);
+                await loadBlocksWithCourtId();
+            } catch(err) { alert(err.message); btn.disabled = false; }
+        };
+
+        (async () => {
+            await Promise.all([loadVenues(), loadBlocksWithCourtId()]);
+        })();
+    </script>
+</body>
+</html>

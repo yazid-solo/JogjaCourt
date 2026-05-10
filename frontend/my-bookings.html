@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pesanan | ArenaBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .booking-card { background: #151515; border: 1px solid #333; transition: all 0.3s; }
+        .booking-card:hover { border-color: #444; }
+        .badge-pending   { background: rgba(234,179,8,.1);   color: #eab308; border: 1px solid rgba(234,179,8,.3); }
+        .badge-confirmed { background: rgba(170,255,0,.1);   color: #AAFF00; border: 1px solid rgba(170,255,0,.3); }
+        .badge-cancelled { background: rgba(239,68,68,.1);   color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+        .badge-completed { background: rgba(59,130,246,.1);  color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
+        .badge-expired   { background: rgba(107,114,128,.1); color: #6b7280; border: 1px solid rgba(107,114,128,.3); }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+
+    <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-md border-b border-dark-border">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
+                <i data-lucide="activity" class="text-brand"></i>
+                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            </div>
+            <a href="locations.html" class="text-sm font-bold text-brand border border-brand/50 px-4 py-2 rounded hover:bg-brand hover:text-black transition-colors">
+                + Pesan Lapangan
+            </a>
+        </div>
+    </nav>
+
+    <div class="pt-28 pb-20 max-w-4xl mx-auto px-4 sm:px-6">
+        <h1 class="text-4xl font-display uppercase tracking-widest mb-2">Riwayat <span class="text-brand">Pesanan</span></h1>
+        <p class="text-gray-400 mb-8">Pantau status booking dan pembayaran Anda.</p>
+
+        <!-- Filter Tab -->
+        <div class="flex gap-2 mb-6 flex-wrap">
+            <button onclick="filterStatus('all')" class="filter-btn active text-xs uppercase tracking-widest px-4 py-2 rounded border border-dark-border text-white bg-dark-surface" data-status="all">Semua</button>
+            <button onclick="filterStatus('pending')"   class="filter-btn text-xs uppercase tracking-widest px-4 py-2 rounded border border-dark-border text-gray-400" data-status="pending">Pending</button>
+            <button onclick="filterStatus('confirmed')" class="filter-btn text-xs uppercase tracking-widest px-4 py-2 rounded border border-dark-border text-gray-400" data-status="confirmed">Confirmed</button>
+            <button onclick="filterStatus('completed')" class="filter-btn text-xs uppercase tracking-widest px-4 py-2 rounded border border-dark-border text-gray-400" data-status="completed">Selesai</button>
+            <button onclick="filterStatus('cancelled')" class="filter-btn text-xs uppercase tracking-widest px-4 py-2 rounded border border-dark-border text-gray-400" data-status="cancelled">Dibatalkan</button>
+        </div>
+
+        <div id="loadingState" class="flex justify-center items-center py-20">
+            <div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div>
+        </div>
+
+        <div id="bookingsList" class="space-y-4 hidden"></div>
+
+        <div id="emptyState" class="hidden text-center py-20">
+            <i data-lucide="calendar" class="w-16 h-16 text-gray-700 mx-auto mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-400">Belum ada riwayat pesanan.</h3>
+            <a href="locations.html" class="inline-block mt-4 text-brand font-bold uppercase tracking-widest hover:underline">Mulai Booking →</a>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireAuth();
+
+        const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+        const statusLabel = { pending: 'Menunggu Bayar', confirmed: 'Dikonfirmasi', cancelled: 'Dibatalkan', completed: 'Selesai', expired: 'Kadaluarsa' };
+
+        let allBookings = [];
+
+        async function loadBookings() {
+            try {
+                allBookings = await api.get('/bookings');
+                renderBookings(allBookings);
+            } catch (error) {
+                document.getElementById('loadingState').innerHTML = `<p class="text-red-400">Gagal memuat: ${error.message}</p>`;
+            }
+        }
+
+        function filterStatus(status) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const isActive = btn.dataset.status === status;
+                btn.classList.toggle('bg-brand', isActive);
+                btn.classList.toggle('text-black', isActive);
+                btn.classList.toggle('border-brand', isActive);
+                btn.classList.toggle('text-gray-400', !isActive);
+                btn.classList.toggle('bg-dark-surface', !isActive);
+            });
+            const filtered = status === 'all' ? allBookings : allBookings.filter(b => b.status === status);
+            renderBookings(filtered);
+        }
+
+        function renderBookings(bookings) {
+            const list = document.getElementById('bookingsList');
+            document.getElementById('loadingState').classList.add('hidden');
+
+            if (bookings.length === 0) {
+                list.classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+            list.classList.remove('hidden');
+
+            list.innerHTML = bookings.map(b => {
+                const createdDate = new Date(b.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                const playDate = new Date(b.booking_date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+
+                let actionHtml = '';
+                if (b.status === 'pending') {
+                    actionHtml = `
+                        <div class="flex gap-2 flex-shrink-0">
+                            <button onclick="cancelBooking('${b.id}')" class="text-xs px-3 py-2 border border-red-600 text-red-400 hover:bg-red-900/20 rounded transition-colors">Batalkan</button>
+                            <button onclick="window.location.href='booking.html?id=${b.id}'" class="text-xs px-4 py-2 bg-brand text-black font-bold rounded hover:bg-white transition-colors">Bayar Sekarang</button>
+                        </div>`;
+                } else if (b.status === 'confirmed') {
+                    actionHtml = `<span class="text-xs text-brand flex items-center gap-1 flex-shrink-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Terkonfirmasi</span>`;
+                }
+
+                return `
+                <div class="booking-card rounded-xl p-5">
+                    <div class="flex flex-col md:flex-row justify-between gap-4">
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-2 mb-3 flex-wrap">
+                                <span class="badge-${b.status} text-[10px] px-2 py-1 rounded font-bold uppercase tracking-widest">${statusLabel[b.status] || b.status}</span>
+                                <span class="text-xs text-gray-600">Dipesan ${createdDate}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-1">${b.court?.name || '—'}</h3>
+                            <p class="text-sm text-gray-400 flex items-center gap-4 flex-wrap">
+                                <span class="flex items-center gap-1"><i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> ${playDate}</span>
+                                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${b.start_time.substring(0,5)} – ${b.end_time.substring(0,5)} WIB</span>
+                            </p>
+                        </div>
+                        <div class="flex md:flex-col items-center md:items-end justify-between border-t md:border-t-0 border-dark-border pt-4 md:pt-0 mt-2 md:mt-0 gap-3">
+                            <p class="font-bold text-lg">${formatRp(b.total_price)}</p>
+                            ${actionHtml}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        }
+
+        window.cancelBooking = async function(id) {
+            if (!confirm('Yakin ingin membatalkan booking ini?')) return;
+            try {
+                await api.put(`/bookings/${id}/cancel`, {});
+                await loadBookings();
+            } catch (e) { alert(e.message); }
+        };
+
+        loadBookings();
+    </script>
+</body>
+</html>

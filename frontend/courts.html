@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Lapangan | ArenaBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00', dark: '#88cc00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .court-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .court-card:hover {
+            border-color: rgba(170, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        .slot-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .slot-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .slot-btn.available:hover {
+            border-color: #AAFF00;
+            background: rgba(170, 255, 0, 0.05);
+            transform: scale(1.02);
+        }
+        .slot-btn.available:hover::after { opacity: 1; }
+        .slot-btn.selected {
+            background: linear-gradient(135deg, #AAFF00 0%, #88cc00 100%);
+            color: #000;
+            border-color: #AAFF00;
+            box-shadow: 0 4px 15px rgba(170, 255, 0, 0.3);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .slot-btn.booked {
+            background: rgba(255, 255, 255, 0.01);
+            color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.03);
+            cursor: not-allowed;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.02) 5px, rgba(255,255,255,0.02) 10px);
+        }
+        
+        /* Custom Date input dark mode */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+    
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-md border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
+                <i data-lucide="activity" class="text-brand"></i>
+                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            </div>
+            <a href="javascript:history.back()" class="text-sm font-medium text-gray-400 hover:text-white flex items-center">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Kembali
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="pt-24 pb-8 border-b border-dark-border bg-[#0d0d0d]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-end gap-4">
+            <div>
+                <p class="text-brand font-bold uppercase tracking-widest text-sm mb-2">Pilihan Lapangan di</p>
+                <h1 id="venueTitle" class="text-4xl md:text-5xl font-display tracking-widest uppercase">Memuat...</h1>
+            </div>
+            
+            <div class="w-full md:w-auto">
+                <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Pilih Tanggal Main</label>
+                <input type="date" id="datePicker" class="bg-dark-surface border border-dark-border text-white px-4 py-3 rounded w-full md:w-48 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div id="loadingState" class="flex justify-center items-center py-20">
+            <div class="w-12 h-12 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div>
+        </div>
+
+        <div id="courtsContainer" class="space-y-8 hidden">
+            <!-- Courts will be generated here -->
+        </div>
+        
+        <div id="emptyState" class="hidden text-center py-20">
+            <i data-lucide="x-circle" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-400">Belum ada lapangan yang aktif di GOR ini.</h3>
+        </div>
+
+    </div>
+
+    <!-- Floating Action Bar for Checkout -->
+    <div id="checkoutBar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 translate-y-[150%] w-[95%] max-w-4xl bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-5 transition-transform duration-500 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <!-- Duration Selector -->
+                <div class="bg-black/40 rounded-xl p-2 border border-white/5 flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+                    <div class="pl-2">
+                        <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-0.5">Durasi</p>
+                        <p class="text-white font-medium text-sm"><span id="durationCounter">1</span> Jam</p>
+                    </div>
+                    <div class="flex items-center bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
+                        <button onclick="changeDuration(-1)" class="w-10 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">-</button>
+                        <div class="w-px h-4 bg-gray-700"></div>
+                        <button onclick="changeDuration(1)" class="w-10 h-8 flex items-center justify-center text-brand hover:text-black hover:bg-brand transition-colors">+</button>
+                    </div>
+                </div>
+
+                <!-- Rental Type -->
+                <div id="rentalTypeContainer" class="hidden">
+                    <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-1">Tipe Sewa</p>
+                    <div class="relative">
+                        <select id="rentalTypeSelect" class="appearance-none bg-black/40 border border-white/10 rounded-lg text-white text-sm font-medium px-4 py-2 pr-10 outline-none focus:border-brand hover:border-white/20 transition-colors cursor-pointer">
+                            <option value="hourly">Harian</option>
+                            <option value="monthly">Bulanan</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price & Button -->
+            <div class="flex items-center gap-5 w-full md:w-auto justify-between md:justify-end border-t border-white/5 md:border-0 pt-4 md:pt-0">
+                <div class="text-left md:text-right">
+                    <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-0.5">Total Biaya</p>
+                    <p id="totalPrice" class="text-2xl font-display tracking-widest font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Rp 0</p>
+                </div>
+                
+                <button id="bookBtn" class="bg-brand text-black px-6 py-3 font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:shadow-[0_0_20px_rgba(170,255,0,0.4)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                    Pesan <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireAuth();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const venueId = urlParams.get('venue_id');
+        const venueName = urlParams.get('venue_name');
+
+        if (!venueId) window.location.href = 'locations.html';
+        if (venueName) document.getElementById('venueTitle').textContent = venueName;
+
+        // Setup DatePicker
+        const datePicker = document.getElementById('datePicker');
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.min = today;
+        datePicker.value = today;
+
+        let allCourts = [];
+        let selectedCourtId = null;
+        let selectedSlots = [];
+        let totalAmount = 0;
+        let currentRentalType = 'hourly';
+
+        // Utility format Rupiah
+        const formatRp = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
+
+        async function loadData() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('courtsContainer').classList.add('hidden');
+            
+            try {
+                // Fetch courts
+                allCourts = await api.get(`/venues/${venueId}/courts`);
+                
+                if (allCourts.length === 0) {
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return;
+                }
+
+                renderCourts();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function renderCourts() {
+            const container = document.getElementById('courtsContainer');
+            container.innerHTML = '';
+            
+            for (const court of allCourts) {
+                // Fetch availability for this court on selected date
+                const dateVal = datePicker.value;
+                let availabilityData;
+                try {
+                    availabilityData = await api.get(`/courts/${court.id}/availability?date_req=${dateVal}`);
+                } catch (e) {
+                    console.error("Error fetching availability", e);
+                    continue;
+                }
+
+                const courtEl = document.createElement('div');
+                courtEl.className = 'court-card p-6 rounded-xl';
+                
+                let slotsHtml = '';
+                availabilityData.slots.forEach(slot => {
+                    const startH = slot.start_time.substring(0,5);
+                    const isBooked = !slot.is_available;
+                    const priceRp = formatRp(slot.price);
+                    const btnClass = isBooked ? 'booked' : 'available border-gray-600 hover:text-white text-gray-300';
+                    
+                    slotsHtml += `
+                        <button 
+                            class="slot-btn rounded-xl py-3 px-2 flex flex-col items-center justify-center text-sm ${btnClass}"
+                            ${isBooked ? 'disabled' : ''}
+                            data-court="${court.id}"
+                            data-start="${slot.start_time}"
+                            onclick="toggleSlot('${court.id}', '${slot.start_time}', '${slot.end_time}', ${slot.price}, this)"
+                        >
+                            <span class="font-bold text-base tracking-wide ${isBooked ? 'text-gray-600' : 'text-gray-200'}">${startH}</span>
+                            <span class="text-[10px] mt-1 ${isBooked ? 'text-gray-700' : 'text-gray-400'}">${priceRp}</span>
+                            ${slot.is_peak ? `<span class="text-[9px] ${isBooked ? 'text-gray-600 bg-gray-800' : 'text-brand bg-brand/10'} px-1.5 py-0.5 rounded mt-1 font-bold uppercase tracking-wider">Peak</span>` : ''}
+                        </button>
+                    `;
+                });
+
+                courtEl.innerHTML = `
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                                ${court.name}
+                            </h3>
+                            <p class="text-gray-400 text-sm mt-1">
+                                Reguler: <span class="text-white">${formatRp(court.price_regular)}/jam</span> 
+                                ${court.price_peak > court.price_regular ? `| Peak: <span class="text-brand">${formatRp(court.price_peak)}/jam</span>` : ''}
+                            </p>
+                            ${court.price_monthly ? `<p class="text-gray-500 text-xs mt-1">Sewa Bulanan: <span class="text-brand">${formatRp(court.price_monthly)} / bulan</span></p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3">
+                        ${slotsHtml}
+                    </div>
+                `;
+                container.appendChild(courtEl);
+            }
+            
+            document.getElementById('loadingState').classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            // Reset selection when re-rendered
+            selectedSlots = [];
+            selectedCourtId = null;
+            updateCheckoutBar();
+        }
+
+        window.changeDuration = function(delta) {
+            if (selectedSlots.length === 0) return;
+            selectedSlots.sort((a,b) => a.start.localeCompare(b.start));
+            
+            if (delta === 1) {
+                const lastSlot = selectedSlots[selectedSlots.length - 1];
+                const nextStart = lastSlot.end;
+                const nextBtn = document.querySelector(`.slot-btn[data-court="${selectedCourtId}"][data-start="${nextStart}"]`);
+                
+                if (!nextBtn) {
+                    alert("Jam berikutnya tidak tersedia atau di luar jam operasional.");
+                    return;
+                }
+                if (nextBtn.disabled) {
+                    alert("Jam berikutnya sudah dibooking orang lain.");
+                    return;
+                }
+                nextBtn.click();
+            } else if (delta === -1) {
+                if (selectedSlots.length <= 1) return;
+                const lastSlot = selectedSlots[selectedSlots.length - 1];
+                const lastBtn = document.querySelector(`.slot-btn[data-court="${selectedCourtId}"][data-start="${lastSlot.start}"]`);
+                if (lastBtn) {
+                    lastBtn.click();
+                }
+            }
+        };
+
+        window.toggleSlot = function(courtId, start, end, price, btnEl) {
+            // If user selects a different court, reset everything
+            if (selectedCourtId && selectedCourtId !== courtId) {
+                alert("Anda hanya bisa memesan 1 lapangan dalam satu transaksi. Silakan batalkan pilihan sebelumnya.");
+                return;
+            }
+            
+            selectedCourtId = courtId;
+            
+            // Check if already selected
+            const index = selectedSlots.findIndex(s => s.start === start);
+            if (index > -1) {
+                // Deselect
+                selectedSlots.splice(index, 1);
+                btnEl.classList.remove('selected');
+                btnEl.classList.add('available', 'border-gray-600', 'text-gray-300');
+                if (selectedSlots.length === 0) selectedCourtId = null;
+            } else {
+                // Select
+                selectedSlots.push({start, end, price});
+                btnEl.classList.remove('available', 'border-gray-600', 'text-gray-300');
+                btnEl.classList.add('selected');
+            }
+            
+            updateCheckoutBar();
+        };
+
+        function updateCheckoutBar() {
+            const bar = document.getElementById('checkoutBar');
+            const rentalTypeContainer = document.getElementById('rentalTypeContainer');
+            const rentalTypeSelect = document.getElementById('rentalTypeSelect');
+            
+            if (selectedSlots.length > 0) {
+                const court = allCourts.find(c => c.id === selectedCourtId);
+                
+                if (court && court.price_monthly) {
+                    rentalTypeContainer.classList.remove('hidden');
+                } else {
+                    rentalTypeContainer.classList.add('hidden');
+                    currentRentalType = 'hourly';
+                    rentalTypeSelect.value = 'hourly';
+                }
+                
+                if (currentRentalType === 'monthly') {
+                    totalAmount = selectedSlots.length * Number(court.price_monthly);
+                } else {
+                    totalAmount = selectedSlots.reduce((sum, slot) => sum + Number(slot.price), 0);
+                }
+                
+                document.getElementById('totalPrice').textContent = formatRp(totalAmount);
+                document.getElementById('durationCounter').textContent = selectedSlots.length;
+                bar.classList.remove('translate-y-[150%]');
+                if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+            } else {
+                bar.classList.add('translate-y-[150%]');
+            }
+        }
+        
+        document.getElementById('rentalTypeSelect').addEventListener('change', (e) => {
+            currentRentalType = e.target.value;
+            updateCheckoutBar();
+        });
+
+        datePicker.addEventListener('change', () => {
+            loadData();
+        });
+
+        document.getElementById('bookBtn').addEventListener('click', async () => {
+            if (selectedSlots.length === 0) return;
+            
+            // Sort slots to ensure continuity
+            selectedSlots.sort((a,b) => a.start.localeCompare(b.start));
+            
+            // Check if selected slots are continuous
+            let isContinuous = true;
+            for (let i = 0; i < selectedSlots.length - 1; i++) {
+                if (selectedSlots[i].end !== selectedSlots[i+1].start) {
+                    isContinuous = false;
+                    break;
+                }
+            }
+            
+            if (!isContinuous) {
+                alert("Harap pilih jadwal jam yang saling berurutan (contoh: 11:00, 12:00) dalam satu pesanan. Jika ingin jam terpisah, buat pesanan baru.");
+                return;
+            }
+            
+            const start_time = selectedSlots[0].start;
+            const end_time = selectedSlots[selectedSlots.length-1].end;
+            
+            const payload = {
+                court_id: selectedCourtId,
+                booking_type: currentRentalType,
+                booking_date: datePicker.value,
+                start_time: start_time,
+                end_time: end_time
+            };
+
+            const btn = document.getElementById('bookBtn');
+            btn.innerHTML = 'Memproses...';
+            btn.disabled = true;
+
+            try {
+                const booking = await api.post('/bookings', payload);
+                // Redirect to payment
+                window.location.href = `booking.html?id=${booking.id}`;
+            } catch (error) {
+                alert(error.message);
+                btn.innerHTML = 'Lanjut Pesan';
+                btn.disabled = false;
+                // Reload data in case someone else took it
+                loadData();
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+</html>

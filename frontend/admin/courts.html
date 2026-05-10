@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Lapangan | ArenaBooking Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .form-input { background: rgba(255,255,255,.03); border: 1px solid #333; color: white; transition: all .3s; }
+        .form-input:focus { border-color: #AAFF00; box-shadow: 0 0 8px rgba(170,255,0,.2); outline: none; }
+        th { color:#6b7280; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
+        tr:hover td { background:#1c1c1c; }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
+        <div class="h-20 flex items-center px-6 border-b border-dark-border shrink-0">
+            <i data-lucide="activity" class="text-brand w-6 h-6 mr-2"></i>
+            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
+        </div>
+        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
+            <a href="dashboard.html"  class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
+            <a href="bookings.html"   class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
+            <a href="payments.html"   class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
+            <a href="court-blocks.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600 superadmin-only">Manajemen</p>
+            <a href="courts.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded bg-brand/10 text-brand font-medium text-sm"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
+            <a href="areas.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
+            <a href="venues.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
+            <a href="users.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
+        </nav>
+        <div class="p-4 border-t border-dark-border shrink-0">
+            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded w-full hover:bg-red-900/20 text-red-400 transition-colors text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-64">
+        <header class="h-20 bg-dark border-b border-dark-border flex items-center justify-between px-8 sticky top-0 z-30">
+            <div>
+                <h1 class="text-lg font-semibold">Kelola Lapangan</h1>
+                <p class="text-xs text-gray-500">Tambah, edit, dan kelola lapangan badminton</p>
+            </div>
+            <button onclick="openModal()" class="bg-brand text-black px-5 py-2 rounded font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Tambah Lapangan
+            </button>
+        </header>
+
+        <div class="p-6">
+            <div id="loadingState" class="flex justify-center py-20"><div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div></div>
+
+            <div id="tableWrapper" class="hidden overflow-x-auto rounded-xl border border-dark-border">
+                <table class="w-full border-collapse">
+                    <thead class="border-b border-dark-border"><tr>
+                        <th class="px-6 py-4 text-left">Nama Lapangan</th>
+                        <th class="px-6 py-4 text-left">GOR</th>
+                        <th class="px-6 py-4 text-left">Harga Bulanan</th>
+                        <th class="px-6 py-4 text-left">Harga/Jam</th>
+                        <th class="px-6 py-4 text-left">Harga Peak</th>
+                        <th class="px-6 py-4 text-left">Status</th>
+                        <th class="px-6 py-4 text-left">Aksi</th>
+                    </tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tambah Lapangan -->
+    <div id="modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-surface border border-dark-border rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold font-display tracking-widest">TAMBAH LAPANGAN</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="courtForm" class="space-y-4">
+                <input type="hidden" id="f_id">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">GOR / Venue</label>
+                    <select id="f_venue_id" required class="form-input w-full px-3 py-2.5 rounded"><option value="">-- Pilih GOR --</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Nama Lapangan</label>
+                    <input type="text" id="f_name" required placeholder="cth: Lapangan A / VIP" class="form-input w-full px-3 py-2.5 rounded">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jenis Sewa</label>
+                        <select id="f_rental_type" class="form-input w-full px-3 py-2.5 rounded">
+                            <option value="both">Per Jam & Bulanan</option>
+                            <option value="hourly">Per Jam Saja</option>
+                            <option value="monthly">Bulanan Saja</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jam Peak (cth: 18:00-22:00)</label>
+                        <input type="text" id="f_peak_hours" placeholder="18:00-22:00" class="form-input w-full px-3 py-2.5 rounded">
+                    </div>
+                </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jenis Sewa</label>
+                        <select id="f_rental_type" class="form-input w-full px-3 py-2.5 rounded">
+                            <option value="both">Per Jam & Bulanan</option>
+                            <option value="hourly">Per Jam Saja</option>
+                            <option value="monthly">Bulanan Saja</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Harga Reguler (/jam)</label>
+                        <input type="number" id="f_price_regular" required placeholder="cth: 75000" class="form-input w-full px-3 py-2.5 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Harga Peak Hour (/jam)</label>
+                        <input type="number" id="f_price_peak" required placeholder="cth: 100000" class="form-input w-full px-3 py-2.5 rounded">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Harga Bulanan</label>
+                        <input type="number" id="f_price_monthly" placeholder="cth: 2000000 (opsional)" class="form-input w-full px-3 py-2.5 rounded">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 border border-dark-border text-gray-400 py-2.5 rounded hover:bg-dark-border transition-colors text-sm">Batal</button>
+                    <button type="submit" class="flex-1 bg-brand text-black py-2.5 rounded font-bold text-sm hover:bg-white transition-colors">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireRole(['admin', 'super_admin']);
+        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+
+        if (!auth.isSuperAdmin()) {
+            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
+        }
+
+        const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+
+        async function loadAll() {
+            try {
+                const [courts, venues] = await Promise.all([api.get('/courts'), api.get('/venues')]);
+                // Buat lookup map venue_id → venue name
+                const venuesMap = {};
+                venues.forEach(v => { venuesMap[v.id] = v.name; });
+
+                // Isi dropdown venue di form
+                const sel = document.getElementById('f_venue_id');
+                venues.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id; opt.textContent = v.name;
+                    sel.appendChild(opt);
+                });
+                renderTable(courts, venuesMap);
+            } catch (e) { alert(e.message); }
+        }
+
+        function renderTable(courts, venuesMap = {}) {
+            const body = document.getElementById('tableBody');
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('tableWrapper').classList.remove('hidden');
+
+            if (courts.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Belum ada lapangan. Klik "Tambah Lapangan".</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = courts.map(c => `
+                <tr class="border-b border-dark-border">
+                    <td class="px-6 py-4 font-medium text-white">${c.name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${venuesMap[c.venue_id] || '—'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-300">${c.price_monthly ? 'Rp ' + Number(c.price_monthly).toLocaleString('id-ID') : '—'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-300">Rp ${Number(c.price_regular).toLocaleString('id-ID')}</td>
+                    <td class="px-6 py-4 text-sm text-brand">Rp ${Number(c.price_peak).toLocaleString('id-ID')}</td>
+                    <td class="px-6 py-4"><span class="${c.is_active ? 'text-brand' : 'text-red-500'} text-xs font-bold uppercase">${c.is_active ? '✓ Aktif' : '✗ Nonaktif'}</span></td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="editCourt('${c.id}', '${c.venue_id}', '${c.name.replace(/'/g, "\\'")}', '${c.rental_type}', ${c.price_regular}, ${c.price_peak}, ${c.price_monthly || "''"}, '${c.peak_hours || ''}')" class="text-xs px-3 py-1 border border-gray-600 text-gray-400 hover:text-white hover:border-white rounded transition-colors">Edit</button>
+                        <button onclick="toggleActive('${c.id}', ${c.is_active})" class="text-xs px-3 py-1 border ${c.is_active ? 'border-red-600 text-red-400 hover:bg-red-900/20' : 'border-brand text-brand hover:bg-brand/10'} rounded transition-colors">
+                            ${c.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.toggleActive = async function(courtId, isActive) {
+            if (!confirm(`${isActive ? 'Nonaktifkan' : 'Aktifkan'} lapangan ini?`)) return;
+            try {
+                await api.put(`/courts/${courtId}`, { is_active: !isActive });
+                loadAll();
+            } catch (e) { alert(e.message); }
+        };
+
+        window.editCourt = function(id, venue_id, name, rental_type, price_regular, price_peak, price_monthly, peak_hours) {
+            document.querySelector('#modal h2').textContent = 'EDIT LAPANGAN';
+            document.getElementById('f_id').value = id;
+            document.getElementById('f_venue_id').value = venue_id;
+            document.getElementById('f_name').value = name;
+            document.getElementById('f_rental_type').value = rental_type || 'both';
+            document.getElementById('f_price_regular').value = price_regular;
+            document.getElementById('f_price_peak').value = price_peak;
+            document.getElementById('f_price_monthly').value = price_monthly;
+            document.getElementById('f_peak_hours').value = peak_hours;
+            document.getElementById('modal').classList.remove('hidden');
+        };
+
+        window.openModal = () => {
+            document.querySelector('#modal h2').textContent = 'TAMBAH LAPANGAN';
+            document.getElementById('f_id').value = '';
+            document.getElementById('courtForm').reset();
+            document.getElementById('modal').classList.remove('hidden');
+        };
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+
+        document.getElementById('courtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('f_id').value;
+            const payload = {
+                venue_id: document.getElementById('f_venue_id').value,
+                name: document.getElementById('f_name').value,
+                rental_type: document.getElementById('f_rental_type').value,
+                price_regular: parseFloat(document.getElementById('f_price_regular').value),
+                price_peak: parseFloat(document.getElementById('f_price_peak').value),
+                price_monthly: document.getElementById('f_price_monthly').value ? parseFloat(document.getElementById('f_price_monthly').value) : null,
+                peak_hours: document.getElementById('f_peak_hours').value || null,
+            };
+            try {
+                if (id) {
+                    await api.put(`/courts/${id}`, payload);
+                    alert('Lapangan berhasil diperbarui!');
+                } else {
+                    await api.post('/courts', payload);
+                    alert('Lapangan berhasil ditambahkan!');
+                }
+                closeModal();
+                loadAll();
+            } catch (e) { alert(e.message); }
+        });
+
+        loadAll();
+    </script>
+</body>
+</html>

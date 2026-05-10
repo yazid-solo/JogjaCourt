@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ArenaBooking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#080808', surface: '#0f0f0f', card: '#161616', border: '#222222' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: #080808; color: white; }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; font-size: 14px; color: #9ca3af; transition: all 0.2s; }
+        .sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
+        .sidebar-link.active { background: rgba(170,255,0,0.1); color: #AAFF00; font-weight: 600; }
+
+        /* Super Admin Gold Theme Override */
+        body.superadmin-mode aside {
+            background: linear-gradient(180deg, #100e00 0%, #0f0f0f 100%);
+            border-right-color: rgba(255, 200, 0, 0.15);
+        }
+        body.superadmin-mode .sidebar-link.active { background: rgba(255,200,0,0.12); color: #FFC800; }
+        body.superadmin-mode .sidebar-link:hover { background: rgba(255,200,0,0.07); color: #FFC800; }
+        body.superadmin-mode #sidebarLogo .logo-dot { background: #FFC800; }
+        body.superadmin-mode #sidebarLogo span { color: #FFC800; }
+
+        .role-badge-superadmin {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: linear-gradient(90deg, rgba(255,200,0,0.15), rgba(255,200,0,0.05));
+            border: 1px solid rgba(255,200,0,0.3);
+            color: #FFC800;
+            font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
+            padding: 3px 8px; border-radius: 99px;
+        }
+        .role-badge-admin {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(170,255,0,0.08);
+            border: 1px solid rgba(170,255,0,0.2);
+            color: #AAFF00;
+            font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
+            padding: 3px 8px; border-radius: 99px;
+        }
+        .stat-card {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(170,255,0,0.3); box-shadow: 0 8px 32px rgba(170,255,0,0.06); }
+        .chart-card { background: #161616; border: 1px solid #222; border-radius: 16px; padding: 24px; }
+        .quick-action { background: #161616; border: 1px solid #222; border-radius: 12px; padding: 16px; transition: all 0.2s; cursor: pointer; }
+        .quick-action:hover { border-color: #AAFF00; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f0f; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex">
+
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
+        <!-- Logo -->
+        <div id="sidebarLogo" class="h-16 flex items-center px-6 border-b border-dark-border flex-shrink-0">
+            <div class="logo-dot w-8 h-8 bg-brand rounded-lg flex items-center justify-center mr-2">
+                <i data-lucide="activity" class="text-black w-4 h-4"></i>
+            </div>
+            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
+        </div>
+
+        <!-- Sidebar User Profile -->
+        <div id="sidebarProfile" class="px-5 py-4 border-b border-dark-border flex-shrink-0 flex items-center gap-3">
+            <div id="sidebarAvatar" class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background: rgba(170,255,0,0.15); color: #AAFF00;"></div>
+            <div class="overflow-hidden">
+                <p id="sidebarName" class="text-sm font-semibold text-white truncate"></p>
+                <span id="sidebarRoleBadge" class="role-badge-admin">Admin</span>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
+            <a href="dashboard.html" class="sidebar-link active"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
+
+            <p class="px-4 pt-5 pb-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
+            <a href="bookings.html"  class="sidebar-link"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
+            <a href="payments.html"  class="sidebar-link">
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar
+                <span id="pendingBadge" class="hidden ml-auto bg-yellow-500/20 text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+            </a>
+            <a href="court-blocks.html" class="sidebar-link"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
+
+            <p class="px-4 pt-5 pb-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 superadmin-only">Manajemen</p>
+            <a href="courts.html"    class="sidebar-link superadmin-only"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
+            <a href="areas.html"     class="sidebar-link superadmin-only"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
+            <a href="venues.html"    class="sidebar-link superadmin-only"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
+            <a href="users.html"     class="sidebar-link superadmin-only"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="p-4 border-t border-dark-border flex-shrink-0">
+            <button id="logoutBtn" class="sidebar-link w-full text-red-400 hover:bg-red-900/10 hover:text-red-300">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+            </button>
+        </div>
+    </aside>
+
+    <!-- ====== MAIN ====== -->
+    <main class="flex-1 md:ml-64 min-h-screen">
+        <!-- Topbar -->
+        <header class="h-16 sticky top-0 z-30 flex items-center justify-between px-6 md:px-8 border-b border-dark-border" style="background: rgba(8,8,8,0.95); backdrop-filter: blur(12px);">
+            <div>
+                <h1 class="text-base font-semibold text-white">Dashboard</h1>
+                <p class="text-xs text-gray-500" id="currentDate">—</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="topbarAvatar" class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style="background: rgba(170,255,0,0.15); color: #AAFF00;"></div>
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold" id="adminName">Admin</p>
+                    <p class="text-[11px]" id="adminRole">—</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 space-y-6">
+            <!-- Loading -->
+            <div id="loadingState" class="flex justify-center items-center py-20">
+                <div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div>
+            </div>
+
+            <div id="dashboardContent" class="hidden space-y-6">
+                <!-- Welcome -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-display tracking-widest">Selamat Datang, <span class="text-brand" id="adminNameGreet">Admin</span>!</h2>
+                        <p class="text-gray-500 text-sm mt-1">Berikut ringkasan aktivitas hari ini.</p>
+                    </div>
+                    <a href="payments.html" class="flex items-center gap-2 bg-brand text-black px-4 py-2 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        Verifikasi Pembayaran
+                    </a>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="stat-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Booking Hari Ini</p>
+                            <div class="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="calendar-check" class="w-4 h-4 text-brand"></i>
+                            </div>
+                        </div>
+                        <p id="statBookings" class="text-3xl font-display tracking-widest text-white">0</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Pendapatan Hari Ini</p>
+                            <div class="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-brand"></i>
+                            </div>
+                        </div>
+                        <p id="statRevenue" class="text-2xl font-bold text-brand">Rp 0</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Pending Pembayaran</p>
+                            <div class="w-8 h-8 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="clock" class="w-4 h-4 text-yellow-400"></i>
+                            </div>
+                        </div>
+                        <p id="statPending" class="text-3xl font-display tracking-widest text-yellow-400">0</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Lapangan Aktif</p>
+                            <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                <i data-lucide="grid" class="w-4 h-4 text-blue-400"></i>
+                            </div>
+                        </div>
+                        <p id="statCourts" class="text-3xl font-display tracking-widest text-blue-400">0</p>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="chart-card lg:col-span-3">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-sm font-bold uppercase tracking-widest text-gray-400">Pendapatan 7 Hari Terakhir</h3>
+                            <span class="text-[10px] text-gray-600 uppercase tracking-widest">IDR</span>
+                        </div>
+                        <canvas id="revenueChart" height="180"></canvas>
+                    </div>
+
+                    <div class="chart-card lg:col-span-2">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Top Lapangan (7 Hari)</h3>
+                        <div id="occupancyWrap"><canvas id="occupancyChart" height="220"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3">Aksi Cepat</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="quick-action" onclick="window.location.href='bookings.html'">
+                            <i data-lucide="list" class="w-5 h-5 text-brand mb-2"></i>
+                            <p class="text-sm font-semibold">Semua Booking</p>
+                            <p class="text-xs text-gray-600 mt-0.5">Kelola transaksi</p>
+                        </div>
+                        <div class="quick-action" onclick="window.location.href='payments.html'">
+                            <i data-lucide="check-square" class="w-5 h-5 text-yellow-400 mb-2"></i>
+                            <p class="text-sm font-semibold">Verifikasi Bayar</p>
+                            <p class="text-xs text-gray-600 mt-0.5">Konfirmasi bukti</p>
+                        </div>
+                        <div class="quick-action" onclick="window.location.href='courts.html'">
+                            <i data-lucide="layout-grid" class="w-5 h-5 text-blue-400 mb-2"></i>
+                            <p class="text-sm font-semibold">Kelola Lapangan</p>
+                            <p class="text-xs text-gray-600 mt-0.5">Tambah / edit</p>
+                        </div>
+                        <div class="quick-action" onclick="window.location.href='../index.html'">
+                            <i data-lucide="globe" class="w-5 h-5 text-gray-400 mb-2"></i>
+                            <p class="text-sm font-semibold">Lihat Frontend</p>
+                            <p class="text-xs text-gray-600 mt-0.5">Tampilan customer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // --- Role-based visual setup (must run FIRST before lucide icons) ---
+        auth.requireRole(['admin', 'super_admin']);
+
+        const user = auth.getUser();
+        const isSA = auth.isSuperAdmin();
+
+        // Sidebar profile
+        document.getElementById('adminName').textContent = user.name;
+        document.getElementById('adminNameGreet').textContent = user.name;
+        document.getElementById('sidebarName').textContent = user.name;
+        document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
+        document.getElementById('topbarAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+        if (isSA) {
+            // Gold theme for Super Admin
+            document.body.classList.add('superadmin-mode');
+
+            document.getElementById('adminRole').textContent = 'Super Admin';
+            document.getElementById('adminRole').style.color = '#FFC800';
+
+            document.getElementById('sidebarAvatar').style.background = 'rgba(255,200,0,0.15)';
+            document.getElementById('sidebarAvatar').style.color = '#FFC800';
+            document.getElementById('topbarAvatar').style.background = 'rgba(255,200,0,0.15)';
+            document.getElementById('topbarAvatar').style.color = '#FFC800';
+
+            const badge = document.getElementById('sidebarRoleBadge');
+            badge.textContent = '⭐ SUPER ADMIN';
+            badge.className = 'role-badge-superadmin';
+        } else {
+            // Green theme for regular Admin
+            document.getElementById('adminRole').textContent = 'Admin Operasional';
+            document.getElementById('adminRole').style.color = '#AAFF00';
+            document.getElementById('sidebarRoleBadge').textContent = '✦ ADMIN';
+
+            // Hide super-admin-only elements
+            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
+        }
+
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+        const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+
+        async function loadDashboard() {
+            try {
+                const [stats, revenueData, occupancyData] = await Promise.all([
+                    api.get('/dashboard/stats'),
+                    api.get('/dashboard/weekly-revenue'),
+                    api.get('/dashboard/court-occupancy')
+                ]);
+
+                document.getElementById('statBookings').textContent = stats.total_bookings_today;
+                document.getElementById('statRevenue').textContent = formatRp(stats.total_revenue_today);
+                document.getElementById('statPending').textContent = stats.pending_payments_count;
+                document.getElementById('statCourts').textContent = stats.active_courts_count;
+
+                // Show pending badge
+                if (stats.pending_payments_count > 0) {
+                    const badge = document.getElementById('pendingBadge');
+                    badge.textContent = stats.pending_payments_count;
+                    badge.classList.remove('hidden');
+                }
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+
+                initCharts(revenueData, occupancyData);
+            } catch (e) {
+                document.getElementById('loadingState').innerHTML =
+                    `<p class="text-red-400 text-sm">Gagal memuat: ${e.message}</p>`;
+            }
+        }
+
+        function initCharts(revenue, occupancy) {
+            Chart.defaults.color = '#555';
+            Chart.defaults.borderColor = '#222';
+
+            // Revenue line chart
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: revenue.map(d => d.date),
+                    datasets: [{
+                        label: 'Pendapatan',
+                        data: revenue.map(d => d.revenue),
+                        borderColor: '#AAFF00',
+                        backgroundColor: 'rgba(170,255,0,0.08)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#AAFF00',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => formatRp(ctx.parsed.y) } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => v >= 1000 ? 'Rp ' + (v/1000) + 'k' : 'Rp ' + v } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Occupancy bar chart
+            if (occupancy.length === 0) {
+                document.getElementById('occupancyWrap').innerHTML =
+                    '<p class="text-center text-gray-600 text-sm mt-16">Belum ada data booking.</p>';
+            } else {
+                new Chart(document.getElementById('occupancyChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: occupancy.map(c => c.court.length > 12 ? c.court.substring(0,12)+'…' : c.court),
+                        datasets: [{
+                            data: occupancy.map(c => c.bookings),
+                            backgroundColor: ['#AAFF00','#3b82f6','#eab308','#ef4444','#8b5cf6','#06b6d4','#f97316','#10b981'],
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
+                    }
+                });
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Daerah | ArenaBooking Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#AAFF00' },
+                        dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
+                    },
+                    fontFamily: { sans: ['Inter','sans-serif'], display: ['Bebas Neue','cursive'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0A0A0A; color: white; }
+        .form-input { background: rgba(255,255,255,.03); border: 1px solid #333; color: white; transition: all .3s; }
+        .form-input:focus { border-color: #AAFF00; outline: none; box-shadow: 0 0 8px rgba(170,255,0,.15); }
+        th { color: #6b7280; font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+        tr:hover td { background: #1c1c1c; }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
+        <div class="h-20 flex items-center px-6 border-b border-dark-border shrink-0">
+            <i data-lucide="activity" class="text-brand w-6 h-6 mr-2"></i>
+            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
+        </div>
+        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
+            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
+            <a href="bookings.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
+            <a href="payments.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
+            <a href="court-blocks.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
+            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Manajemen</p>
+            <a href="courts.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
+            <a href="areas.html" class="flex items-center gap-3 px-4 py-3 rounded bg-brand/10 text-brand font-medium text-sm"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
+            <a href="venues.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
+            <a href="users.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
+        </nav>
+        <div class="p-4 border-t border-dark-border shrink-0">
+            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded w-full hover:bg-red-900/20 text-red-400 transition-colors text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-64">
+        <header class="h-20 bg-dark border-b border-dark-border flex items-center justify-between px-8 sticky top-0 z-30">
+            <div>
+                <h1 class="text-lg font-semibold">Kelola Daerah</h1>
+                <p class="text-xs text-gray-500">Tambah dan kelola wilayah cakupan layanan</p>
+            </div>
+            <button onclick="openModal()" class="bg-brand text-black px-5 py-2 rounded font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Tambah Daerah
+            </button>
+        </header>
+
+        <div class="p-6">
+            <div id="loadingState" class="flex justify-center py-20"><div class="w-10 h-10 border-4 border-dark-border border-t-brand rounded-full animate-spin"></div></div>
+            <div id="emptyState" class="hidden text-center py-20 text-gray-500">
+                <i data-lucide="map" class="w-16 h-16 mx-auto mb-4 text-gray-700"></i>
+                <p>Belum ada daerah. Klik "Tambah Daerah" untuk menambahkan.</p>
+            </div>
+            <div id="tableWrapper" class="hidden overflow-x-auto rounded-xl border border-dark-border">
+                <table class="w-full border-collapse">
+                    <thead class="border-b border-dark-border"><tr>
+                        <th class="px-6 py-4 text-left">Nama Daerah</th>
+                        <th class="px-6 py-4 text-left">Provinsi</th>
+                        <th class="px-6 py-4 text-left">Deskripsi</th>
+                        <th class="px-6 py-4 text-left">Status</th>
+                        <th class="px-6 py-4 text-left">Aksi</th>
+                    </tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tambah Daerah -->
+    <div id="modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-surface border border-dark-border rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalTitle" class="text-xl font-bold font-display tracking-widest">TAMBAH DAERAH</h2>
+                <button onclick="closeModal()"><i data-lucide="x" class="w-5 h-5 text-gray-500 hover:text-white"></i></button>
+            </div>
+            <div id="formError" class="hidden mb-4 bg-red-900/30 border border-red-500/50 text-red-400 p-3 rounded text-sm"></div>
+            <form id="areaForm" class="space-y-4">
+                <input type="hidden" id="f_id">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Nama Daerah / Kota *</label>
+                    <input type="text" id="f_name" required placeholder="cth: Jakarta Selatan" class="form-input w-full px-3 py-2.5 rounded">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Provinsi *</label>
+                    <input type="text" id="f_province" required placeholder="cth: DKI Jakarta" class="form-input w-full px-3 py-2.5 rounded">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Deskripsi</label>
+                    <textarea id="f_description" rows="2" placeholder="Keterangan singkat tentang daerah ini..." class="form-input w-full px-3 py-2.5 rounded resize-none"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 border border-dark-border text-gray-400 py-2.5 rounded hover:bg-dark-border text-sm">Batal</button>
+                    <button type="submit" id="submitBtn" class="flex-1 bg-brand text-black py-2.5 rounded font-bold text-sm hover:bg-white transition-colors">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        auth.requireRole(['admin', 'super_admin']);
+        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
+
+        if (!auth.isSuperAdmin()) {
+            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
+            // Redirect admin from areas page since they shouldn't access it
+            window.location.href = 'dashboard.html';
+        }
+
+        async function loadAreas() {
+            try {
+                const areas = await api.get('/areas');
+                renderTable(areas);
+            } catch (e) {
+                document.getElementById('loadingState').innerHTML = `<p class="text-red-400">Gagal memuat: ${e.message}</p>`;
+            }
+        }
+
+        function renderTable(areas) {
+            document.getElementById('loadingState').classList.add('hidden');
+            if (areas.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('tableWrapper').classList.remove('hidden');
+            document.getElementById('tableBody').innerHTML = areas.map(a => `
+                <tr class="border-b border-dark-border">
+                    <td class="px-6 py-4 font-medium text-white">${a.name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${a.province}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">${a.description || '—'}</td>
+                    <td class="px-6 py-4"><span class="${a.is_active ? 'text-brand' : 'text-red-500'} text-xs font-bold uppercase">${a.is_active ? '✓ Aktif' : '✗ Nonaktif'}</span></td>
+                    <td class="px-6 py-4 flex gap-2">
+                        <button onclick="editArea('${a.id}', '${a.name.replace(/'/g, "\\'")}', '${a.province.replace(/'/g, "\\'")}', '${(a.description || '').replace(/'/g, "\\'")}')"
+                            class="text-xs px-3 py-1 border border-gray-600 text-gray-400 hover:text-white hover:border-white rounded transition-colors">Edit</button>
+                        <button onclick="toggleArea('${a.id}', ${a.is_active})"
+                            class="text-xs px-3 py-1 border ${a.is_active ? 'border-red-600 text-red-400 hover:bg-red-900/20' : 'border-brand text-brand hover:bg-brand/10'} rounded transition-colors">
+                            ${a.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.editArea = function(id, name, province, description) {
+            document.getElementById('modalTitle').textContent = 'EDIT DAERAH';
+            document.getElementById('f_id').value = id;
+            document.getElementById('f_name').value = name;
+            document.getElementById('f_province').value = province;
+            document.getElementById('f_description').value = description;
+            document.getElementById('modal').classList.remove('hidden');
+        };
+
+        window.toggleArea = async function(id, isActive) {
+            if (!confirm(`${isActive ? 'Nonaktifkan' : 'Aktifkan'} daerah ini?`)) return;
+            try {
+                await api.put(`/areas/${id}`, { is_active: !isActive });
+                location.reload();
+            } catch (e) { alert(e.message); }
+        };
+
+        window.openModal = () => {
+            document.getElementById('modalTitle').textContent = 'TAMBAH DAERAH';
+            document.getElementById('f_id').value = '';
+            document.getElementById('areaForm').reset();
+            document.getElementById('modal').classList.remove('hidden');
+        };
+        window.closeModal = () => {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('formError').classList.add('hidden');
+        };
+
+        document.getElementById('areaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.textContent = 'Menyimpan...';
+            btn.disabled = true;
+            document.getElementById('formError').classList.add('hidden');
+
+            const id = document.getElementById('f_id').value;
+            const payload = {
+                name: document.getElementById('f_name').value,
+                province: document.getElementById('f_province').value,
+                description: document.getElementById('f_description').value || null,
+            };
+
+            try {
+                if (id) {
+                    await api.put(`/areas/${id}`, payload);
+                } else {
+                    await api.post('/areas', payload);
+                }
+                closeModal();
+                location.reload();
+            } catch (e) {
+                const errEl = document.getElementById('formError');
+                errEl.textContent = e.message;
+                errEl.classList.remove('hidden');
+                btn.textContent = 'Simpan';
+                btn.disabled = false;
+            }
+        });
+
+        loadAreas();
+    </script>
+</body>
+</html>
