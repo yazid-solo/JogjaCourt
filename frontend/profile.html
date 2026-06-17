@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Saya | ArenaBooking</title>
+    <title>Profil Saya | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -12,7 +12,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { brand: '#AAFF00', dark: '#080808', card: '#111', border: '#222' },
+                    colors: { brand: '#D4AF37', dark: '#080808', card: '#111', border: '#222' },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
                 }
             }
@@ -22,10 +22,10 @@
         body { background: #080808; color: #fff; }
         .glass-panel { background: #111; border: 1px solid #222; border-radius: 1rem; }
         .input-dark { background: #080808; border: 1px solid #333; color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; width: 100%; transition: all 0.2s; }
-        .input-dark:focus { border-color: #AAFF00; outline: none; box-shadow: 0 0 0 1px rgba(170,255,0,0.3); }
+        .input-dark:focus { border-color: #D4AF37; outline: none; box-shadow: 0 0 0 1px rgba(212,175,55,0.3); }
         .input-dark:disabled { background: #1a1a1a; color: #888; cursor: not-allowed; }
-        .btn-primary { background: #AAFF00; color: #000; font-weight: bold; border-radius: 0.5rem; padding: 0.75rem 1.5rem; transition: all 0.2s; }
-        .btn-primary:hover { box-shadow: 0 0 15px rgba(170,255,0,0.4); transform: translateY(-1px); }
+        .btn-primary { background: #D4AF37; color: #000; font-weight: bold; border-radius: 0.5rem; padding: 0.75rem 1.5rem; transition: all 0.2s; }
+        .btn-primary:hover { box-shadow: 0 0 15px rgba(212,175,55,0.4); transform: translateY(-1px); }
     </style>
 </head>
 <body class="min-h-screen pb-20">
@@ -34,12 +34,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
-                    <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
-                        <i data-lucide="activity" class="text-black w-4 h-4"></i>
-                    </div>
-                    <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+                    <img src="logo.png" alt="JogjaCourt Logo" class="h-12 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                    <span class="font-display text-2xl sm:text-3xl tracking-wider text-white ml-2 pt-1">JOGJA<span class="text-brand">COURT</span></span>
                 </div>
                 <div class="flex items-center gap-4">
+                    <div id="notifBellWrap" class="hidden relative">
+                        <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="Notifications.toggleDropdown(event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            <span class="notif-badge">0</span>
+                        </button>
+                    </div>
                     <a href="my-bookings.html" class="text-gray-400 hover:text-white text-sm">Riwayat Booking</a>
                     <button id="logoutBtn" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Keluar
@@ -160,9 +164,17 @@
 
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/notifications.js?v=2"></script>
     <script>
+        if (typeof Notifications !== 'undefined') Notifications.init();
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
         auth.requireAuth();
+
+        // Show bell if authenticated
+        if (typeof auth !== 'undefined' && auth.isAuthenticated()) {
+            const bellWrap = document.getElementById('notifBellWrap');
+            if (bellWrap) bellWrap.classList.remove('hidden');
+        }
 
         async function loadProfile() {
             try {

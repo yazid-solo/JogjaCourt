@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk | ArenaBooking</title>
+    <title>Masuk | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script>
@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#080808', surface: '#111111', card: '#191919', border: '#2a2a2a' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
@@ -21,8 +21,11 @@
     </script>
     <style>
         body {
-            background: #080808;
-            background-image: radial-gradient(ellipse at 50% 0%, rgba(170,255,0,0.08) 0%, transparent 60%);
+            background-color: #000000;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85)), url('bg-badminton.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         .form-input {
             background: rgba(255,255,255,0.04);
@@ -30,14 +33,27 @@
             color: white;
             transition: all 0.3s;
         }
-        .form-input:focus { border-color: #AAFF00; outline: none; box-shadow: 0 0 0 3px rgba(170,255,0,0.1); }
+        .form-input:focus { border-color: #D4AF37; outline: none; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
         .form-input::placeholder { color: #555; }
         .shimmer-btn {
-            background: linear-gradient(90deg, #AAFF00 0%, #ffffff 50%, #AAFF00 100%);
+            background: linear-gradient(90deg, #D4AF37 0%, #ffffff 50%, #D4AF37 100%);
             background-size: 200%;
             transition: all 0.3s;
         }
         .shimmer-btn:hover { background-position: right center; }
+        /* Autofill dark mode fix */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #111111 inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+            border: 1px solid #2a2a2a;
+        }
+        input:-webkit-autofill:focus {
+            border-color: #D4AF37 !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 py-12 sm:py-20 selection:bg-brand selection:text-black">
@@ -48,11 +64,9 @@
     <div class="w-full max-w-md relative z-10">
         <!-- Logo -->
         <div class="text-center mb-8 cursor-pointer" onclick="window.location.href='index.html'">
-            <div class="inline-flex items-center gap-2 mb-4">
-                <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                </div>
-                <span class="font-display text-3xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            <div class="inline-flex items-center justify-center gap-3 mb-2">
+                <img src="logo.png" alt="JogjaCourt Logo" class="h-14 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: brightness(1.1) contrast(1.4) drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                <h1 class="font-display text-4xl sm:text-5xl tracking-widest text-white mt-1">JOGJA<span class="text-brand">COURT</span></h1>
             </div>
             <p class="text-gray-500 text-sm">Masuk ke akun Anda untuk melanjutkan.</p>
         </div>

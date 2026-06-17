@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilih Lapangan | ArenaBooking</title>
+    <title>Pilih Lapangan | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00', dark: '#88cc00' },
+                        brand: { DEFAULT: '#D4AF37', dark: '#B5952F' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
                     },
                     fontFamily: {
@@ -52,15 +54,15 @@
             transition: opacity 0.3s;
         }
         .slot-btn.available:hover {
-            border-color: #AAFF00;
+            border-color: #D4AF37;
             background: rgba(170, 255, 0, 0.05);
             transform: scale(1.02);
         }
         .slot-btn.available:hover::after { opacity: 1; }
         .slot-btn.selected {
-            background: linear-gradient(135deg, #AAFF00 0%, #88cc00 100%);
+            background: linear-gradient(135deg, #D4AF37 0%, #B5952F 100%);
             color: #000;
-            border-color: #AAFF00;
+            border-color: #D4AF37;
             box-shadow: 0 4px 15px rgba(170, 255, 0, 0.3);
             transform: scale(1.05);
             z-index: 10;
@@ -73,11 +75,9 @@
             background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.02) 5px, rgba(255,255,255,0.02) 10px);
         }
         
-        /* Custom Date input dark mode */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
+        /* Custom Date input dark mode for flatpickr */
+        .flatpickr-calendar { background: #151515; border: 1px solid #333; }
+        .flatpickr-day.selected { background: #D4AF37 !important; color: black !important; border-color: #D4AF37 !important; }
     </style>
 </head>
 <body class="min-h-screen font-sans">
@@ -85,13 +85,21 @@
     <!-- Navbar -->
     <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-md border-b border-dark-border">
         <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
-                <i data-lucide="activity" class="text-brand"></i>
-                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            <div class="flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <img src="logo.png" alt="JogjaCourt Logo" class="h-12 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                    <span class="font-display text-2xl sm:text-3xl tracking-wider text-white ml-2 pt-1">JOGJA<span class="text-brand">COURT</span></span>
+                </div>
+            <div class="flex items-center gap-4">
+                <div id="notifBellWrap" class="hidden relative">
+                    <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="Notifications.toggleDropdown(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="notif-badge">0</span>
+                    </button>
+                </div>
+                <a href="javascript:history.back()" class="text-sm font-medium text-gray-400 hover:text-white flex items-center">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Kembali
+                </a>
             </div>
-            <a href="javascript:history.back()" class="text-sm font-medium text-gray-400 hover:text-white flex items-center">
-                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Kembali
-            </a>
         </div>
     </nav>
 
@@ -166,7 +174,7 @@
                     <p id="totalPrice" class="text-2xl font-display tracking-widest font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Rp 0</p>
                 </div>
                 
-                <button id="bookBtn" class="bg-brand text-black px-6 py-3 font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:shadow-[0_0_20px_rgba(170,255,0,0.4)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                <button id="bookBtn" class="bg-brand text-black px-6 py-3 font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
                     Pesan <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -176,9 +184,19 @@
 
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/notifications.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script>
+        if (typeof Notifications !== 'undefined') Notifications.init();
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
         auth.requireAuth();
+        
+        // Show bell if authenticated
+        if (typeof auth !== 'undefined' && auth.isAuthenticated()) {
+            const bellWrap = document.getElementById('notifBellWrap');
+            if (bellWrap) bellWrap.classList.remove('hidden');
+        }
 
         const urlParams = new URLSearchParams(window.location.search);
         const venueId = urlParams.get('venue_id');
@@ -189,20 +207,32 @@
 
         // Setup DatePicker
         const datePicker = document.getElementById('datePicker');
-        const today = new Date().toISOString().split('T')[0];
-        datePicker.min = today;
-        datePicker.value = today;
+        flatpickr(datePicker, {
+            altInput: true,
+            altFormat: "d-m-Y",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            defaultDate: "today",
+            locale: "id",
+            disableMobile: "true",
+            onChange: function(selectedDates, dateStr, instance) {
+                loadData();
+            }
+        });
 
         let allCourts = [];
         let selectedCourtId = null;
         let selectedSlots = [];
         let totalAmount = 0;
         let currentRentalType = 'hourly';
+        let isLoading = false;
 
         // Utility format Rupiah
         const formatRp = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
 
         async function loadData() {
+            if (isLoading) return;
+            isLoading = true;
             document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('courtsContainer').classList.add('hidden');
             
@@ -216,9 +246,11 @@
                     return;
                 }
 
-                renderCourts();
+                await renderCourts();
             } catch (error) {
                 alert(error.message);
+            } finally {
+                isLoading = false;
             }
         }
 
@@ -381,10 +413,6 @@
         document.getElementById('rentalTypeSelect').addEventListener('change', (e) => {
             currentRentalType = e.target.value;
             updateCheckoutBar();
-        });
-
-        datePicker.addEventListener('change', () => {
-            loadData();
         });
 
         document.getElementById('bookBtn').addEventListener('click', async () => {

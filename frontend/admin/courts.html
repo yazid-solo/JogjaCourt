@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Lapangan | ArenaBooking Admin</title>
+    <title>Kelola Lapangan | JogjaCourt Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
@@ -23,7 +23,8 @@
     <style>
         body { background-color: #0A0A0A; color: white; }
         .form-input { background: rgba(255,255,255,.03); border: 1px solid #333; color: white; transition: all .3s; }
-        .form-input:focus { border-color: #AAFF00; box-shadow: 0 0 8px rgba(170,255,0,.2); outline: none; }
+        .form-input:focus { border-color: #D4AF37; box-shadow: 0 0 8px rgba(212,175,55,.2); outline: none; }
+        select.form-input option { background-color: #111; color: white; }
         th { color:#6b7280; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
         tr:hover td { background:#1c1c1c; }
     </style>
@@ -31,37 +32,27 @@
 <body class="min-h-screen font-sans flex">
 
     <!-- Sidebar -->
-    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
-        <div class="h-20 flex items-center px-6 border-b border-dark-border shrink-0">
-            <i data-lucide="activity" class="text-brand w-6 h-6 mr-2"></i>
-            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
-        </div>
-        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
-            <a href="dashboard.html"  class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
-            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
-            <a href="bookings.html"   class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
-            <a href="payments.html"   class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
-            <a href="court-blocks.html" class="flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
-            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600 superadmin-only">Manajemen</p>
-            <a href="courts.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded bg-brand/10 text-brand font-medium text-sm"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
-            <a href="areas.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
-            <a href="venues.html"     class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
-            <a href="users.html"      class="superadmin-only flex items-center gap-3 px-4 py-3 rounded hover:bg-dark-border text-gray-400 hover:text-white transition-colors text-sm"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
-        </nav>
-        <div class="p-4 border-t border-dark-border shrink-0">
-            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded w-full hover:bg-red-900/20 text-red-400 transition-colors text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> Keluar</button>
-        </div>
-    </aside>
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col"></aside>
 
     <main class="flex-1 md:ml-64">
-        <header class="h-20 bg-dark border-b border-dark-border flex items-center justify-between px-8 sticky top-0 z-30">
-            <div>
-                <h1 class="text-lg font-semibold">Kelola Lapangan</h1>
-                <p class="text-xs text-gray-500">Tambah, edit, dan kelola lapangan badminton</p>
+        <header id="adminTopbar" class="h-16 bg-dark border-b border-dark-border sticky top-0 z-30 px-4 md:px-8" style="background:rgba(8,8,8,0.97);backdrop-filter:blur(12px);">
+            <div class="hidden md:flex items-center justify-between h-full w-full">
+                <div>
+                    <h1 class="text-lg font-semibold">Kelola Lapangan</h1>
+                    <p class="text-xs text-gray-500">Tambah, edit, dan kelola lapangan badminton</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="notifBellWrapDesktop" class="relative">
+                        <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="if(typeof Notifications !== 'undefined') Notifications.toggleDropdown(event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            <span class="notif-badge">0</span>
+                        </button>
+                    </div>
+                    <button onclick="openModal()" class="bg-brand text-black px-5 py-2 rounded font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Tambah Lapangan
+                    </button>
+                </div>
             </div>
-            <button onclick="openModal()" class="bg-brand text-black px-5 py-2 rounded font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
-                <i data-lucide="plus" class="w-4 h-4"></i> Tambah Lapangan
-            </button>
         </header>
 
         <div class="p-6">
@@ -101,7 +92,7 @@
                     <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Nama Lapangan</label>
                     <input type="text" id="f_name" required placeholder="cth: Lapangan A / VIP" class="form-input w-full px-3 py-2.5 rounded">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jenis Sewa</label>
                         <select id="f_rental_type" class="form-input w-full px-3 py-2.5 rounded">
@@ -111,20 +102,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jam Peak (cth: 18:00-22:00)</label>
-                        <input type="text" id="f_peak_hours" placeholder="18:00-22:00" class="form-input w-full px-3 py-2.5 rounded">
+                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jam Peak (cth: 18:00-24:00)</label>
+                        <input type="text" id="f_peak_hours" placeholder="18:00-24:00" class="form-input w-full px-3 py-2.5 rounded">
                     </div>
                 </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Jenis Sewa</label>
-                        <select id="f_rental_type" class="form-input w-full px-3 py-2.5 rounded">
-                            <option value="both">Per Jam & Bulanan</option>
-                            <option value="hourly">Per Jam Saja</option>
-                            <option value="monthly">Bulanan Saja</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs text-gray-400 mb-1 uppercase tracking-widest">Harga Reguler (/jam)</label>
                         <input type="number" id="f_price_regular" required placeholder="cth: 75000" class="form-input w-full px-3 py-2.5 rounded">
@@ -150,14 +132,9 @@
 
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
     <script>
-        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-        auth.requireRole(['admin', 'super_admin']);
-        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
-
-        if (!auth.isSuperAdmin()) {
-            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
-        }
+        AdminSidebar.init('courts');
 
         const formatRp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 

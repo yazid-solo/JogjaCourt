@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Pesanan | ArenaBooking</title>
+    <title>Riwayat Pesanan | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
@@ -25,7 +25,7 @@
         .booking-card { background: #151515; border: 1px solid #333; transition: all 0.3s; }
         .booking-card:hover { border-color: #444; }
         .badge-pending   { background: rgba(234,179,8,.1);   color: #eab308; border: 1px solid rgba(234,179,8,.3); }
-        .badge-confirmed { background: rgba(170,255,0,.1);   color: #AAFF00; border: 1px solid rgba(170,255,0,.3); }
+        .badge-confirmed { background: rgba(212,175,55,.1);   color: #D4AF37; border: 1px solid rgba(212,175,55,.3); }
         .badge-cancelled { background: rgba(239,68,68,.1);   color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
         .badge-completed { background: rgba(59,130,246,.1);  color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
         .badge-expired   { background: rgba(107,114,128,.1); color: #6b7280; border: 1px solid rgba(107,114,128,.3); }
@@ -35,13 +35,21 @@
 
     <nav class="fixed w-full z-50 bg-dark/90 backdrop-blur-md border-b border-dark-border">
         <div class="max-w-4xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
-                <i data-lucide="activity" class="text-brand"></i>
-                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
+            <div class="flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <img src="logo.png" alt="JogjaCourt Logo" class="h-12 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                    <span class="font-display text-2xl sm:text-3xl tracking-wider text-white ml-2 pt-1">JOGJA<span class="text-brand">COURT</span></span>
+                </div>
+            <div class="flex items-center gap-3">
+                <div id="notifBellWrap" class="relative">
+                    <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="Notifications.toggleDropdown(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="notif-badge">0</span>
+                    </button>
+                </div>
+                <a href="locations.html" class="text-sm font-bold text-brand border border-brand/50 px-4 py-2 rounded hover:bg-brand hover:text-black transition-colors">
+                    + Pesan Lapangan
+                </a>
             </div>
-            <a href="locations.html" class="text-sm font-bold text-brand border border-brand/50 px-4 py-2 rounded hover:bg-brand hover:text-black transition-colors">
-                + Pesan Lapangan
-            </a>
         </div>
     </nav>
 
@@ -73,7 +81,9 @@
 
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/notifications.js?v=2"></script>
     <script>
+        if (typeof Notifications !== 'undefined') Notifications.init();
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
         auth.requireAuth();
 

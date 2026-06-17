@@ -1,5 +1,5 @@
 """
-Server sederhana untuk frontend ArenaBooking.
+Server sederhana untuk frontend JogjaCourt.
 Jalankan: python serve.py
 Akses: http://localhost:3000
 """

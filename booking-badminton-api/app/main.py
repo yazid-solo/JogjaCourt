@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.database import engine, Base
 import app.models  # noqa: F401 — registers all ORM models with Base.metadata
-from app.routers import auth, areas, venues, courts, bookings, payments, dashboard, users
+from app.routers import auth, areas, venues, courts, bookings, payments, dashboard, users, notifications
 from app.config import settings
 
 @asynccontextmanager
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     yield
     # Cleanup on shutdown
 
-app = FastAPI(title="ArenaBooking API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="JogjaCourt API", version="1.0.0", lifespan=lifespan)
 
 # CORS configuration
 app.add_middleware(
@@ -37,7 +37,8 @@ app.include_router(bookings.router)
 app.include_router(payments.router)
 app.include_router(dashboard.router)
 app.include_router(users.router)
+app.include_router(notifications.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to ArenaBooking API", "docs": "/docs"}
+    return {"message": "Welcome to JogjaCourt API", "docs": "/docs"}

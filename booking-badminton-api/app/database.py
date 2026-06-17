@@ -4,12 +4,15 @@ from app.config import settings
 
 # Create the async engine
 # statement_cache_size=0 WAJIB untuk Supabase Pooler (PgBouncer Transaction Mode)
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
-    poolclass=NullPool,
+    poolclass=AsyncAdaptedQueuePool,
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=1800,
     connect_args={
         "statement_cache_size": 0,
         "prepared_statement_cache_size": 0,

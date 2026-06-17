@@ -10,7 +10,7 @@ async def setup_admin():
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     
     async with async_session() as db:
-        # Cek apakah user admin@arenabooking.com sudah ada
+        # Cek apakah user admin@jogjacourt.com sudah ada
         result = await db.execute(select(User).where(User.email == settings.DEFAULT_ADMIN_EMAIL))
         admin = result.scalars().first()
         

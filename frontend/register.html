@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Akun | ArenaBooking</title>
+    <title>Daftar Akun | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script>
@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
                     },
                     fontFamily: {
@@ -24,8 +24,11 @@
     </script>
     <style>
         body {
-            background-color: #0A0A0A;
-            background-image: radial-gradient(circle at 50% 0%, rgba(170, 255, 0, 0.1), transparent 50%);
+            background-color: #000000;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85)), url('bg-badminton.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         .form-input {
             background: rgba(255, 255, 255, 0.03);
@@ -34,9 +37,22 @@
             transition: all 0.3s ease;
         }
         .form-input:focus {
-            border-color: #AAFF00;
-            box-shadow: 0 0 10px rgba(170, 255, 0, 0.2);
+            border-color: #D4AF37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
             outline: none;
+        }
+        /* Autofill dark mode fix */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #151515 inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+            border: 1px solid #333;
+        }
+        input:-webkit-autofill:focus {
+            border-color: #D4AF37 !important;
         }
     </style>
 </head>
@@ -49,9 +65,10 @@
     <div class="w-full max-w-md bg-dark-surface p-8 sm:p-12 rounded-2xl border border-dark-border shadow-2xl relative z-10">
         
         <div class="text-center mb-10 cursor-pointer" onclick="window.location.href='index.html'">
-            <h1 class="font-display text-4xl tracking-widest text-white italic">
-                ARENA<span class="text-brand">BOOKING</span>
-            </h1>
+            <div class="inline-flex items-center justify-center gap-3 mb-2">
+                <img src="logo.png" alt="JogjaCourt Logo" class="h-14 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: brightness(1.1) contrast(1.4) drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                <h1 class="font-display text-4xl sm:text-5xl tracking-widest text-white mt-1">JOGJA<span class="text-brand">COURT</span></h1>
+            </div>
             <p class="text-gray-400 text-sm mt-2 font-light">Buat akun untuk mulai bertanding.</p>
         </div>
 
@@ -87,7 +104,7 @@
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-brand text-black font-bold uppercase tracking-widest py-3.5 rounded-md hover:bg-white transition-all duration-300 transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(170,255,0,0.3)] hover:shadow-[0_0_25px_rgba(170,255,0,0.5)]">
+            <button type="submit" id="submitBtn" class="w-full bg-brand text-black font-bold uppercase tracking-widest py-3.5 rounded-md hover:bg-white transition-all duration-300 transform hover:-translate-y-0.5 shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)]">
                 Daftar Sekarang <span class="ml-2">→</span>
             </button>
         </form>

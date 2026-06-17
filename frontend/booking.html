@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selesaikan Pembayaran | ArenaBooking</title>
+    <title>Selesaikan Pembayaran | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#333333' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
@@ -28,28 +28,19 @@
             backdrop-filter: blur(12px);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
-        .form-input { 
-            background: rgba(255,255,255,.03); 
-            border: 1px solid rgba(255,255,255,.1); 
-            color: white; 
-            transition: all .3s ease; 
-        }
-        .form-input:focus { 
-            border-color: #AAFF00; 
-            box-shadow: 0 0 15px rgba(170, 255, 0, 0.2);
-            background: rgba(255,255,255,.05);
-            outline: none; 
-        }
+        .form-input { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; transition: all 0.3s ease; }
+        .form-input:focus { border-color: #D4AF37; outline: none; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+        select.form-input option { background-color: #111; color: white; }
     </style>
 </head>
 <body class="min-h-screen font-sans">
 
     <nav class="fixed w-full z-50 bg-dark border-b border-dark-border">
         <div class="max-w-3xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
-                <i data-lucide="activity" class="text-brand"></i>
-                <span class="font-display text-2xl tracking-wider">ARENA<span class="text-brand">BOOKING</span></span>
-            </div>
+            <div class="flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <img src="logo.png" alt="JogjaCourt Logo" class="h-12 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                    <span class="font-display text-2xl sm:text-3xl tracking-wider text-white ml-2 pt-1">JOGJA<span class="text-brand">COURT</span></span>
+                </div>
             <a href="my-bookings.html" class="text-xs text-gray-400 hover:text-white flex items-center gap-1">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Riwayat Pesanan
             </a>

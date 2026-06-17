@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blokir Lapangan | ArenaBooking Admin</title>
+    <title>Blokir Lapangan | JogjaCourt Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#0A0A0A', surface: '#151515', border: '#2a2a2a' }
                     },
                     fontFamily: { sans: ['Inter','sans-serif'], display: ['Bebas Neue','cursive'] }
@@ -23,7 +25,8 @@
     <style>
         body { background-color:#0A0A0A; color:white; }
         .form-input { background:rgba(255,255,255,.04); border:1px solid #2a2a2a; color:white; transition:all .3s; }
-        .form-input:focus { border-color:#AAFF00; outline:none; box-shadow: 0 0 0 3px rgba(170,255,0,.08); }
+        .form-input:focus { border-color:#D4AF37; outline:none; box-shadow: 0 0 0 3px rgba(212,175,55,.08); }
+        select.form-input option { background-color: #111; color: white; }
         th { color:#6b7280; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
         tr:hover td { background:#1a1a1a; }
         .role-badge-superadmin {
@@ -34,8 +37,8 @@
         }
         .role-badge-admin {
             display: inline-flex; align-items: center; gap: 4px;
-            background: rgba(170,255,0,0.08); border: 1px solid rgba(170,255,0,0.2);
-            color: #AAFF00; font-size: 9px; font-weight: 800; letter-spacing: .12em;
+            background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);
+            color: #D4AF37; font-size: 9px; font-weight: 800; letter-spacing: .12em;
             padding: 3px 8px; border-radius: 99px;
         }
         body.superadmin-mode aside { background: linear-gradient(180deg, #100e00 0%, #151515 100%); border-right-color: rgba(255,200,0,.15); }
@@ -43,50 +46,29 @@
         body.superadmin-mode .sidebar-link:hover { background: rgba(255,200,0,.07); color: #FFC800; }
         .sidebar-link { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:10px; font-size:14px; color:#9ca3af; transition:all .2s; }
         .sidebar-link:hover { background:rgba(255,255,255,.05); color:white; }
-        .sidebar-link.active { background:rgba(170,255,0,.1); color:#AAFF00; font-weight:600; }
+        .sidebar-link.active { background:rgba(212,175,55,.1); color:#D4AF37; font-weight:600; }
     </style>
 </head>
 <body class="min-h-screen font-sans flex">
 
     <!-- Sidebar -->
-    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col">
-        <div id="sidebarLogo" class="h-16 flex items-center px-6 border-b border-dark-border shrink-0">
-            <div class="logo-dot w-8 h-8 bg-brand rounded-lg flex items-center justify-center mr-2">
-                <i data-lucide="activity" class="text-black w-4 h-4"></i>
-            </div>
-            <span class="font-display text-xl tracking-wider">ARENA<span class="text-brand">ADMIN</span></span>
-        </div>
-        <div class="px-5 py-4 border-b border-dark-border shrink-0 flex items-center gap-3">
-            <div id="sidebarAvatar" class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style="background:rgba(170,255,0,.15);color:#AAFF00;"></div>
-            <div class="overflow-hidden">
-                <p id="sidebarName" class="text-sm font-semibold text-white truncate"></p>
-                <span id="sidebarRoleBadge" class="role-badge-admin">✦ ADMIN</span>
-            </div>
-        </div>
-        <nav class="p-4 space-y-1 flex-grow overflow-y-auto">
-            <a href="dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</a>
-            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Transaksi</p>
-            <a href="bookings.html" class="sidebar-link"><i data-lucide="calendar" class="w-4 h-4"></i> Semua Booking</a>
-            <a href="payments.html" class="sidebar-link"><i data-lucide="credit-card" class="w-4 h-4"></i> Verifikasi Bayar</a>
-            <a href="court-blocks.html" class="sidebar-link active"><i data-lucide="shield-off" class="w-4 h-4"></i> Blokir Lapangan</a>
-            <p class="px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-gray-600">Manajemen</p>
-            <a href="courts.html" class="sidebar-link superadmin-only"><i data-lucide="layout-grid" class="w-4 h-4"></i> Lapangan</a>
-            <a href="areas.html" class="sidebar-link superadmin-only"><i data-lucide="map" class="w-4 h-4"></i> Daerah</a>
-            <a href="venues.html" class="sidebar-link superadmin-only"><i data-lucide="building-2" class="w-4 h-4"></i> GOR / Venue</a>
-            <a href="users.html" class="sidebar-link superadmin-only"><i data-lucide="users" class="w-4 h-4"></i> Akun Pengguna</a>
-        </nav>
-        <div class="p-4 border-t border-dark-border shrink-0">
-            <button id="logoutBtn" class="sidebar-link w-full text-red-400 hover:bg-red-900/10 hover:text-red-300">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
-            </button>
-        </div>
-    </aside>
+    <aside class="w-64 fixed h-full bg-dark-surface border-r border-dark-border z-40 hidden md:flex flex-col"></aside>
 
     <main class="flex-1 md:ml-64">
-        <header class="h-16 sticky top-0 z-30 flex items-center justify-between px-8 border-b border-dark-border" style="background:rgba(10,10,10,.95);backdrop-filter:blur(12px);">
-            <div>
-                <h1 class="text-base font-semibold">Blokir Lapangan</h1>
-                <p class="text-xs text-gray-500">Blokir jadwal untuk maintenance atau event khusus</p>
+        <header id="adminTopbar" class="h-16 sticky top-0 z-30 px-4 md:px-8 border-b border-dark-border" style="background:rgba(10,10,10,.97);backdrop-filter:blur(12px);">
+            <div class="hidden md:flex items-center justify-between h-full w-full">
+                <div>
+                    <h1 class="text-base font-semibold">Blokir Lapangan</h1>
+                    <p class="text-xs text-gray-500">Blokir jadwal untuk maintenance atau event khusus</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="notifBellWrapDesktop" class="relative">
+                        <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="if(typeof Notifications !== 'undefined') Notifications.toggleDropdown(event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            <span class="notif-badge">0</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -177,28 +159,16 @@
 
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script>
-        // === Role Setup ===
-        auth.requireRole(['admin', 'super_admin']);
-        const user = auth.getUser();
+        AdminSidebar.init('court-blocks');
+        const user = auth.getUser() || {};
         const isSA = auth.isSuperAdmin();
 
-        document.getElementById('sidebarName').textContent = user.name;
-        document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
-        if (isSA) {
-            document.body.classList.add('superadmin-mode');
-            document.getElementById('sidebarAvatar').style.cssText = 'background:rgba(255,200,0,.15);color:#FFC800;';
-            const badge = document.getElementById('sidebarRoleBadge');
-            badge.textContent = '⭐ SUPER ADMIN'; badge.className = 'role-badge-superadmin';
-        } else {
-            document.querySelectorAll('.superadmin-only').forEach(el => el.remove());
-        }
-
-        document.getElementById('logoutBtn').addEventListener('click', () => auth.logout());
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-
         // === Logic ===
-        const hours = Array.from({length: 15}, (_, i) => i + 8); // 08:00 - 22:00
+        const hours = Array.from({length: 16}, (_, i) => i + 8); // 08:00 - 23:00
         const startSel = document.getElementById('f_start');
         const endSel   = document.getElementById('f_end');
         hours.forEach(h => {
@@ -213,6 +183,10 @@
                 const label = `${String(h).padStart(2,'0')}:00`;
                 endSel.innerHTML += `<option value="${label}">${label}</option>`;
             });
+            // Tambahkan opsi 24:00 (dikirim sebagai 23:59 ke backend)
+            if (start >= 8) {
+                endSel.innerHTML += `<option value="23:59">24:00</option>`;
+            }
         });
 
         let allBlocks = [];
@@ -237,8 +211,16 @@
             courts.forEach(c => { courtSel.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
         });
 
-        // Set min date to today
-        document.getElementById('f_date').min = new Date().toISOString().split('T')[0];
+        // Set min date to today using flatpickr
+        flatpickr("#f_date", {
+            altInput: true,
+            altFormat: "d-m-Y",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            defaultDate: "today",
+            locale: "id",
+            disableMobile: "true"
+        });
 
         document.getElementById('blockForm').addEventListener('submit', async (e) => {
             e.preventDefault();

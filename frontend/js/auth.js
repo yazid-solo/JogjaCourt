@@ -105,6 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user.role === 'admin' || user.role === 'super_admin') {
                 const adminLink = document.getElementById('adminLink');
                 if (adminLink) adminLink.classList.remove('hidden');
+                
+                const mobileAdminLink = document.getElementById('mobileAdminLink');
+                if (mobileAdminLink) mobileAdminLink.classList.remove('hidden');
+            }
+            
+            // Handle Mobile Menu Auth State
+            const mobileGuestMenu = document.getElementById('mobileGuestMenu');
+            const mobileAuthMenu = document.getElementById('mobileAuthMenu');
+            if (mobileGuestMenu && mobileAuthMenu) {
+                mobileGuestMenu.classList.add('hidden');
+                mobileAuthMenu.classList.remove('hidden');
             }
         } else {
             loginBtn.classList.remove('hidden');
@@ -112,9 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Logout button (anywhere it appears)
-    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.logout();
+    // Logout button (anywhere it appears, including mobile)
+    const logoutBtns = document.querySelectorAll('#logoutBtn, .logoutBtn');
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.logout();
+        });
     });
 });

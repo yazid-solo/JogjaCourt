@@ -29,6 +29,9 @@ class UserListResponse(BaseModel):
 class UserStatusUpdate(BaseModel):
     is_active: bool
 
+class UserRoleUpdate(BaseModel):
+    role: str
+
 
 @router.get("", response_model=List[UserListResponse], dependencies=[Depends(require_super_admin)])
 async def get_all_users(db: AsyncSession = Depends(get_db)):
@@ -53,6 +56,29 @@ async def update_user_status(
     if user.role in (RoleEnum.super_admin,):
         raise HTTPException(status_code=400, detail="Tidak dapat menonaktifkan akun Super Admin")
     user.is_active = payload.is_active
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+@router.put("/{user_id}/role", response_model=UserListResponse, dependencies=[Depends(require_super_admin)])
+async def update_user_role(
+    user_id: UUID,
+    payload: UserRoleUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    """Ubah peran pengguna (Super Admin)."""
+    if payload.role not in [e.value for e in RoleEnum]:
+        raise HTTPException(status_code=400, detail="Peran tidak valid")
+        
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan")
+        
+    if user.role == RoleEnum.super_admin and payload.role != "super_admin":
+        raise HTTPException(status_code=400, detail="Tidak dapat merubah peran Super Admin")
+        
+    user.role = RoleEnum(payload.role)
     await db.commit()
     await db.refresh(user)
     return user

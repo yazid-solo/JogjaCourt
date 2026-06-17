@@ -60,7 +60,13 @@ async def calculate_price(db: AsyncSession, court_id: UUID, booking_type: Bookin
     if not court:
         raise HTTPException(status_code=404, detail="Court not found")
         
-    duration_hours = (datetime.combine(datetime.min, end_time) - datetime.combine(datetime.min, start_time)).seconds / 3600
+    end_dt = datetime.combine(datetime.min, end_time)
+    start_dt = datetime.combine(datetime.min, start_time)
+    
+    if end_time == time(23, 59):
+        end_dt += timedelta(minutes=1) # Treat as exactly 24:00 (1 full hour)
+        
+    duration_hours = (end_dt - start_dt).seconds / 3600
     
     if booking_type == BookingTypeEnum.monthly:
         if not court.price_monthly:

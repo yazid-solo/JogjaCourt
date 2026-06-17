@@ -26,6 +26,7 @@ class VenueUpdate(BaseModel):
 
 class VenueResponse(VenueBase):
     id: UUID
+    owner_id: Optional[UUID] = None
     is_active: bool
     created_at: datetime
     

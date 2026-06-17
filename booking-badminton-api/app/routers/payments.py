@@ -14,6 +14,8 @@ from app.schemas.payment import PaymentResponse, PaymentDetailResponse
 from app.utils.dependencies import get_current_user, require_admin
 from app.utils.helpers import upload_image_to_supabase
 from app.services.payment_service import confirm_payment
+from app.models.court import Court
+from app.models.venue import Venue
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
@@ -30,6 +32,8 @@ async def get_payments(db: AsyncSession = Depends(get_db), current_user = Depend
 
     if current_user.role == RoleEnum.customer:
         stmt = stmt.join(Booking).where(Booking.user_id == current_user.id)
+    elif current_user.role == RoleEnum.admin:
+        stmt = stmt.join(Booking).join(Court).join(Venue).where(Venue.owner_id == current_user.id)
 
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -71,6 +75,20 @@ async def upload_payment_proof(
         existing_payment.amount = amount
         existing_payment.proof_image_url = image_url or existing_payment.proof_image_url
         existing_payment.status = PaymentStatusEnum.pending
+        
+        # Ambil owner (admin) dari lapangan
+        result_court = await db.execute(select(Court).options(selectinload(Court.venue)).where(Court.id == booking.court_id))
+        court_data = result_court.scalars().first()
+        if court_data and court_data.venue and court_data.venue.owner_id:
+            from app.models.notification import Notification
+            db.add(Notification(
+                user_id=court_data.venue.owner_id,
+                title="Bukti Pembayaran Diunggah",
+                message=f"Customer telah mengunggah bukti pembayaran untuk booking pada {booking.booking_date}.",
+                related_entity_type="payment",
+                related_entity_id=existing_payment.id
+            ))
+            
         await db.commit()
         await db.refresh(existing_payment)
         return existing_payment
@@ -83,6 +101,21 @@ async def upload_payment_proof(
             status=PaymentStatusEnum.pending
         )
         db.add(db_payment)
+        await db.flush() # flush to get id for notification
+        
+        # Ambil owner (admin) dari lapangan
+        result_court = await db.execute(select(Court).options(selectinload(Court.venue)).where(Court.id == booking.court_id))
+        court_data = result_court.scalars().first()
+        if court_data and court_data.venue and court_data.venue.owner_id:
+            from app.models.notification import Notification
+            db.add(Notification(
+                user_id=court_data.venue.owner_id,
+                title="Bukti Pembayaran Diunggah",
+                message=f"Customer telah mengunggah bukti pembayaran untuk booking pada {booking.booking_date}.",
+                related_entity_type="payment",
+                related_entity_id=db_payment.id
+            ))
+            
         await db.commit()
         await db.refresh(db_payment)
         return db_payment
@@ -94,6 +127,12 @@ async def verify_payment(
     current_user = Depends(get_current_user)
 ):
     """Konfirmasi pembayaran valid (Admin)."""
+    if current_user.role == RoleEnum.admin:
+        result = await db.execute(select(Payment).options(selectinload(Payment.booking).selectinload(Booking.court).selectinload(Court.venue)).where(Payment.id == payment_id))
+        payment = result.scalars().first()
+        if not payment or payment.booking.court.venue.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Akses ditolak")
+            
     return await confirm_payment(db, payment_id, current_user.id, is_approved=True)
 
 @router.put("/{payment_id}/reject", response_model=PaymentResponse, dependencies=[Depends(require_admin)])
@@ -104,4 +143,10 @@ async def reject_payment(
     current_user = Depends(get_current_user)
 ):
     """Tolak bukti pembayaran (Admin)."""
+    if current_user.role == RoleEnum.admin:
+        result = await db.execute(select(Payment).options(selectinload(Payment.booking).selectinload(Booking.court).selectinload(Court.venue)).where(Payment.id == payment_id))
+        payment = result.scalars().first()
+        if not payment or payment.booking.court.venue.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Akses ditolak")
+            
     return await confirm_payment(db, payment_id, current_user.id, is_approved=False, rejection_reason=req.rejection_reason)

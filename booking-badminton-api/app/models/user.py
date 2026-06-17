@@ -25,6 +25,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    venues = relationship("Venue", back_populates="owner")
     bookings = relationship("Booking", back_populates="user", cascade="all, delete-orphan")
     confirmed_payments = relationship("Payment", back_populates="admin")
     court_blocks = relationship("CourtBlock", back_populates="admin")

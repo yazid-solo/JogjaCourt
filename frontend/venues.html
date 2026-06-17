@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar GOR | ArenaBooking</title>
+    <title>Daftar GOR | JogjaCourt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { DEFAULT: '#AAFF00' },
+                        brand: { DEFAULT: '#D4AF37' },
                         dark: { DEFAULT: '#080808', surface: '#111111', card: '#191919', border: '#2a2a2a' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Bebas Neue', 'cursive'] }
@@ -28,7 +28,7 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
         }
-        .venue-card:hover { border-color: rgba(170,255,0,0.5); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(170,255,0,0.08); }
+        .venue-card:hover { border-color: rgba(212,175,55,0.5); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(212,175,55,0.08); }
         .venue-card:hover .venue-img { transform: scale(1.08); }
         .venue-img { transition: transform 0.7s ease; }
         .img-overlay { background: linear-gradient(to top, #111 0%, rgba(17,17,17,0.4) 60%, transparent 100%); }
@@ -42,13 +42,17 @@
     <nav class="fixed w-full z-50" style="background: rgba(8,8,8,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid #2a2a2a;">
         <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
             <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
-                <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
-                    <i data-lucide="activity" class="text-black w-4 h-4"></i>
-                </div>
-                <span class="font-display text-2xl tracking-wider hidden sm:block">ARENA<span class="text-brand">BOOKING</span></span>
+                <img src="logo.png" alt="JogjaCourt Logo" class="h-12 sm:h-16 w-auto object-contain transition-transform hover:scale-105" style="filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));">
+                <span class="font-display text-2xl sm:text-3xl tracking-wider text-white ml-2 pt-1">JOGJA<span class="text-brand">COURT</span></span>
             </div>
-            <!-- Breadcrumb -->
-            <div class="flex items-center gap-2 text-sm text-gray-500">
+            <!-- Breadcrumb & Notifications -->
+            <div class="flex items-center gap-4 text-sm text-gray-500">
+                <div id="notifBellWrap" class="hidden relative">
+                    <button class="notif-toggle-btn p-2 rounded-lg hover:bg-white/5 transition-colors relative" onclick="Notifications.toggleDropdown(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="notif-badge">0</span>
+                    </button>
+                </div>
                 <a href="locations.html" class="hover:text-brand transition-colors flex items-center gap-1">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span id="areaNameBreadcrumb" class="hidden sm:block">Daerah</span>
@@ -96,8 +100,17 @@
     </div>
 
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/notifications.js?v=2"></script>
     <script>
+        if (typeof Notifications !== 'undefined') Notifications.init();
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        
+        // Show bell if authenticated
+        if (typeof auth !== 'undefined' && auth.isAuthenticated()) {
+            const bellWrap = document.getElementById('notifBellWrap');
+            if (bellWrap) bellWrap.classList.remove('hidden');
+        }
 
         const urlParams = new URLSearchParams(window.location.search);
         const areaId = urlParams.get('area_id');
@@ -109,7 +122,7 @@
         document.getElementById('areaNameBreadcrumb').textContent = areaName;
         document.getElementById('areaNameCrumb').textContent = areaName;
         document.getElementById('areaNameSub').textContent = areaName;
-        document.title = `GOR di ${areaName} | ArenaBooking`;
+        document.title = `GOR di ${areaName} | JogjaCourt`;
 
         const VENUE_IMAGES = [
             'https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&w=700&q=80',

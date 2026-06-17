@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
     
-    DEFAULT_ADMIN_EMAIL: str = "admin@arenabooking.com"
+    DEFAULT_ADMIN_EMAIL: str = "admin@jogjacourt.com"
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
     DEFAULT_ADMIN_NAME: str = "Super Admin"
 

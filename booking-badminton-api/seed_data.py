@@ -1,5 +1,5 @@
 """
-Seed data untuk ArenaBooking — jalankan SEKALI untuk mengisi database awal.
+Seed data untuk JogjaCourt — jalankan SEKALI untuk mengisi database awal.
 Buat: 1 Super Admin, 1 Admin, 1 Customer, 3 Daerah, 4 Venue, 8 Lapangan.
 
 Cara pakai:
@@ -41,7 +41,7 @@ from app.models.court import Court, CourtTypeEnum, RentalTypeEnum
 
 async def seed():
     async with AsyncSessionLocal() as db:
-        print("🌱 Mulai seed data ArenaBooking...\n")
+        print("🌱 Mulai seed data JogjaCourt...\n")
 
         # ──────────────────────────────────────────────
         # 1. USERS
@@ -49,14 +49,14 @@ async def seed():
         users_data = [
             {
                 "name": "Super Admin",
-                "email": "superadmin@arenabooking.com",
+                "email": "superadmin@jogjacourt.com",
                 "password": "superadmin_2026!",
                 "phone": "081200000001",
                 "role": RoleEnum.super_admin
             },
             {
                 "name": "Admin Operasional",
-                "email": "admin@arenabooking.com",
+                "email": "admin@jogjacourt.com",
                 "password": "admin_arena_2026!",
                 "phone": "081200000002",
                 "role": RoleEnum.admin
@@ -224,8 +224,8 @@ async def seed():
         await db.commit()
         print("\n🎉 Selesai! Seed data berhasil dimasukkan ke database.")
         print("\n📋 Akun yang tersedia:")
-        print("  Super Admin: superadmin@arenabooking.com / superadmin_2026!")
-        print("  Admin:       admin@arenabooking.com / admin_arena_2026!")
+        print("  Super Admin: superadmin@jogjacourt.com / superadmin_2026!")
+        print("  Admin:       admin@jogjacourt.com / admin_arena_2026!")
         print("  Customer:    budi@gmail.com / budi123456")
 
 if __name__ == "__main__":
