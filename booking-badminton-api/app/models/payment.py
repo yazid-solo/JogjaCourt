@@ -30,6 +30,7 @@ class Payment(Base):
     
     proof_image_url = Column(Text, nullable=True)
     rejection_reason = Column(Text, nullable=True) # Tambahan: alasan penolakan
+    payout_id = Column(UUID(as_uuid=True), ForeignKey("payouts.id", ondelete="SET NULL"), nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     confirmed_at = Column(DateTime, nullable=True)
@@ -37,3 +38,4 @@ class Payment(Base):
     # Relationships
     booking = relationship("Booking", back_populates="payment")
     admin = relationship("User", back_populates="confirmed_payments")
+    payout = relationship("Payout", back_populates="payments")

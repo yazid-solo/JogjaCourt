@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import date, time, datetime
 from decimal import Decimal
 from app.models.booking import BookingStatusEnum, BookingTypeEnum
-from app.schemas.court import CourtResponse
+from app.schemas.court import CourtResponse, CourtDetailResponse
 from app.schemas.user import UserResponse
 
 class BookingBase(BaseModel):
@@ -28,7 +28,25 @@ class BookingResponse(BookingBase):
     model_config = ConfigDict(from_attributes=True)
 
 class BookingDetailResponse(BookingResponse):
-    court: CourtResponse
+    court: CourtDetailResponse
     user: UserResponse
     
     model_config = ConfigDict(from_attributes=True)
+
+class BookingExtendRequest(BaseModel):
+    hours_to_add: int = 1
+
+
+class BookingRecurringCreate(BaseModel):
+    user_email: str
+    court_id: UUID
+    start_date: date
+    end_date: date
+    day_of_week: int # 0=Monday, 6=Sunday
+    start_time: time
+    end_time: time
+
+class BookingUpdateAdmin(BaseModel):
+    status: Optional[BookingStatusEnum] = None
+    total_price: Optional[Decimal] = None
+

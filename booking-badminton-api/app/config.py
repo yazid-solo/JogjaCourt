@@ -14,7 +14,11 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
     DEFAULT_ADMIN_NAME: str = "Super Admin"
 
+    XENDIT_SECRET_KEY: str = "" # Kunci Rahasia Xendit (contoh: xnd_development_...)
+    GOOGLE_CLIENT_ID: str = ""
+
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()

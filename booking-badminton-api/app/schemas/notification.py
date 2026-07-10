@@ -5,6 +5,7 @@ from datetime import datetime
 class NotificationBase(BaseModel):
     title: str
     message: str
+    target_role: Optional[str] = None
     related_entity_type: Optional[str] = None
     related_entity_id: Optional[UUID4] = None
 
@@ -19,3 +20,11 @@ class NotificationResponse(NotificationBase):
 
     class Config:
         from_attributes = True
+
+class PushSubscriptionKeys(BaseModel):
+    p256dh: str
+    auth: str
+
+class PushSubscriptionRequest(BaseModel):
+    endpoint: str
+    keys: PushSubscriptionKeys

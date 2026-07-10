@@ -6,3 +6,9 @@ from .booking import Booking
 from .payment import Payment
 from .court_block import CourtBlock
 from .notification import Notification
+from .push_subscription import PushSubscription
+from .message import Message
+from .payout import Payout
+from .testimonial import Testimonial
+from .system_setting import SystemSetting
+from .kyc_request import KycRequest

@@ -43,12 +43,11 @@ class CourtBlockResponse(BaseModel):
 
 @router.get("", response_model=List[CourtResponse])
 async def get_courts(venue_id: UUID = None, db: AsyncSession = Depends(get_db), current_user = Depends(get_optional_user)):
-    """Daftar lapangan. Admin hanya melihat miliknya."""
-    stmt = select(Court)
+    """Daftar lapangan aktif. Admin hanya melihat miliknya."""
+    stmt = select(Court).where(Court.is_active == True)
+    
     if current_user and current_user.role == RoleEnum.admin:
         stmt = stmt.join(Venue).where(Venue.owner_id == current_user.id)
-    else:
-        stmt = stmt.where(Court.is_active == True)
 
     if venue_id:
         stmt = stmt.where(Court.venue_id == venue_id)
@@ -61,7 +60,7 @@ async def get_courts(venue_id: UUID = None, db: AsyncSession = Depends(get_db), 
 async def get_court(court_id: UUID, db: AsyncSession = Depends(get_db)):
     """Detail satu lapangan (publik)."""
     result = await db.execute(
-        select(Court).options(selectinload(Court.venue)).where(Court.id == court_id)
+        select(Court).options(selectinload(Court.venue).selectinload(Venue.owner)).where(Court.id == court_id)
     )
     court = result.scalars().first()
     if not court:

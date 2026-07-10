@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from typing import List
 from uuid import UUID
 
@@ -32,7 +33,7 @@ async def get_area(area_id: UUID, db: AsyncSession = Depends(get_db)):
 async def get_venues_by_area(area_id: UUID, db: AsyncSession = Depends(get_db)):
     """Daftar GOR aktif di suatu daerah (publik)."""
     result = await db.execute(
-        select(Venue).where(Venue.area_id == area_id, Venue.is_active == True).order_by(Venue.name)
+        select(Venue).options(selectinload(Venue.owner)).where(Venue.area_id == area_id, Venue.is_active == True).order_by(Venue.name)
     )
     return result.scalars().all()
 

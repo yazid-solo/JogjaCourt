@@ -5,6 +5,13 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
 from pydantic import BaseModel
+from fastapi import Request
+import httpx
+import base64
+import hashlib
+from datetime import datetime
+
+from app.config import settings
 
 from app.database import get_db
 from app.models.payment import Payment, PaymentStatusEnum, PaymentMethodEnum
@@ -12,8 +19,7 @@ from app.models.booking import Booking, BookingStatusEnum
 from app.models.user import RoleEnum
 from app.schemas.payment import PaymentResponse, PaymentDetailResponse
 from app.utils.dependencies import get_current_user, require_admin
-from app.utils.helpers import upload_image_to_supabase
-from app.services.payment_service import confirm_payment
+from app.services.payment_service import confirm_payment, process_upload_proof
 from app.models.court import Court
 from app.models.venue import Venue
 
@@ -26,7 +32,8 @@ class RejectRequest(BaseModel):
 async def get_payments(db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     """Daftar pembayaran — customer hanya melihat milik sendiri."""
     stmt = select(Payment).options(
-        selectinload(Payment.booking),
+        selectinload(Payment.booking).selectinload(Booking.user),
+        selectinload(Payment.booking).selectinload(Booking.court).selectinload(Court.venue).selectinload(Venue.owner),
         selectinload(Payment.admin)
     ).order_by(Payment.created_at.desc())
 
@@ -48,77 +55,7 @@ async def upload_payment_proof(
     current_user = Depends(get_current_user)
 ):
     """Upload bukti pembayaran (Customer)."""
-    b_result = await db.execute(select(Booking).where(Booking.id == booking_id))
-    booking = b_result.scalars().first()
-
-    if not booking or booking.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Booking tidak ditemukan atau bukan milik Anda")
-    if booking.status != BookingStatusEnum.pending:
-        raise HTTPException(status_code=400, detail="Booking ini sudah tidak dalam status pending")
-
-    p_result = await db.execute(select(Payment).where(Payment.booking_id == booking_id))
-    existing_payment = p_result.scalars().first()
-    if existing_payment and existing_payment.status not in [PaymentStatusEnum.failed, PaymentStatusEnum.pending]:
-        raise HTTPException(status_code=400, detail="Pembayaran sudah diproses")
-
-    image_url = None
-    if file and file.filename:
-        file_bytes = await file.read()
-        filename = f"proof_{booking_id}_{file.filename}"
-        try:
-            image_url = await upload_image_to_supabase(file_bytes, filename)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Gagal upload bukti: {str(e)}")
-
-    if existing_payment:
-        existing_payment.method = method
-        existing_payment.amount = amount
-        existing_payment.proof_image_url = image_url or existing_payment.proof_image_url
-        existing_payment.status = PaymentStatusEnum.pending
-        
-        # Ambil owner (admin) dari lapangan
-        result_court = await db.execute(select(Court).options(selectinload(Court.venue)).where(Court.id == booking.court_id))
-        court_data = result_court.scalars().first()
-        if court_data and court_data.venue and court_data.venue.owner_id:
-            from app.models.notification import Notification
-            db.add(Notification(
-                user_id=court_data.venue.owner_id,
-                title="Bukti Pembayaran Diunggah",
-                message=f"Customer telah mengunggah bukti pembayaran untuk booking pada {booking.booking_date}.",
-                related_entity_type="payment",
-                related_entity_id=existing_payment.id
-            ))
-            
-        await db.commit()
-        await db.refresh(existing_payment)
-        return existing_payment
-    else:
-        db_payment = Payment(
-            booking_id=booking_id,
-            amount=amount,
-            method=method,
-            proof_image_url=image_url,
-            status=PaymentStatusEnum.pending
-        )
-        db.add(db_payment)
-        await db.flush() # flush to get id for notification
-        
-        # Ambil owner (admin) dari lapangan
-        result_court = await db.execute(select(Court).options(selectinload(Court.venue)).where(Court.id == booking.court_id))
-        court_data = result_court.scalars().first()
-        if court_data and court_data.venue and court_data.venue.owner_id:
-            from app.models.notification import Notification
-            db.add(Notification(
-                user_id=court_data.venue.owner_id,
-                title="Bukti Pembayaran Diunggah",
-                message=f"Customer telah mengunggah bukti pembayaran untuk booking pada {booking.booking_date}.",
-                related_entity_type="payment",
-                related_entity_id=db_payment.id
-            ))
-            
-        await db.commit()
-        await db.refresh(db_payment)
-        return db_payment
+    return await process_upload_proof(db, booking_id, current_user.id, method, amount, file)
 
 @router.put("/{payment_id}/confirm", response_model=PaymentResponse, dependencies=[Depends(require_admin)])
 async def verify_payment(
@@ -150,3 +87,109 @@ async def reject_payment(
             raise HTTPException(status_code=403, detail="Akses ditolak")
             
     return await confirm_payment(db, payment_id, current_user.id, is_approved=False, rejection_reason=req.rejection_reason)
+
+@router.post("/{booking_id}/xendit-invoice")
+async def create_xendit_invoice(
+    booking_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Mendapatkan link Invoice Xendit untuk Booking tertentu."""
+    b_result = await db.execute(select(Booking).options(selectinload(Booking.court)).where(Booking.id == booking_id))
+    booking = b_result.scalars().first()
+
+    if not booking or booking.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Booking tidak ditemukan atau bukan milik Anda")
+    if booking.status != BookingStatusEnum.pending:
+        raise HTTPException(status_code=400, detail="Booking sudah tidak pending")
+
+    p_result = await db.execute(select(Payment).where(Payment.booking_id == booking_id))
+    payment = p_result.scalars().first()
+
+    if not payment:
+        payment = Payment(
+            booking_id=booking_id,
+            amount=booking.total_price,
+            method=PaymentMethodEnum.transfer, # Placeholder for online methods
+            status=PaymentStatusEnum.pending
+        )
+        db.add(payment)
+        await db.commit()
+        await db.refresh(payment)
+    elif payment.status not in [PaymentStatusEnum.pending, PaymentStatusEnum.failed]:
+        raise HTTPException(status_code=400, detail="Pembayaran sudah diproses")
+
+    # SIMULATION MODE jika kunci Xendit kosong
+    if not settings.XENDIT_SECRET_KEY:
+        # Otomatis jadikan lunas (hanya untuk simulasi/demo)
+        payment.status = PaymentStatusEnum.paid
+        booking.status = BookingStatusEnum.confirmed
+        await db.commit()
+        return {"invoice_url": "simulated_success"}
+
+    # Siapkan request ke Xendit Invoices API
+    xendit_url = "https://api.xendit.co/v2/invoices"
+    auth_string = base64.b64encode(f"{settings.XENDIT_SECRET_KEY}:".encode('utf-8')).decode('utf-8')
+    headers = {
+        "Authorization": f"Basic {auth_string}",
+        "Content-Type": "application/json"
+    }
+    
+    unique_order_id = f"{payment.id}-{int(datetime.utcnow().timestamp())}"
+
+    origin_url = request.headers.get("origin") or "http://localhost:5173"
+    
+    payload = {
+        "external_id": unique_order_id,
+        "amount": int(payment.amount),
+        "payer_email": current_user.email,
+        "description": f"Sewa {booking.court.name} - {booking.booking_date.strftime('%d %b %Y')}",
+        "customer": {
+            "given_names": current_user.name,
+            "email": current_user.email
+        },
+        "success_redirect_url": f"{origin_url}/my-bookings",
+        "failure_redirect_url": f"{origin_url}/my-bookings"
+    }
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(xendit_url, json=payload, headers=headers)
+        if resp.status_code != 200 and resp.status_code != 201:
+            raise HTTPException(status_code=500, detail=f"Gagal mendapatkan Invoice Xendit: {resp.text}")
+        
+        data = resp.json()
+        return {"invoice_url": data.get("invoice_url")}
+
+@router.post("/xendit/webhook")
+async def xendit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    """Webhook untuk menerima notifikasi dari Xendit Invoices."""
+    payload = await request.json()
+    
+    external_id = payload.get("external_id")
+    status = payload.get("status")
+    
+    if not external_id:
+        return {"status": "ignored"}
+
+    # external_id format: "uuid-timestamp"
+    try:
+        payment_uuid_str = external_id[:36] # UUID length is 36
+        payment_uuid = UUID(payment_uuid_str)
+    except:
+        return {"status": "ignored"}
+
+    p_result = await db.execute(select(Payment).options(selectinload(Payment.booking)).where(Payment.id == payment_uuid))
+    payment = p_result.scalars().first()
+
+    if not payment:
+        return {"status": "payment not found"}
+
+    if status == 'PAID' or status == 'SETTLED':
+        payment.status = PaymentStatusEnum.paid
+        payment.booking.status = BookingStatusEnum.confirmed
+    elif status == 'EXPIRED':
+        payment.status = PaymentStatusEnum.failed
+        
+    await db.commit()
+    return {"status": "ok"}

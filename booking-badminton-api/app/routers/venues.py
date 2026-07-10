@@ -19,21 +19,25 @@ from app.models.user import RoleEnum
 router = APIRouter(prefix="/venues", tags=["Venues"])
 
 @router.get("", response_model=List[VenueResponse])
-async def get_venues(area_id: UUID = None, db: AsyncSession = Depends(get_db), current_user = Depends(get_optional_user)):
+async def get_venues(area_id: UUID = None, limit: int = None, db: AsyncSession = Depends(get_db), current_user = Depends(get_optional_user)):
     """Daftar GOR aktif. Jika dipanggil Admin, hanya tampilkan miliknya."""
-    stmt = select(Venue)
+    stmt = select(Venue).options(selectinload(Venue.owner))
     
     if current_user and current_user.role == RoleEnum.admin:
-        # Regular admin sees their own venues (even if inactive, maybe? For now let's just show all theirs)
+        # Regular admin sees their own venues
         stmt = stmt.where(Venue.owner_id == current_user.id)
     else:
-        # Public / Super Admin sees active venues. Super Admin could see all, but let's keep it simple.
+        # Public / Super Admin sees active venues.
         stmt = stmt.where(Venue.is_active == True)
 
     if area_id:
         stmt = stmt.where(Venue.area_id == area_id)
         
     stmt = stmt.order_by(Venue.name)
+    
+    if limit:
+        stmt = stmt.limit(limit)
+        
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -41,7 +45,7 @@ async def get_venues(area_id: UUID = None, db: AsyncSession = Depends(get_db), c
 async def get_venue(venue_id: UUID, db: AsyncSession = Depends(get_db)):
     """Detail satu GOR beserta info daerahnya (publik)."""
     result = await db.execute(
-        select(Venue).options(selectinload(Venue.area)).where(Venue.id == venue_id)
+        select(Venue).options(selectinload(Venue.area), selectinload(Venue.owner)).where(Venue.id == venue_id)
     )
     venue = result.scalars().first()
     if not venue:
@@ -66,8 +70,9 @@ async def create_venue(venue: VenueCreate, db: AsyncSession = Depends(get_db), c
         
     db.add(db_venue)
     await db.commit()
-    await db.refresh(db_venue)
-    return db_venue
+    # Eager load owner for response
+    result = await db.execute(select(Venue).options(selectinload(Venue.owner)).where(Venue.id == db_venue.id))
+    return result.scalars().first()
 
 @router.post("/upload-image", dependencies=[Depends(require_admin)])
 async def upload_venue_image(file: UploadFile = File(...)):
@@ -88,7 +93,7 @@ async def upload_venue_image(file: UploadFile = File(...)):
 @router.put("/{venue_id}", response_model=VenueResponse, dependencies=[Depends(require_admin)])
 async def update_venue(venue_id: UUID, venue: VenueUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     """Update data GOR (Admin / Super Admin)."""
-    result = await db.execute(select(Venue).where(Venue.id == venue_id))
+    result = await db.execute(select(Venue).options(selectinload(Venue.owner)).where(Venue.id == venue_id))
     db_venue = result.scalars().first()
     if not db_venue:
         raise HTTPException(status_code=404, detail="GOR tidak ditemukan")

@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import datetime
 from decimal import Decimal
 from app.models.payment import PaymentMethodEnum, PaymentStatusEnum
-from app.schemas.booking import BookingResponse
+from app.schemas.booking import BookingResponse, BookingDetailResponse
 from app.schemas.user import UserResponse
 
 class PaymentBase(BaseModel):
@@ -27,7 +27,7 @@ class PaymentResponse(PaymentBase):
     model_config = ConfigDict(from_attributes=True)
 
 class PaymentDetailResponse(PaymentResponse):
-    booking: BookingResponse
+    booking: BookingDetailResponse
     admin: Optional[UserResponse] = None
     
     model_config = ConfigDict(from_attributes=True)
