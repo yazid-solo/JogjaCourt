@@ -11,36 +11,63 @@ from app.utils.helpers import upload_image_to_supabase
 from app.database import get_db
 from app.models.venue import Venue
 from app.models.court import Court
-from app.schemas.venue import VenueCreate, VenueUpdate, VenueResponse, VenueDetailResponse
+from app.schemas.venue import VenueCreate, VenueUpdate, VenueResponse, VenueDetailResponse, VenuePaginatedResponse
 from app.schemas.court import CourtResponse
 from app.utils.dependencies import require_super_admin, require_admin, get_optional_user, get_current_user
 from app.models.user import RoleEnum
 
 router = APIRouter(prefix="/venues", tags=["Venues"])
 
-@router.get("", response_model=List[VenueResponse])
-async def get_venues(area_id: UUID = None, limit: int = None, db: AsyncSession = Depends(get_db), current_user = Depends(get_optional_user)):
+from sqlalchemy import func
+
+@router.get("", response_model=VenuePaginatedResponse)
+async def get_venues(
+    area_id: UUID = None, 
+    page: int = 1,
+    size: int = 50,
+    db: AsyncSession = Depends(get_db), 
+    current_user = Depends(get_optional_user)
+):
     """Daftar GOR aktif. Jika dipanggil Admin, hanya tampilkan miliknya."""
-    stmt = select(Venue).options(selectinload(Venue.owner))
+    count_stmt = select(func.count(Venue.id))
+    stmt = select(Venue).options(selectinload(Venue.owner), selectinload(Venue.area))
     
     if current_user and current_user.role == RoleEnum.admin:
         # Regular admin sees their own venues
+        count_stmt = count_stmt.where(Venue.owner_id == current_user.id)
         stmt = stmt.where(Venue.owner_id == current_user.id)
     else:
         # Public / Super Admin sees active venues.
+        count_stmt = count_stmt.where(Venue.is_active == True)
         stmt = stmt.where(Venue.is_active == True)
 
     if area_id:
+        count_stmt = count_stmt.where(Venue.area_id == area_id)
         stmt = stmt.where(Venue.area_id == area_id)
         
     stmt = stmt.order_by(Venue.name)
     
-    if limit:
-        stmt = stmt.limit(limit)
+    # Exec count
+    total_count_res = await db.execute(count_stmt)
+    total_count = total_count_res.scalar() or 0
+    
+    offset = (page - 1) * size
+    stmt = stmt.offset(offset).limit(size)
         
     result = await db.execute(stmt)
-    return result.scalars().all()
+    venues = result.scalars().all()
+    
+    total_pages = (total_count + size - 1) // size
+    if total_pages == 0:
+        total_pages = 1
 
+    return {
+        "total_count": total_count,
+        "total_pages": total_pages,
+        "current_page": page,
+        "limit": size,
+        "data": venues
+    }
 @router.get("/{venue_id}", response_model=VenueDetailResponse)
 async def get_venue(venue_id: UUID, db: AsyncSession = Depends(get_db)):
     """Detail satu GOR beserta info daerahnya (publik)."""

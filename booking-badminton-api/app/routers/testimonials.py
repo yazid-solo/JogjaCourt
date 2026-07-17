@@ -118,6 +118,7 @@ async def get_admin_testimonials(
         venue_ids = [v.id for v in admin_venues]
         stmt = stmt.where(Testimonial.venue_id.in_(venue_ids))
 
+    stmt = stmt.limit(200)
     result = await db.execute(stmt)
     testimonials = result.scalars().all()
     return [format_testimonial(t) for t in testimonials]

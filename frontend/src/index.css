@@ -122,9 +122,45 @@
     @apply select-none;
   }
 
-  /* Smooth scroll behavior */
+  /* Smooth scroll behavior - Let Lenis handle */
   html {
-    @apply scroll-smooth;
+    scroll-behavior: auto;
+  }
+  
+  /* Optimize scroll performance */
+  * {
+    -webkit-overflow-scrolling: touch;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* GLOBAL FIX: Convert all 100vh usage to 100dvh for proper mobile address bar handling */
+  .h-screen { height: 100dvh !important; }
+  .min-h-screen { min-height: 100dvh !important; }
+  .max-h-screen { max-height: 100dvh !important; }
+  
+  /* Safe Area Utilities */
+  .safe-area-pb {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  /* Smooth rendering untuk card & elements */
+  .main-card,
+  .premium-depth-card {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   /* Improve form visibility on mobile */
@@ -160,5 +196,41 @@
   /* Hardware acceleration for modals */
   .modal-backdrop {
     @apply will-change-transform;
+  }
+  
+  /* GPU acceleration for smooth animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+/* ============================================
+   SCROLL PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+@layer utilities {
+  /* Optimize images for scroll performance */
+  img {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px;
+  }
+  
+  /* Disable heavy filters on scroll */
+  .cta-wrapper {
+    filter: none !important;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

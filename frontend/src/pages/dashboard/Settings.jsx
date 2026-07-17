@@ -110,37 +110,39 @@ function SettingsInner() {
 
     setPwdLoading(true);
     try {
-      // Assuming a generic endpoint for password change. Will gracefully handle 404 if not exist.
-      await api.put('/users/me/password', {
-        old_password: pwdData.old_password,
+      await api.put('/auth/change-password', {
+        current_password: pwdData.old_password,
         new_password: pwdData.new_password
       });
       setPwdSuccessMsg('Kata sandi berhasil diperbarui.');
       setPwdData({ old_password: '', new_password: '', confirm_password: '' });
       setTimeout(() => setPwdSuccessMsg(''), 4000);
     } catch (error) {
-      if (error.response?.status === 404) {
-        setPwdErrorMsg("Layanan pembaruan kata sandi sedang dalam perbaikan.");
-      } else {
-        setPwdErrorMsg(error.response?.data?.detail || "Gagal memperbarui kata sandi.");
-      }
+      setPwdErrorMsg(error.response?.data?.detail || "Gagal memperbarui kata sandi.");
     } finally {
       setPwdLoading(false);
     }
   };
 
-  const handleContactSubmit = (e) => {
+  const [contactData, setContactData] = useState({ topic: '', message: '' });
+
+  const handleContactSubmit = async (e) => {
     e.preventDefault();
     setContactLoading(true);
-    // Simulate sending message
-    setTimeout(() => {
-      setContactLoading(false);
+    try {
+      await api.post('/users/contact-us', contactData);
       setContactSuccess(true);
+      setContactData({ topic: '', message: '' }); // reset form
       setTimeout(() => {
         setContactSuccess(false);
         setShowContactModal(false);
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.detail || "Gagal mengirim pesan ke sistem.");
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -201,8 +203,8 @@ function SettingsInner() {
         </div>
         
         {/* Profile Info */}
-        <div className="px-8 pb-8 relative">
-          <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8">
+        <div className="px-4 sm:px-8 pb-8 relative">
+          <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-12 sm:-mt-16 mb-8">
             <div className="relative group inline-block">
               <div 
                 onClick={() => setShowImageMenu(!showImageMenu)}
@@ -653,7 +655,12 @@ function SettingsInner() {
               <form onSubmit={handleContactSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Perihal / Topik</label>
-                  <select required className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none appearance-none">
+                  <select 
+                    required 
+                    value={contactData.topic}
+                    onChange={(e) => setContactData({...contactData, topic: e.target.value})}
+                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none appearance-none"
+                  >
                     <option value="">Pilih topik kendala...</option>
                     <option value="teknis">Kendala Teknis (Error/Bug)</option>
                     <option value="keuangan">Kendala Keuangan & Tarik Dana</option>
@@ -663,7 +670,14 @@ function SettingsInner() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-neutral-500 uppercase mb-2">Pesan Anda</label>
-                  <textarea required rows="4" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none resize-none" placeholder="Deskripsikan kendala Anda secara detail..."></textarea>
+                  <textarea 
+                    required 
+                    rows="4" 
+                    value={contactData.message}
+                    onChange={(e) => setContactData({...contactData, message: e.target.value})}
+                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none resize-none" 
+                    placeholder="Deskripsikan kendala Anda secara detail..."
+                  ></textarea>
                 </div>
                 <div className="pt-2 flex gap-3">
                   <button type="button" onClick={() => setShowContactModal(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all">

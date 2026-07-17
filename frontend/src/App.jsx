@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -29,7 +30,9 @@ import ErrorBoundary from './components/ErrorBoundary';
 import MitraRegister from './pages/MitraRegister';
 
 import { AuthProvider } from './context/AuthContext';
+import { ChatNotifProvider } from './context/ChatNotifContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import GlobalToast from './components/ui/GlobalToast';
 
 // Komponen Halaman Placeholder (Kosong)
 const BlankPage = ({ title }) => (
@@ -46,13 +49,16 @@ function App() {
         <GoogleOAuthProvider clientId="801087464391-ula551k2nsbdlpbt0o0r56jc6pvr8b0m.apps.googleusercontent.com">
             <ErrorBoundary>
                 <AuthProvider>
+                <ChatNotifProvider>
                 <Router>
+                    <GlobalToast />
                     <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/mitra-register" element={<MitraRegister />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/privacy" element={<Legal type="privacy" />} />
                         <Route path="/terms" element={<Legal type="terms" />} />
                         <Route path="/support" element={<Legal type="support" />} />
@@ -117,6 +123,7 @@ function App() {
                         <Route path="*" element={<BlankPage title="404 Not Found" />} />
                     </Routes>
                 </Router>
+                </ChatNotifProvider>
             </AuthProvider>
             </ErrorBoundary>
         </GoogleOAuthProvider>

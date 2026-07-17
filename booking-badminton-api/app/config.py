@@ -14,8 +14,19 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
     DEFAULT_ADMIN_NAME: str = "Super Admin"
 
+    FRONTEND_URL: str = "http://localhost:3000"
+
     XENDIT_SECRET_KEY: str = "" # Kunci Rahasia Xendit (contoh: xnd_development_...)
     GOOGLE_CLIENT_ID: str = ""
+    
+    # WhatsApp Gateway (Fonnte)
+    FONNTE_TOKEN: str = ""
+    
+    # SMTP Email Server
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
 
     class Config:
         env_file = ".env"

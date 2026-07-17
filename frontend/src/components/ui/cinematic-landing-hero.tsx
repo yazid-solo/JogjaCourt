@@ -16,7 +16,7 @@ const INJECTED_STYLES = `
   /* Environment Overlays */
   .film-grain {
       position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 50; opacity: 0.04; mix-blend-mode: overlay;
+      pointer-events: none; z-index: 50; opacity: 0.03;
       background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
   }
 
@@ -37,9 +37,11 @@ const INJECTED_STYLES = `
       height: 120%;
       top: -10%;
       object-fit: cover;
-      will-change: transform, opacity;
-      transform: translateZ(0);
+      will-change: transform;
+      transform: translateZ(0) translate3d(0,0,0);
       backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      image-rendering: -webkit-optimize-contrast;
   }
 
   /* OUTSIDE THE CARD: Theme-aware text */
@@ -83,12 +85,14 @@ const INJECTED_STYLES = `
           inset 0 -2px 4px rgba(0, 0, 0, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.04);
       position: relative;
+      will-change: transform;
   }
 
   .card-sheen {
       position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 50;
       background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 40%);
-      mix-blend-mode: screen; transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease;
+      will-change: transform;
   }
 
   /* Realistic iPhone Mockup Hardware */
@@ -177,20 +181,19 @@ const INJECTED_STYLES = `
       stroke-linecap: round;
   }
 
-  /* Parallax floating particles */
+  /* Parallax floating particles - DISABLED for performance */
   @keyframes float-particle {
-    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
-    25% { transform: translateY(-20px) translateX(10px); opacity: 0.7; }
-    50% { transform: translateY(-10px) translateX(-5px); opacity: 0.5; }
-    75% { transform: translateY(-30px) translateX(15px); opacity: 0.8; }
+    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+    50% { transform: translateY(-15px) translateX(8px); opacity: 0.4; }
   }
 
   .parallax-particle {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%);
     pointer-events: none;
-    animation: float-particle 8s ease-in-out infinite;
+    animation: float-particle 6s ease-in-out infinite;
+    will-change: transform;
   }
 
   /* Vignette overlay for cinematic depth */
@@ -234,7 +237,17 @@ export function CinematicHero({
   const requestRef = useRef<number>(0);
 
   useEffect(() => {
+    let lastMoveTime = 0;
+    const throttleDelay = 50; // throttle setiap 50ms
+    
     const handleMouseMove = (e: MouseEvent) => {
+      // Nonaktifkan efek parallax mouse di mobile untuk menghemat baterai & CPU
+      if (window.innerWidth < 768) return;
+
+      const now = Date.now();
+      if (now - lastMoveTime < throttleDelay) return;
+      lastMoveTime = now;
+      
       if (window.scrollY > window.innerHeight * 2) return;
 
       cancelAnimationFrame(requestRef.current);
@@ -252,49 +265,49 @@ export function CinematicHero({
           const yVal = (e.clientY / window.innerHeight - 0.5) * 2;
 
           gsap.to(mockupRef.current, {
-            rotationY: xVal * 22,
-            rotationX: -yVal * 22,
-            ease: "power3.out",
-            duration: 0.8,
+            rotationY: xVal * 18, // dikurangi dari 22 ke 18
+            rotationX: -yVal * 18,
+            ease: "power2.out", // diubah dari power3.out
+            duration: 0.6, // dikurangi dari 0.8
+            overwrite: true,
           });
         }
       });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(requestRef.current);
     };
   },[]);
 
-  // Smooth Scrolling Setup (Lenis)
+  // Lenis Super Lightweight - Dioptimalkan untuk Mobile & GSAP
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2, // durasi perlambatan scroll
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // kurva easing premium
+      duration: 1.0, // snappier duration
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      smoothTouch: false, // MATIKAN smooth touch untuk mobile agar menggunakan native scroll (60fps tanpa lag)
+      touchMultiplier: 1, 
       infinite: false,
     });
 
-    // Menghubungkan Lenis dengan GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
-    // Mengintegrasikan Lenis ke dalam render loop GSAP untuk performa maksimal
+    let rafId;
     const raf = (time: number) => {
-      lenis.raf(time * 1000);
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
     };
-    
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0); // menonaktifkan lagSmoothing bawaan agar tidak konflik
+    rafId = requestAnimationFrame(raf);
 
     return () => {
       lenis.destroy();
-      gsap.ticker.remove(raf);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
@@ -304,68 +317,71 @@ export function CinematicHero({
     const ctx = gsap.context(() => {
       // Parallax bg layers entrance
       gsap.set(".parallax-bg-layer", { scale: 1.15, autoAlpha: 0 });
-      gsap.set(".text-track", { autoAlpha: 0, y: 60, scale: 0.85, filter: "blur(20px)", rotationX: -20 });
+      gsap.set(".text-track", { autoAlpha: 0, y: 60, scale: 0.9, rotationX: -15 });
       gsap.set(".text-days", { autoAlpha: 1, clipPath: "inset(0 100% 0 0)" });
       gsap.set(".main-card", { y: window.innerHeight + 200, autoAlpha: 1 });
       gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge", ".phone-widget"], { autoAlpha: 0 });
-      gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
+      gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.9 });
 
       const introTl = gsap.timeline({ delay: 0.3 });
       introTl
         .to(".parallax-bg-layer", { 
-          autoAlpha: 1, scale: 1, duration: 2.5, ease: "power2.out", stagger: 0.15 
+          autoAlpha: 1, scale: 1, duration: 2, ease: "power2.out", stagger: 0.12 
         })
-        .to(".text-track", { duration: 1.8, autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", rotationX: 0, ease: "expo.out" }, "-=1.8")
-        .to(".text-days", { duration: 1.4, clipPath: "inset(0 0% 0 0)", ease: "power4.inOut" }, "-=1.0");
+        .to(".text-track", { duration: 1.4, autoAlpha: 1, y: 0, scale: 1, rotationX: 0, ease: "power3.out" }, "-=1.4")
+        .to(".text-days", { duration: 1.2, clipPath: "inset(0 0% 0 0)", ease: "power3.inOut" }, "-=0.8");
 
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: "+=5000",
+          end: "+=3800",
           pin: true,
-          scrub: 0.8,
+          scrub: 0.5,
           anticipatePin: 1,
         },
       });
 
       scrollTl
-        // Parallax bg layers: gentle movement, GPU-accelerated
-        .to(".parallax-bg-layer-1", { yPercent: -15, scale: 1.1, ease: "none", duration: 4, force3D: true }, 0)
-        .to(".parallax-bg-layer-2", { yPercent: -10, scale: 1.05, ease: "none", duration: 4, force3D: true }, 0)
-        .to(".parallax-bg-layer-3", { yPercent: -5, ease: "none", duration: 4, force3D: true }, 0)
-        .fromTo([".hero-text-wrapper", ".bg-grid-theme"], { scale: 1, autoAlpha: 1 }, { scale: 1.15, autoAlpha: 0, ease: "power2.inOut", duration: 2, immediateRender: false }, 0)
-        .to(".main-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
-        // Background wrappers fade out AFTER the card has arrived — no conflict with introTl!
-        .fromTo(".parallax-wrapper-1", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.inOut", duration: 3, immediateRender: false }, 2.5)
-        .fromTo(".parallax-wrapper-2", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.inOut", duration: 3, immediateRender: false }, 2.8)
-        .fromTo(".parallax-wrapper-3", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.inOut", duration: 3, immediateRender: false }, 3.1)
-        .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: 1.5 })
+        // Parallax bg layers: smooth & lightweight
+        .to(".parallax-bg-layer-1", { yPercent: -10, ease: "power1.out", duration: 3.2, force3D: true }, 0)
+        .to(".parallax-bg-layer-2", { yPercent: -6, ease: "power1.out", duration: 3.2, force3D: true }, 0)
+        .to(".parallax-bg-layer-3", { yPercent: -4, ease: "power1.out", duration: 3.2, force3D: true }, 0)
+        .fromTo([".hero-text-wrapper", ".bg-grid-theme"], { scale: 1, autoAlpha: 1 }, { scale: 1.1, autoAlpha: 0, ease: "power2.inOut", duration: 1.6, immediateRender: false }, 0)
+        .to(".main-card", { y: 0, ease: "power2.inOut", duration: 1.6 }, 0)
+        // Background wrappers fade out early
+        .fromTo(".parallax-wrapper-1", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 0.8)
+        .fromTo(".parallax-wrapper-2", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 1.0)
+        .fromTo(".parallax-wrapper-3", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 1.2)
+        // Expand card seamlessly
+        .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power2.inOut", duration: 1.2 }, 1.0)
+        // Content fades in as the card expands! No blank delay!
         .fromTo(".mockup-scroll-wrapper",
-          { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 },
-          { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 }, "-=0.8"
+          { y: 150, autoAlpha: 0, scale: 0.85 },
+          { y: 0, autoAlpha: 1, scale: 1, ease: "power3.out", duration: 1.8, immediateRender: false }, 1.3
         )
-        .fromTo(".phone-widget", { y: 40, autoAlpha: 0, scale: 0.95 }, { y: 0, autoAlpha: 1, scale: 1, stagger: 0.15, ease: "back.out(1.2)", duration: 1.5 }, "-=1.5")
-        .to(".progress-ring", { strokeDashoffset: 60, duration: 2, ease: "power3.inOut" }, "-=1.2")
-        .to(".counter-val", { innerHTML: metricValue, snap: { innerHTML: 1 }, duration: 2, ease: "expo.out" }, "-=2.0")
-        .fromTo(".floating-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=2.0")
-        .fromTo(".card-left-text", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
-        .fromTo(".card-right-text", { x: 50, autoAlpha: 0, scale: 0.8 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
-        .to({}, { duration: 2.5 })
-        .fromTo(".cta-wrapper", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.1 }) 
+        .fromTo(".phone-widget", { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.1, ease: "power2.out", duration: 1.2 }, 1.6)
+        .to(".progress-ring", { strokeDashoffset: 60, duration: 1.4, ease: "power2.out" }, 1.6)
+        .to(".counter-val", { innerHTML: metricValue, snap: { innerHTML: 1 }, duration: 1.4, ease: "power2.out" }, 1.6)
+        .fromTo(".floating-badge", { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: "power2.out", duration: 1.2, stagger: 0.1 }, 1.8)
+        .fromTo(".card-left-text", { x: -30, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power2.out", duration: 1.2 }, 1.8)
+        .fromTo(".card-right-text", { x: 30, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power2.out", duration: 1.2 }, 1.8)
+        // Let the user digest the information
         .to({}, { duration: 1.5 })
+        .fromTo(".cta-wrapper", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }) 
+        .to({}, { duration: 1.0 })
         .to([".mockup-scroll-wrapper", ".floating-badge", ".card-left-text", ".card-right-text"], {
-          scale: 0.9, y: -40, z: -200, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05,
+          autoAlpha: 0, ease: "power2.in", duration: 0.8,
         })
         .to(".main-card", { 
           width: isMobile ? "92vw" : "85vw", 
           height: isMobile ? "92vh" : "85vh", 
           borderRadius: isMobile ? "32px" : "40px", 
-          ease: "expo.inOut", 
-          duration: 1.8 
+          ease: "power2.inOut", 
+          duration: 1.4 
         }, "pullback") 
-        .to(".cta-wrapper", { scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8 }, "pullback")
-        .to(".main-card", { y: -window.innerHeight - 300, ease: "power3.in", duration: 1.5 });
+        .to(".cta-wrapper", { scale: 1, ease: "power2.inOut", duration: 1.4 }, "pullback")
+        .to(".main-card", { y: -window.innerHeight - 300, ease: "power2.in", duration: 1.2 });
 
     }, containerRef);
 
@@ -375,7 +391,7 @@ export function CinematicHero({
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-screen h-screen overflow-hidden flex items-center justify-center bg-black text-white font-sans antialiased", className)}
+      className={cn("relative w-full h-[100dvh] overflow-hidden flex items-center justify-center bg-black text-white font-sans antialiased", className)}
       style={{ perspective: "1500px" }}
       {...props}
     >
@@ -398,7 +414,7 @@ export function CinematicHero({
           src="/assets/bg-badminton-2.jpg" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal"
-          style={{ filter: "brightness(0.28) saturate(0.7)", mixBlendMode: "screen" }}
+          style={{ filter: "brightness(0.35) saturate(0.7)", opacity: 0.6 }}
         />
       </div>
 
@@ -408,28 +424,24 @@ export function CinematicHero({
           src="/assets/bg-badminton-8.jpg" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal"
-          style={{ filter: "brightness(0.22) saturate(0.6)", mixBlendMode: "overlay" }}
+          style={{ filter: "brightness(0.3) saturate(0.6)", opacity: 0.4 }}
         />
       </div>
 
       {/* Vignette for cinematic depth */}
       <div className="vignette-overlay z-[4]" aria-hidden="true" />
 
-      {/* Floating golden particles */}
+      {/* Floating golden particles - Minimal */}
       <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="parallax-particle w-1 h-1" style={{ top: "20%", left: "15%", animationDelay: "0s" }} />
-        <div className="parallax-particle w-1.5 h-1.5" style={{ top: "60%", left: "80%", animationDelay: "2s" }} />
-        <div className="parallax-particle w-0.5 h-0.5" style={{ top: "35%", left: "65%", animationDelay: "4s" }} />
-        <div className="parallax-particle w-1 h-1" style={{ top: "75%", left: "25%", animationDelay: "6s" }} />
-        <div className="parallax-particle w-0.5 h-0.5" style={{ top: "10%", left: "90%", animationDelay: "1s" }} />
-        <div className="parallax-particle w-1 h-1" style={{ top: "85%", left: "50%", animationDelay: "3s" }} />
+        <div className="parallax-particle w-0.5 h-0.5" style={{ top: "25%", left: "20%", animationDelay: "0s" }} />
+        <div className="parallax-particle w-0.5 h-0.5" style={{ top: "70%", left: "75%", animationDelay: "3s" }} />
       </div>
 
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-[6] pointer-events-none opacity-30" aria-hidden="true" />
 
       {/* BACKGROUND LAYER: Hero Texts */}
-      <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 will-change-transform transform-style-3d">
+      <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-full px-4 will-change-transform transform-style-3d">
         <h1 className="text-track gsap-reveal text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
           {tagline1}
         </h1>
@@ -439,7 +451,7 @@ export function CinematicHero({
       </div>
 
       {/* BACKGROUND LAYER 2: Tactile CTA Buttons */}
-      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 gsap-reveal pointer-events-auto will-change-transform">
+      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-full px-4 gsap-reveal pointer-events-auto will-change-transform">
         <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
           {ctaHeading}
         </h2>
@@ -447,7 +459,7 @@ export function CinematicHero({
           {ctaDescription}
         </p>
         <div className="flex flex-col sm:flex-row gap-6">
-          <a href="#" className="btn-modern-light flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2">
+          <a href="/explore" className="btn-modern-light flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2">
             <svg className="w-8 h-8 transition-transform group-hover:scale-105 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
             </svg>
@@ -456,7 +468,7 @@ export function CinematicHero({
               <div className="text-xl font-bold leading-none tracking-tight">Cari Lapangan</div>
             </div>
           </a>
-          <a href="#" className="btn-modern-dark flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 focus:ring-offset-background">
+          <a href="/mitra-register" className="btn-modern-dark flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 focus:ring-offset-background">
             <svg className="w-7 h-7 transition-transform group-hover:scale-105 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-11v6h2v-6h-2zm0-4v2h2V7h-2z"/>
             </svg>
@@ -477,11 +489,11 @@ export function CinematicHero({
           <div className="card-sheen" aria-hidden="true" />
 
           {/* DYNAMIC RESPONSIVE GRID */}
-          <div className="relative w-full h-full max-w-7xl mx-auto px-4 lg:px-12 flex flex-col justify-evenly lg:grid lg:grid-cols-2 items-center lg:gap-8 z-10 py-6 lg:py-0">
+          <div className="relative w-full h-full max-w-7xl mx-auto px-4 lg:px-12 flex flex-col justify-center gap-4 lg:grid lg:grid-cols-2 items-center lg:gap-8 z-10 py-8 lg:py-0">
             
             {/* 1. BACKGROUND TEXT: BRAND NAME (Watermark) */}
             <div className="card-right-text gsap-reveal flex justify-center z-0 w-full opacity-10 pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <h2 className="text-[7rem] md:text-[10rem] lg:text-[14rem] font-black uppercase tracking-tighter text-white/50 mt-0 whitespace-nowrap drop-shadow-2xl">
+              <h2 className="text-[12vw] md:text-[8vw] lg:text-[7.5vw] font-black uppercase tracking-tighter text-white/50 mt-0 whitespace-nowrap drop-shadow-2xl">
                 {brandName}
               </h2>
             </div>
@@ -735,7 +747,7 @@ export function CinematicHero({
                 {/* Floating Glass Badges */}
                 <div className="floating-badge absolute flex top-6 lg:top-12 left-[-15px] lg:left-[-120px] rounded-2xl p-3 items-center gap-3 z-30 shadow-2xl bg-[#0a0a0a]/80 border border-white/10 backdrop-blur-xl">
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 shrink-0 bg-neutral-800">
-                      <img src="/logo.png" alt="Admin" className="w-full h-full object-cover p-1" />
+                      <img src="/Logo.svg" alt="Admin" className="w-full h-full object-cover p-1" />
                     </div>
                     <div className="pr-2">
                       <div className="flex justify-between items-center mb-0.5">
@@ -764,7 +776,7 @@ export function CinematicHero({
             {/* 3. BOTTOM (Mobile) / LEFT (Desktop): ACCOUNTABILITY TEXT */}
             <div className="card-left-text gsap-reveal order-3 lg:order-1 flex flex-col justify-center text-center lg:text-left z-20 w-full lg:max-w-xl px-4 lg:px-0">
               
-              <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6 w-fit mx-auto lg:mx-0 shadow-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-3 md:mb-6 w-fit mx-auto lg:mx-0 shadow-xl">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -772,13 +784,13 @@ export function CinematicHero({
                 <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Booking Real-time</span>
               </div>
 
-              <h3 className="text-white text-3xl md:text-4xl lg:text-5xl font-black mb-6 tracking-tight leading-[1.1] drop-shadow-lg lg:max-w-[80%] pr-4">
+              <h3 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-6 tracking-tight leading-[1.15] drop-shadow-lg lg:max-w-[80%] mx-auto lg:mx-0">
                 {cardHeading}
               </h3>
               
-              <div className="hidden md:block w-12 h-1 bg-gradient-to-r from-[#D4AF37] to-transparent mb-6 mx-auto lg:mx-0 rounded-full" />
+              <div className="block w-12 h-1 bg-gradient-to-r from-[#D4AF37] to-transparent mb-3 md:mb-6 mx-auto lg:mx-0 rounded-full" />
 
-              <p className="hidden md:block text-white drop-shadow-md text-sm md:text-base lg:text-lg font-medium leading-relaxed mx-auto lg:mx-0 max-w-sm lg:max-w-[65%] pr-2">
+              <p className="block text-white drop-shadow-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed mx-auto lg:mx-0 max-w-sm lg:max-w-[65%]">
                 {cardDescription}
               </p>
               

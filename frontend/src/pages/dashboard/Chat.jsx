@@ -482,7 +482,7 @@ export default function Chat() {
   const filteredContacts = contacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="h-[calc(100vh-10rem)] max-w-6xl mx-auto flex flex-col md:flex-row gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+    <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-10rem)] max-w-6xl mx-auto flex flex-col md:flex-row gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       
       <style>{`
         .custom-scroll::-webkit-scrollbar { width: 6px; }

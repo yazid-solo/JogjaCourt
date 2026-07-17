@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -15,13 +15,14 @@ from app.config import settings
 
 from app.database import get_db
 from app.models.payment import Payment, PaymentStatusEnum, PaymentMethodEnum
-from app.models.booking import Booking, BookingStatusEnum
+from app.models.booking import Booking, BookingStatusEnum, BookingTypeEnum
 from app.models.user import RoleEnum
 from app.schemas.payment import PaymentResponse, PaymentDetailResponse
 from app.utils.dependencies import get_current_user, require_admin
 from app.services.payment_service import confirm_payment, process_upload_proof
 from app.models.court import Court
 from app.models.venue import Venue
+from app.services.notification_service import send_whatsapp_message, send_email
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
@@ -42,6 +43,7 @@ async def get_payments(db: AsyncSession = Depends(get_db), current_user = Depend
     elif current_user.role == RoleEnum.admin:
         stmt = stmt.join(Booking).join(Court).join(Venue).where(Venue.owner_id == current_user.id)
 
+    stmt = stmt.limit(200)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -140,11 +142,15 @@ async def create_xendit_invoice(
 
     origin_url = request.headers.get("origin") or "http://localhost:5173"
     
+    desc = f"Sewa {booking.court.name} - {booking.booking_date.strftime('%d %b %Y')}"
+    if booking.booking_type == BookingTypeEnum.monthly:
+        desc = f"Member {booking.court.name} - {booking.booking_date.strftime('%d %b %Y')} s/d {booking.end_date.strftime('%d %b %Y')}"
+    
     payload = {
         "external_id": unique_order_id,
         "amount": int(payment.amount),
         "payer_email": current_user.email,
-        "description": f"Sewa {booking.court.name} - {booking.booking_date.strftime('%d %b %Y')}",
+        "description": desc,
         "customer": {
             "given_names": current_user.name,
             "email": current_user.email
@@ -162,7 +168,7 @@ async def create_xendit_invoice(
         return {"invoice_url": data.get("invoice_url")}
 
 @router.post("/xendit/webhook")
-async def xendit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+async def xendit_webhook(request: Request, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     """Webhook untuk menerima notifikasi dari Xendit Invoices."""
     payload = await request.json()
     
@@ -188,6 +194,36 @@ async def xendit_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     if status == 'PAID' or status == 'SETTLED':
         payment.status = PaymentStatusEnum.paid
         payment.booking.status = BookingStatusEnum.confirmed
+        
+        # Load user and venue data for notification
+        b_res = await db.execute(select(Booking).options(
+            selectinload(Booking.user),
+            selectinload(Booking.court).selectinload(Court.venue)
+        ).where(Booking.id == payment.booking_id))
+        b = b_res.scalars().first()
+        
+        if b and b.user:
+            venue_name = b.court.venue.name if b.court and b.court.venue else "Sistem Booking Lapangan"
+            court_name = b.court.name if b.court else "Lapangan"
+            
+            waktu_str = f"{b.booking_date.strftime('%d %b %Y')} ({b.start_time.strftime('%H:%M')} - {b.end_time.strftime('%H:%M')})"
+            if b.booking_type == BookingTypeEnum.monthly:
+                waktu_str = f"{b.booking_date.strftime('%d %b %Y')} s/d {b.end_date.strftime('%d %b %Y')}"
+
+            wa_message = (
+                f"🎉 HOREE! Pembayaran Berhasil!\n\n"
+                f"Halo {b.user.name},\n"
+                f"Pembayaran Xendit Anda sebesar Rp {payment.amount:,.0f} telah kami terima.\n\n"
+                f"Jadwal {court_name} di {venue_name} sudah diamankan!\n"
+                f"Waktu: {waktu_str}\n"
+                f"Status: CONFIRMED ✅\n\n"
+                f"Sampai jumpa di lapangan! Selamat berolahraga."
+            )
+            email_body = wa_message.replace("\n", "<br>")
+            
+            background_tasks.add_task(send_whatsapp_message, b.user.phone, wa_message)
+            background_tasks.add_task(send_email, b.user.email, f"E-Tiket: Konfirmasi Pembayaran {venue_name}", email_body)
+            
     elif status == 'EXPIRED':
         payment.status = PaymentStatusEnum.failed
         

@@ -119,7 +119,7 @@ async def list_kyc_requests(
     if current_user.role != RoleEnum.super_admin:
         raise HTTPException(status_code=403, detail="Hanya Super Admin yang dapat melihat data ini.")
         
-    result = await db.execute(select(KycRequest).filter(KycRequest.status == status))
+    result = await db.execute(select(KycRequest).filter(KycRequest.status == status).limit(200))
     return result.scalars().all()
 
 @router.post("/{kyc_id}/approve")

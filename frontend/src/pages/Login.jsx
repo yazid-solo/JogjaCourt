@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight, Loader2, KeyRound, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -10,6 +11,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,7 +59,7 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-8 cursor-pointer group">
-          <img src="/logo.png" alt="JogjaCourt" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
+          <img src="/Logo.svg" alt="JogjaCourt" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
           <span className="text-3xl font-black text-white tracking-tighter">JogjaCourt</span>
         </Link>
 
@@ -77,7 +79,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                Username
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -86,13 +88,13 @@ export default function Login() {
                 <input
                   id="username"
                   name="username"
-                  autoComplete="username"
-                  type="text"
+                  autoComplete="email"
+                  type="email"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full bg-[#111] border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all"
-                  placeholder="Masukkan username Anda"
+                  placeholder="Masukkan email terdaftar Anda"
                 />
               </div>
             </div>
@@ -116,6 +118,16 @@ export default function Login() {
                   className="w-full bg-[#111] border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all"
                   placeholder="••••••••"
                 />
+              </div>
+              
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsForgotModalOpen(true)}
+                  className="text-sm font-bold text-[#D4AF37] hover:text-yellow-400 hover:underline transition-colors"
+                >
+                  Lupa Password?
+                </button>
               </div>
             </div>
 
@@ -170,6 +182,11 @@ export default function Login() {
           </div>
         </div>
       </div>
+      
+      <ForgotPasswordModal 
+        isOpen={isForgotModalOpen} 
+        onClose={() => setIsForgotModalOpen(false)} 
+      />
     </div>
   );
 }

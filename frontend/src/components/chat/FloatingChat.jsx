@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, UserCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useChatNotif } from '@/context/ChatNotifContext';
 import api, { WS_URL } from '@/lib/api';
 
-export default function FloatingChat({ adminId, adminName = "Admin GOR", forceOpen = false }) {
+export default function FloatingChat({ forceOpen = false }) {
   const { user } = useAuth();
+  const { unreadCount, latestMsg, clearUnread } = useChatNotif();
   const [isOpen, setIsOpen] = useState(forceOpen);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [adminId, setAdminId] = useState(null);
+  const adminName = "Admin Pusat";
   
   const ws = useRef(null);
   const messagesEndRef = useRef(null);
@@ -22,7 +26,26 @@ export default function FloatingChat({ adminId, adminName = "Admin GOR", forceOp
 
   useEffect(() => {
     if (forceOpen) setIsOpen(true);
-  }, [forceOpen, adminId]);
+  }, [forceOpen]);
+
+  // Fetch Super Admin ID
+  useEffect(() => {
+    if (!user || user.role !== 'customer') return;
+    const fetchSuperAdmin = async () => {
+      try {
+        const res = await api.get('/users/super-admin');
+        setAdminId(res.data.id);
+      } catch (error) {
+        console.error("Gagal mendapatkan kontak admin pusat", error);
+      }
+    };
+    fetchSuperAdmin();
+  }, [user]);
+
+  // Saat chat dibuka, hapus counter unread
+  useEffect(() => {
+    if (isOpen) clearUnread();
+  }, [isOpen, clearUnread]);
 
   // Handle WebSocket Connection & History
   useEffect(() => {
@@ -59,7 +82,6 @@ export default function FloatingChat({ adminId, adminName = "Admin GOR", forceOp
       };
 
       ws.current.onclose = () => {
-        console.log("WebSocket terputus. Mencoba terhubung kembali...");
         setTimeout(connectWs, 3000);
       };
     };
@@ -110,13 +132,28 @@ export default function FloatingChat({ adminId, adminName = "Admin GOR", forceOp
       {/* Floating Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center hover:scale-110 transition-transform z-50 group"
+          onClick={() => { setIsOpen(true); clearUnread(); }}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center hover:scale-110 transition-transform z-[60]"
         >
-          <MessageSquare className="w-6 h-6 group-hover:hidden" />
-          <MessageSquare className="w-6 h-6 hidden group-hover:block animate-pulse" />
-          {/* Notification Dot indicator could go here if unread msgs exist */}
+          <MessageSquare className="w-6 h-6" />
+          {/* Badge Notifikasi Merah */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-[#0a0a0a] animate-bounce">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
+      )}
+
+      {/* Toast Notifikasi Pesan Masuk (saat chat tutup) */}
+      {!isOpen && latestMsg && (
+        <div
+          onClick={() => { setIsOpen(true); clearUnread(); }}
+          className="fixed bottom-24 right-6 z-50 max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
+        >
+          <p className="text-[11px] font-bold text-[#D4AF37] mb-0.5">💬 {latestMsg.sender_name}</p>
+          <p className="text-xs text-white/80 line-clamp-2">{latestMsg.content}</p>
+        </div>
       )}
 
       {/* Chat Window */}
@@ -195,7 +232,7 @@ export default function FloatingChat({ adminId, adminName = "Admin GOR", forceOp
               <button 
                 type="submit"
                 disabled={!newMessage.trim()}
-                className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-black disabled:opacity-50 disabled:bg-[#D4AF37] hover:bg-yellow-500 transition-all flex-shrink-0 shadow-[0_0_10px_rgba(212,175,55,0.3)]"
+                className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-black disabled:opacity-50 hover:bg-yellow-500 transition-all flex-shrink-0 shadow-[0_0_10px_rgba(212,175,55,0.3)]"
               >
                 <Send className="w-4 h-4 ml-[-2px]" />
               </button>

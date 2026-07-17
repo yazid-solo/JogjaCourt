@@ -44,7 +44,7 @@ export default function Profile() {
     const fetchStats = async () => {
       try {
         const res = await api.get('/bookings');
-        const myBookings = res.data;
+        const myBookings = res.data?.data || res.data || [];
         const completed = myBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         
         const totalSpent = completed.reduce((acc, curr) => acc + parseFloat(curr.total_price), 0);
@@ -171,36 +171,41 @@ export default function Profile() {
           <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] rounded-3xl p-6 border border-white/5 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
             
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="relative group">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10 text-center sm:text-left">
+              <div className="flex flex-col items-center gap-3 shrink-0">
                 <div 
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-black border-2 border-[#D4AF37] flex items-center justify-center overflow-hidden cursor-pointer"
+                  className="relative group w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-black/40 border border-white/10 hover:border-[#D4AF37]/50 flex items-center justify-center overflow-hidden cursor-pointer transition-all shadow-xl"
                   onClick={() => fileInputRef.current?.click()}
                   title="Ubah Foto Profil"
                 >
                   {uploadingImage ? (
                     <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
                   ) : user?.profile_image ? (
-                    <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover group-hover:opacity-70 transition-opacity" />
+                    <>
+                      <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all duration-300">
+                        <Camera className="w-6 h-6 text-white mb-1" />
+                        <span className="text-[9px] uppercase tracking-wider text-white font-bold">Ubah</span>
+                      </div>
+                    </>
                   ) : (
-                    <UserCircle className="w-12 h-12 md:w-16 md:h-16 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+                    <>
+                      <UserCircle className="w-16 h-16 text-neutral-500" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all duration-300">
+                        <Camera className="w-6 h-6 text-white mb-1" />
+                        <span className="text-[9px] uppercase tracking-wider text-white font-bold">Ubah</span>
+                      </div>
+                    </>
                   )}
                 </div>
-                <div 
-                  className="absolute bottom-0 right-0 w-7 h-7 bg-[#D4AF37] rounded-full border-2 border-[#1a1a1a] flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                  title="Ubah Foto Profil"
-                >
-                  <Camera className="w-3.5 h-3.5 text-black" />
-                </div>
                 {user?.profile_image && (
-                  <div 
-                    className="absolute top-0 right-0 w-7 h-7 bg-red-500 rounded-full border-2 border-[#1a1a1a] flex items-center justify-center hover:scale-110 transition-transform cursor-pointer z-10"
+                  <button 
                     onClick={handleDeleteImage}
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 hover:text-red-400 transition-colors uppercase tracking-widest bg-white/5 hover:bg-red-500/10 px-4 py-1.5 rounded-full border border-white/5 hover:border-red-500/20"
                     title="Hapus Foto Profil"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-white" />
-                  </div>
+                    <Trash2 className="w-3.5 h-3.5" /> Hapus
+                  </button>
                 )}
                 <input 
                   type="file" 
@@ -211,24 +216,15 @@ export default function Profile() {
                 />
               </div>
               
-              <div className="flex-1">
-                <h1 className="text-xl md:text-2xl font-black text-white mb-1">{user?.name || 'Pelanggan'}</h1>
-                <p className="text-sm text-neutral-400 mb-2">{user?.email}</p>
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border ${
-                  membershipLevel === 'Member Gold' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20' :
-                  membershipLevel === 'Member Silver' ? 'bg-gray-400/10 border-gray-400/20' :
-                  'bg-orange-700/10 border-orange-700/20'
+              <div className="pt-2">
+                <h1 className="text-xl md:text-2xl font-black text-white mb-1 truncate max-w-[150px] sm:max-w-xs">{user?.name || 'Pelanggan'}</h1>
+                <p className="text-xs sm:text-sm text-neutral-400 mb-3 truncate max-w-[150px] sm:max-w-xs">{user?.email}</p>
+                <div className={`inline-flex px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${
+                  membershipLevel === 'Member Gold' ? 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20' :
+                  membershipLevel === 'Member Silver' ? 'bg-gray-400/10 text-gray-400 border-gray-400/20' :
+                  'bg-orange-700/10 text-orange-700 border-orange-700/20'
                 }`}>
-                  <Star className={`w-3.5 h-3.5 ${
-                    membershipLevel === 'Member Gold' ? 'text-[#D4AF37] fill-[#D4AF37]' :
-                    membershipLevel === 'Member Silver' ? 'text-gray-400 fill-gray-400' :
-                    'text-orange-700 fill-orange-700'
-                  }`} />
-                  <span className={`text-xs font-bold ${
-                    membershipLevel === 'Member Gold' ? 'text-[#D4AF37]' :
-                    membershipLevel === 'Member Silver' ? 'text-gray-400' :
-                    'text-orange-700'
-                  }`}>{membershipLevel}</span>
+                  {membershipLevel}
                 </div>
               </div>
             </div>

@@ -17,7 +17,7 @@ router = APIRouter(prefix="/areas", tags=["Areas"])
 @router.get("", response_model=List[AreaResponse])
 async def get_areas(db: AsyncSession = Depends(get_db)):
     """Daftar semua daerah aktif (publik)."""
-    result = await db.execute(select(Area).where(Area.is_active == True).order_by(Area.name))
+    result = await db.execute(select(Area).where(Area.is_active == True).order_by(Area.name).limit(200))
     return result.scalars().all()
 
 @router.get("/{area_id}", response_model=AreaResponse)
@@ -33,7 +33,7 @@ async def get_area(area_id: UUID, db: AsyncSession = Depends(get_db)):
 async def get_venues_by_area(area_id: UUID, db: AsyncSession = Depends(get_db)):
     """Daftar GOR aktif di suatu daerah (publik)."""
     result = await db.execute(
-        select(Venue).options(selectinload(Venue.owner)).where(Venue.area_id == area_id, Venue.is_active == True).order_by(Venue.name)
+        select(Venue).options(selectinload(Venue.owner)).where(Venue.area_id == area_id, Venue.is_active == True).order_by(Venue.name).limit(200)
     )
     return result.scalars().all()
 

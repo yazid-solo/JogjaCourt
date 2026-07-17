@@ -46,3 +46,11 @@ class VenueDetailResponse(VenueResponse):
     area: AreaResponse
     
     model_config = ConfigDict(from_attributes=True)
+
+from typing import List
+class VenuePaginatedResponse(BaseModel):
+    total_count: int
+    total_pages: int
+    current_page: int
+    limit: int
+    data: List[VenueDetailResponse]

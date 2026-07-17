@@ -72,57 +72,73 @@ export default function Payment() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-neutral-900 font-sans flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#050505] text-white font-sans flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Premium Background Effects */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg h-[400px] bg-[#D4AF37]/5 blur-[120px] rounded-full pointer-events-none" />
+
       {/* Mockup Payment Gateway Wrapper */}
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden relative">
+      <div className="w-full max-w-md bg-[#111]/90 backdrop-blur-2xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden relative z-10">
         
         {/* PG Header */}
-        <div className="bg-[#012b6d] p-6 text-white text-center relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <h2 className="font-bold text-lg tracking-wider mb-1 opacity-90">JOGJACOURT PAY</h2>
-          <p className="text-sm opacity-70">Powered by Xendit Sandbox</p>
-          <div className="mt-6">
-            <p className="text-sm opacity-70 mb-1">Total Tagihan</p>
-            <h1 className="text-4xl font-black">{formatIDR(totalPrice)}</h1>
+        <div className="bg-gradient-to-br from-[#1a1a1a] to-black p-8 text-center relative overflow-hidden border-b border-white/10">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-2xl"></div>
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-yellow-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+              <ShieldCheck className="w-6 h-6 text-black" />
+            </div>
+          </div>
+          <h2 className="font-black text-xl tracking-widest mb-1 text-white uppercase">JOGJACOURT PAY</h2>
+          <p className="text-xs text-[#D4AF37] font-medium tracking-widest uppercase mb-6">Secured by 256-bit Encryption</p>
+          
+          <div>
+            <p className="text-xs text-neutral-500 font-bold uppercase tracking-widest mb-2">Total Tagihan</p>
+            <h1 className="text-4xl font-black text-[#D4AF37]">{formatIDR(totalPrice)}</h1>
           </div>
         </div>
 
         {/* PG Content */}
-        <div className="p-6">
-          <div className="flex items-center gap-2 text-sm text-neutral-500 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
-            <ShieldCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />
-            <p>Anda akan dialihkan ke halaman pembayaran aman resmi dari Xendit Payment Gateway.</p>
+        <div className="p-8">
+          <div className="flex items-start gap-3 text-sm text-neutral-300 mb-8 bg-white/5 p-4 rounded-2xl border border-white/10">
+            <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs leading-relaxed">Transaksi Anda dilindungi secara end-to-end dengan sistem enkripsi tingkat bank. Silakan selesaikan pembayaran di halaman resmi gateway kami.</p>
           </div>
 
-          <p className="font-bold text-sm mb-4 text-center">Metode Pembayaran Tersedia di Halaman Berikutnya:</p>
+          <p className="font-bold text-xs text-neutral-500 uppercase tracking-widest mb-5 text-center">Metode Pembayaran Tersedia</p>
           
-          <div className="flex justify-center gap-4 mb-8 text-neutral-400">
-            <div className="flex flex-col items-center gap-1">
-              <Smartphone className="w-8 h-8" />
-              <span className="text-[10px] font-bold">QRIS</span>
+          <div className="flex justify-center gap-6 mb-8 text-neutral-400">
+            <div className="flex flex-col items-center gap-2 group">
+              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:border-[#D4AF37]/30 transition-all">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold tracking-wider">QRIS</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <Wallet className="w-8 h-8" />
-              <span className="text-[10px] font-bold">VA Bank</span>
+            <div className="flex flex-col items-center gap-2 group">
+              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:border-[#D4AF37]/30 transition-all">
+                <Wallet className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold tracking-wider">VA BANK</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <ShieldCheck className="w-8 h-8" />
-              <span className="text-[10px] font-bold">E-Wallet</span>
+            <div className="flex flex-col items-center gap-2 group">
+              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:border-[#D4AF37]/30 transition-all">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold tracking-wider">E-WALLET</span>
             </div>
           </div>
 
           <button 
             onClick={handleSimulatePayment}
             disabled={loading}
-            className="w-full bg-[#012b6d] text-white font-bold py-4 rounded-xl hover:bg-blue-900 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-blue-900/20"
+            className="w-full bg-gradient-to-r from-[#D4AF37] to-yellow-500 text-black font-black py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2 shadow-[0_0_30px_rgba(212,175,55,0.3)] disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden group"
           >
+            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Membuat Tagihan Otomatis...</span>
+                <span>Memproses...</span>
               </>
             ) : (
-              'LANJUTKAN KE PEMBAYARAN'
+              'BAYAR SEKARANG'
             )}
           </button>
         </div>

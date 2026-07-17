@@ -160,7 +160,7 @@ export default function MitraRegister() {
                <h3 className="text-xl font-bold">Informasi Dasar & Akun</h3>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Email (Untuk Login)</label>
                 <input required type="email" name="email" autoComplete="off" value={formData.email} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all" placeholder="email@contoh.com" />
@@ -210,8 +210,8 @@ export default function MitraRegister() {
               <input required type="number" name="nik" value={formData.nik} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-neutral-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all" placeholder="16 digit NIK" />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-               <div className="space-y-1.5 col-span-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               <div className="space-y-1.5 sm:col-span-1">
                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Bank</label>
                  <select name="bank" value={formData.bank} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#D4AF37] appearance-none">
                    {[
@@ -224,7 +224,7 @@ export default function MitraRegister() {
                    ))}
                  </select>
                </div>
-               <div className="space-y-1.5 col-span-2">
+               <div className="space-y-1.5 sm:col-span-2">
                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Nomor Rekening</label>
                  <input required type="number" name="noRek" value={formData.noRek} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-neutral-600 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all" placeholder="No Rekening pencairan pendapatan" />
                </div>
@@ -249,7 +249,7 @@ export default function MitraRegister() {
                <h3 className="text-xl font-bold">Fasilitas & Operasional</h3>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="space-y-1.5">
                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Jumlah Lapangan</label>
                  <select name="jmlLapangan" value={formData.jmlLapangan} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37] appearance-none">
@@ -262,7 +262,7 @@ export default function MitraRegister() {
                </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="space-y-1.5">
                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Jam Buka</label>
                  <input required type="time" name="jamBuka" value={formData.jamBuka} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37]" />
@@ -303,7 +303,7 @@ export default function MitraRegister() {
               </div>
 
               {uploadedFiles.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 mt-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
                   {uploadedFiles.map((file, idx) => (
                     <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-white/10 group">
                       <img src={file.preview} alt={`preview ${idx}`} className="w-full h-full object-cover" />

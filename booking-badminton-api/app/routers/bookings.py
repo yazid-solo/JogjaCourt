@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -8,27 +8,53 @@ from uuid import UUID
 from app.database import get_db
 from app.models.booking import Booking, BookingStatusEnum
 from app.models.user import RoleEnum
-from app.schemas.booking import BookingCreate, BookingResponse, BookingDetailResponse, BookingExtendRequest, BookingRecurringCreate, BookingUpdateAdmin
+from app.schemas.booking import BookingCreate, BookingResponse, BookingDetailResponse, BookingExtendRequest, BookingRecurringCreate, BookingUpdateAdmin, BookingPaginatedResponse
 
 from app.utils.dependencies import get_current_user, require_admin
 from app.services.booking_service import create_booking, cancel_booking_service, confirm_booking_service, complete_booking_service, extend_booking_service
+from app.services.session_validator import validate_hourly_booking_against_membership, get_user_membership_info
 from app.models.court import Court
 from app.models.venue import Venue
+from app.services.notification_service import send_whatsapp_message, send_email
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
+from sqlalchemy import func
 from datetime import datetime
-@router.get("", response_model=List[BookingDetailResponse])
-async def get_bookings(db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
+
+@router.get("", response_model=BookingPaginatedResponse)
+async def get_bookings(
+    page: int = 1,
+    size: int = 50,
+    db: AsyncSession = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     """Daftar booking — customer hanya melihat milik sendiri, admin melihat semua miliknya."""
+    # Count total query
+    count_stmt = select(func.count(Booking.id))
+    
+    # Base query for data
     stmt = select(Booking).options(
         selectinload(Booking.court).selectinload(Court.venue).selectinload(Venue.owner),
         selectinload(Booking.user)
     ).order_by(Booking.created_at.desc())
+
     if current_user.role == RoleEnum.customer:
+        count_stmt = count_stmt.where(Booking.user_id == current_user.id)
         stmt = stmt.where(Booking.user_id == current_user.id)
     elif current_user.role == RoleEnum.admin:
+        count_stmt = count_stmt.join(Court).join(Venue).where(Venue.owner_id == current_user.id)
         stmt = stmt.join(Court).join(Venue).where(Venue.owner_id == current_user.id)
+
+    # Execute count
+    total_count_res = await db.execute(count_stmt)
+    total_count = total_count_res.scalar() or 0
+
+    # Apply pagination
+    offset = (page - 1) * size
+    stmt = stmt.offset(offset).limit(size)
+
+    # Execute data
     result = await db.execute(stmt)
     bookings = result.scalars().all()
     
@@ -45,7 +71,17 @@ async def get_bookings(db: AsyncSession = Depends(get_db), current_user = Depend
     if updated:
         await db.commit()
         
-    return bookings
+    total_pages = (total_count + size - 1) // size
+    if total_pages == 0:
+        total_pages = 1
+
+    return {
+        "total_count": total_count,
+        "total_pages": total_pages,
+        "current_page": page,
+        "limit": size,
+        "data": bookings
+    }
 
 @router.get("/{booking_id}", response_model=BookingDetailResponse)
 async def get_booking(booking_id: UUID, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
@@ -72,9 +108,37 @@ async def get_booking(booking_id: UUID, db: AsyncSession = Depends(get_db), curr
     return booking
 
 @router.post("", response_model=BookingResponse)
-async def make_booking(booking: BookingCreate, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
+async def make_booking(
+    booking: BookingCreate, 
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     """Buat booking baru (Customer)."""
-    return await create_booking(db, booking, current_user.id)
+    new_booking = await create_booking(db, booking, current_user.id)
+    
+    # Ambil detail court & venue
+    court_res = await db.execute(select(Court).options(selectinload(Court.venue)).where(Court.id == new_booking.court_id))
+    court = court_res.scalars().first()
+    
+    venue_name = court.venue.name if court and court.venue else "Sistem Booking Lapangan"
+    court_name = court.name if court else "Lapangan"
+    
+    # Schedule notifications
+    wa_message = (
+        f"Halo {current_user.name}!\n\n"
+        f"Terima kasih telah melakukan pemesanan di {venue_name} - {court_name}.\n"
+        f"Booking ID Anda: {str(new_booking.id)[:8].upper()}\n"
+        f"Jadwal: {new_booking.booking_date.strftime('%d %b %Y')} ({new_booking.start_time.strftime('%H:%M')} - {new_booking.end_time.strftime('%H:%M')})\n"
+        f"Total: Rp {new_booking.total_price:,.0f}\n\n"
+        f"Silakan segera lakukan pembayaran melalui Xendit di aplikasi untuk mengamankan jadwal Anda."
+    )
+    email_body = wa_message.replace("\n", "<br>")
+    
+    background_tasks.add_task(send_whatsapp_message, current_user.phone, wa_message)
+    background_tasks.add_task(send_email, current_user.email, f"Tagihan Booking {venue_name}", email_body)
+    
+    return new_booking
 
 @router.put("/{booking_id}/cancel")
 async def cancel_booking(booking_id: UUID, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
@@ -186,3 +250,66 @@ async def update_booking_admin(booking_id: UUID, req: BookingUpdateAdmin, db: As
     await db.commit()
     await db.refresh(booking)
     return booking
+
+
+@router.get("/membership/check/{court_id}")
+async def check_membership(
+    court_id: UUID,
+    booking_date: str,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Cek apakah user memiliki membership aktif untuk lapangan tertentu pada tanggal tertentu.
+    Endpoint ini digunakan frontend untuk menampilkan info membership user.
+    """
+    try:
+        from datetime import datetime
+        date_obj = datetime.fromisoformat(booking_date).date()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Format tanggal tidak valid (gunakan ISO format: YYYY-MM-DD)")
+    
+    membership_info = await get_user_membership_info(db, current_user.id, court_id, date_obj)
+    
+    if membership_info:
+        return {
+            "has_membership": True,
+            "membership_info": membership_info
+        }
+    else:
+        return {
+            "has_membership": False,
+            "membership_info": None
+        }
+
+
+@router.post("/validate-hourly")
+async def validate_hourly_booking_endpoint(
+    court_id: UUID,
+    booking_date: str,
+    start_time: str,
+    end_time: str,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Validasi apakah user dengan membership aktif boleh melakukan booking hourly.
+    Digunakan oleh frontend sebelum membuat booking.
+    """
+    try:
+        from datetime import datetime, time
+        date_obj = datetime.fromisoformat(booking_date).date()
+        start_time_obj = datetime.strptime(start_time, "%H:%M:%S").time()
+        end_time_obj = datetime.strptime(end_time, "%H:%M:%S").time()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Format tanggal/waktu tidak valid: {str(e)}")
+    
+    is_allowed, message, membership_info = await validate_hourly_booking_against_membership(
+        db, current_user.id, court_id, date_obj, start_time_obj, end_time_obj
+    )
+    
+    return {
+        "is_allowed": is_allowed,
+        "message": message,
+        "membership_info": membership_info
+    }

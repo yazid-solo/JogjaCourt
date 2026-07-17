@@ -52,7 +52,7 @@ async def get_courts(venue_id: UUID = None, db: AsyncSession = Depends(get_db), 
     if venue_id:
         stmt = stmt.where(Court.venue_id == venue_id)
         
-    stmt = stmt.order_by(Court.name)
+    stmt = stmt.order_by(Court.name).limit(200)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -150,6 +150,7 @@ async def get_court_blocks(court_id: UUID, db: AsyncSession = Depends(get_db), c
         select(CourtBlock)
         .where(CourtBlock.court_id == court_id)
         .order_by(CourtBlock.block_date, CourtBlock.start_time)
+        .limit(200)
     )
     return result.scalars().all()
 

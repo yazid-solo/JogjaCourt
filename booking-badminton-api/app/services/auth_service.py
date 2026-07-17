@@ -123,6 +123,9 @@ async def update_profile_image(db: AsyncSession, current_user: User, file: Uploa
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+from app.services.email_service import send_reset_password_email
+import asyncio
+
 async def handle_forgot_password(db: AsyncSession, email: str):
     user = await get_user_by_email(db, email)
     if not user:
@@ -133,8 +136,10 @@ async def handle_forgot_password(db: AsyncSession, email: str):
     user.reset_password_expires = datetime.utcnow() + timedelta(hours=1)
     
     await db.commit()
-    # Mock sending email
-    print(f"MOCK EMAIL: Reset password untuk {email}. Link reset: /reset-password.html?token={token}")
+    
+    # Send email asynchronously
+    asyncio.create_task(send_reset_password_email(email, token))
+    
     return token
 
 async def handle_reset_password(db: AsyncSession, token: str, new_password: str):

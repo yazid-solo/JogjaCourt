@@ -1,6 +1,14 @@
 # Environments
 .env
 .env.*
+.env.local
+
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+.eslintcache
+*.local
 
 # Python
 venv/

@@ -30,6 +30,12 @@ class ErrorBoundary extends React.Component {
             <p className="text-neutral-400 mb-8">
               Maaf, aplikasi mengalami kendala teknis (Crash). Jangan khawatir, Anda dapat memuat ulang halaman untuk mencoba kembali.
             </p>
+            {this.state.error && (
+              <div className="mb-8 text-left max-h-40 overflow-y-auto bg-black/50 p-4 rounded-xl border border-red-500/20">
+                <p className="text-red-500 font-mono text-[10px] break-all">{this.state.error.toString()}</p>
+                <p className="text-red-500/60 font-mono text-[10px] mt-2 break-all">{this.state.errorInfo?.componentStack}</p>
+              </div>
+            )}
             <button
               onClick={() => window.location.reload()}
               className="bg-[#D4AF37] hover:bg-[#b5952f] text-black font-bold py-3 px-8 rounded-full transition-all"

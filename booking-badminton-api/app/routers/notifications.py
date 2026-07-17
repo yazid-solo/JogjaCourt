@@ -59,7 +59,7 @@ async def get_my_notifications(
     stmt = select(Notification).where(
         Notification.user_id == current_user.id,
         Notification.target_role == current_user.role
-    ).order_by(Notification.created_at.desc())
+    ).order_by(Notification.created_at.desc()).limit(100)
     result = await db.execute(stmt)
     notifications = result.scalars().all()
     return notifications

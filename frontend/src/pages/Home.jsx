@@ -2,15 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { CinematicHero } from "@/components/ui/cinematic-landing-hero"
-import { 
-  ContainerAnimated,
-  ContainerScroll,
-  ContainerStagger,
-  ContainerSticky,
-  GalleryCol,
-  GalleryContainer 
-} from "@/components/blocks/animated-gallery"
-import { Button } from "@/components/ui/button"
+import { ContainerAnimated, ContainerStagger } from "@/components/blocks/animated-gallery"
 import { 
   MessageSquare, 
   Clock, 
@@ -19,33 +11,80 @@ import {
   Search,
   CalendarCheck,
   CreditCard,
-  Trophy,
   LogOut,
   UserCircle
 } from "lucide-react"
 import { TestimonialCarousel } from "@/components/blocks/testimonial-carousel"
 import { CinematicFooter } from "@/components/ui/motion-footer"
 import NotificationBell from "@/components/blocks/NotificationBell"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import CardFanCarousel from "@/components/ui/card-fan-carousel"
 
-// Badminton specific Unsplash images
-const VENUES_1 = [
-  { img: "/assets/bg-badminton-1.jpg", name: "GOR Seturan" },
-  { img: "/assets/bg-badminton-2.jpg", name: "Depok Sport Center" },
-  { img: "/assets/bg-badminton-3.jpg", name: "GOR Klebengan" },
-  { img: "/assets/bg-badminton-4.jpg", name: "Tirta Sport" },
-]
-const VENUES_2 = [
-  { img: "/assets/bg-badminton-5.jpg", name: "GOR Lembah UGM" },
-  { img: "/assets/bg-badminton-6.jpg", name: "Pandiga Sport" },
-  { img: "/assets/bg-badminton-7.jpg", name: "GOR Tridadi" },
-  { img: "/assets/bg-badminton-8.jpg", name: "Maguwoharjo Sport" },
-]
-const VENUES_3 = [
-  { img: "/assets/bg-badminton-9.png", name: "Telaga Jonge Badminton" },
-  { img: "/assets/bg-1.jpg", name: "GOR Pangukan" },
-  { img: "/assets/bg-2.jpg", name: "Bima Sport" },
-  { img: "/assets/bg-3.jpg", name: "Piyungan Badminton" },
-]
+// Fan carousel cards - local badminton images
+const FAN_CARDS = [
+  { imgUrl: "/assets/bg-badminton-1.jpg", alt: "GOR Seturan" },
+  { imgUrl: "/assets/bg-badminton-2.jpg", alt: "Depok Sport Center" },
+  { imgUrl: "/assets/bg-badminton-3.jpg", alt: "GOR Klebengan" },
+  { imgUrl: "/assets/bg-badminton-4.jpg", alt: "Tirta Sport" },
+  { imgUrl: "/assets/bg-badminton-5.jpg", alt: "GOR Lembah UGM" },
+  { imgUrl: "/assets/bg-badminton-6.jpg", alt: "Pandiga Sport" },
+  { imgUrl: "/assets/bg-badminton-7.jpg", alt: "GOR Klebengan" }
+];
+
+// 3D Tilt Card Component for Features
+const TiltCard = ({ children, className, variants }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["8deg", "-8deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      variants={variants}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateY,
+        rotateX,
+        transformStyle: "preserve-3d",
+        perspective: 1000
+      }}
+      whileHover={{ scale: 1.02, y: -5 }}
+      className={`relative ${className}`}
+    >
+      <div 
+        style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }} 
+        className="w-full h-full relative"
+      >
+        {children}
+      </div>
+    </motion.div>
+  );
+};
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
@@ -53,58 +92,93 @@ export default function Home() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    let ticking = false
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 50)
+          ticking = false
+        })
+        ticking = true
+      }
     }
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
   return (
-    <div className="relative w-full bg-black min-h-screen font-sans selection:bg-[#D4AF37] selection:text-black">
+    <div className="relative w-full bg-black min-h-screen font-sans selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
       
       {/* 1. NAVBAR SECTION */}
-      <nav className={`fixed top-0 w-full z-[100] transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md border-b border-white/10 py-4' : 'bg-transparent py-6'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer">
-            <img src="/logo.png" alt="JogjaCourt Logo" className="w-9 h-9 object-contain" />
-            <span className="text-white font-bold text-xl tracking-tight hidden sm:block">JogjaCourt</span>
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className={`fixed top-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md border-b border-white/10 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'bg-gradient-to-b from-black/80 to-transparent py-6'}`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer group">
+            <div className="relative">
+              <img src="/Logo.svg" alt="JogjaCourt Logo" className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-[#D4AF37] blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
+            </div>
+            <span className="text-white font-black text-xl tracking-tight hidden sm:block bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-[#D4AF37] transition-all duration-500">JogjaCourt</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
-            <a href="#features" className="hover:text-white transition-colors">Fitur Unggulan</a>
-            <a href="#how-it-works" className="hover:text-white transition-colors">Cara Kerja</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-neutral-400">
+            <a href="#features" className="hover:text-white hover:scale-105 transition-all">Fitur Unggulan</a>
+            <a href="#how-it-works" className="hover:text-white hover:scale-105 transition-all">Cara Kerja</a>
             <Link 
               to={user ? "/explore" : "/login"} 
               state={!user ? { from: { pathname: '/explore' } } : undefined}
-              className="hover:text-white transition-colors"
+              className="hover:text-[#D4AF37] hover:scale-105 transition-all"
             >
               Eksplor GOR
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {user ? (
-              <div className="flex items-center gap-4">
-                <Link to={user.role === 'customer' ? '/profile' : '/dashboard/settings'} className="hidden sm:flex items-center gap-3 hover:opacity-80 transition-opacity">
-                  <div className="w-10 h-10 rounded-full bg-neutral-800 border-2 border-[#D4AF37] flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Link to={user.role === 'customer' ? '/profile' : '/dashboard/settings'} className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity group">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 border-2 border-[#D4AF37] flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-all">
                     {user.profile_image ? (
                       <img src={user.profile_image} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
-                      <UserCircle className="w-6 h-6 text-neutral-400" />
+                      <UserCircle className="w-6 h-6 text-[#D4AF37]" />
                     )}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="hidden sm:flex flex-col">
                     <span className="text-sm font-bold text-white leading-none">{user.name}</span>
-                    <span className="text-xs text-[#D4AF37] capitalize mt-1">{user.role.replace('_', ' ')}</span>
+                    <span className="text-xs text-[#D4AF37] capitalize mt-1 tracking-widest">{user.role.replace('_', ' ')}</span>
                   </div>
                 </Link>
                 
                 <NotificationBell />
                 
-                <Link to={user.role === 'customer' ? '/my-bookings' : '/dashboard'} className="text-sm font-bold bg-[#D4AF37] text-black px-5 py-2 rounded-full hover:bg-yellow-500 transition-colors shadow-[0_0_15px_rgba(212,175,55,0.3)] flex items-center gap-2">
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span className="hidden sm:inline">{user.role === 'customer' ? 'Tiket Saya' : 'Dashboard'}</span>
+                <Link to={user.role === 'customer' ? '/my-bookings' : '/dashboard'} className="relative group text-sm font-bold bg-[#D4AF37] text-black w-10 h-10 sm:w-auto sm:h-auto sm:px-6 sm:py-2.5 rounded-full flex items-center justify-center gap-2 overflow-hidden transition-all hover:scale-105">
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                  <LayoutDashboard className="w-4 h-4 relative z-10" />
+                  <span className="hidden sm:inline relative z-10">{user.role === 'customer' ? 'Tiket Saya' : 'Dashboard'}</span>
                 </Link>
                 
                 <button 
@@ -112,7 +186,7 @@ export default function Home() {
                     logout()
                     navigate('/login')
                   }}
-                  className="text-neutral-400 hover:text-red-500 transition-colors p-2"
+                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-500 flex items-center justify-center transition-all"
                   title="Keluar"
                 >
                   <LogOut className="w-5 h-5" />
@@ -120,232 +194,229 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-white hover:text-[#D4AF37] transition-colors">
+                <Link to="/login" className="text-sm font-bold text-white hover:text-[#D4AF37] transition-colors px-4 py-2">
                   Masuk
                 </Link>
-                <Link to="/register" className="text-sm font-bold bg-white text-black px-5 py-2 rounded-full hover:bg-neutral-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                  Daftar
+                <Link to="/register" className="relative group text-sm font-bold bg-white text-black px-6 py-2.5 rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                  <div className="absolute inset-0 bg-[#D4AF37] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
+                  <span className="relative z-10 group-hover:text-black transition-colors duration-300">Daftar</span>
                 </Link>
               </>
             )}
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* 2. HERO SECTION (3D Cinematic) */}
       <section id="hero" className="relative z-10">
         <CinematicHero />
       </section>
 
-      {/* 3. FEATURES SHOWCASE (Bento Box Design based on Backend Features) */}
-      <section id="features" className="relative z-20 bg-black pt-32 pb-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-[#D4AF37] text-sm font-bold tracking-widest uppercase mb-3">Kenapa Pakai JogjaCourt?</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              Booking Gampang, Bebas Pusing
+      {/* 3. FEATURES SHOWCASE (Bento Box 3D Design) */}
+      <section id="features" className="relative z-20 bg-black pt-16 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#D4AF37]/10 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-[#D4AF37] text-sm font-bold tracking-widest uppercase mb-3 flex items-center justify-center gap-2">
+              <span className="w-8 h-px bg-[#D4AF37]"></span>
+              Kenapa Pakai JogjaCourt?
+              <span className="w-8 h-px bg-[#D4AF37]"></span>
+            </h2>
+            <h3 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight">
+              Sistem Cerdas, Efisiensi Waktu
             </h3>
-            <p className="mt-4 text-neutral-400 max-w-2xl mx-auto text-lg">
-              Aplikasi yang dibikin khusus buat anak badminton Jogja. Nggak ada lagi cerita lapangan kedobel atau jadwal bentrok.
+            <p className="mt-6 text-neutral-400 max-w-2xl mx-auto text-base sm:text-lg">
+              Infrastruktur digital yang dirancang khusus untuk memodernisasi ekosistem badminton di Yogyakarta. Menyelesaikan permasalahan double-booking dan bentrok jadwal secara presisi.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {/* Feature 1: Live Chat */}
-            <div className="col-span-1 lg:col-span-2 bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 hover:bg-[#111] transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20 group-hover:scale-110 transition-transform">
-                <MessageSquare className="text-blue-400 w-6 h-6" />
+            <TiltCard 
+              variants={itemVariants}
+              className="col-span-1 lg:col-span-2 bg-gradient-to-br from-[#000a1a] to-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 group overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.05)]"
+            >
+              <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700 -z-10">
+                <MessageSquare className="w-64 h-64 text-blue-500" />
               </div>
-              <h4 className="text-2xl font-bold text-white mb-3">Chat Langsung Sama Admin</h4>
-              <p className="text-neutral-400 leading-relaxed max-w-md">
-                Mau nanya fasilitas GOR atau nego jadwal rutin? Langsung chat aja sama admin GOR-nya langsung di dalam aplikasi. Fast response, nggak perlu ribet pindah ke WA.
-              </p>
-            </div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(59,130,246,0.4)] group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare className="text-black w-7 h-7" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-4">Komunikasi Langsung dengan Pengelola</h4>
+                <p className="text-neutral-400 leading-relaxed max-w-md">
+                  Tersedia fitur pesan terintegrasi untuk menanyakan fasilitas, ketersediaan jadwal rutin, atau negosiasi harga secara langsung kepada pihak pengelola tanpa perlu beralih aplikasi.
+                </p>
+              </div>
+            </TiltCard>
 
             {/* Feature 2: Auto Cancel */}
-            <div className="col-span-1 bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 hover:bg-[#111] transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20 group-hover:scale-110 transition-transform">
-                <Clock className="text-red-400 w-6 h-6" />
+            <TiltCard 
+              variants={itemVariants}
+              className="col-span-1 bg-gradient-to-br from-[#1a0505] to-[#0a0a0a] border border-rose-500/30 rounded-3xl p-8 group overflow-hidden shadow-[0_0_30px_rgba(244,63,94,0.05)]"
+            >
+              <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700 -z-10">
+                <Clock className="w-64 h-64 text-rose-500" />
               </div>
-              <h4 className="text-2xl font-bold text-white mb-3">Booking Anti-PHP</h4>
-              <p className="text-neutral-400 leading-relaxed">
-                Kesel sama yang cuma nge-tag jam tapi nggak jadi bayar? Aplikasi kami otomatis ngebatalin pesanan yang ngelewatin batas waktu pembayaran. 
-              </p>
-            </div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-rose-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(244,63,94,0.4)] group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="text-black w-7 h-7" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-4">Sistem Booking Terotomatisasi</h4>
+                <p className="text-neutral-400 leading-relaxed">
+                  Jadwal yang telah dibooking akan otomatis dibatalkan oleh sistem jika melewati batas waktu pembayaran, memastikan ketersediaan lapangan selalu akurat secara real-time.
+                </p>
+              </div>
+            </TiltCard>
 
             {/* Feature 3: Security JWT */}
-            <div className="col-span-1 bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 hover:bg-[#111] transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="text-emerald-400 w-6 h-6" />
+            <TiltCard 
+              variants={itemVariants}
+              className="col-span-1 bg-gradient-to-br from-[#051a0a] to-[#0a0a0a] border border-emerald-500/30 rounded-3xl p-8 group overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.05)]"
+            >
+              <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700 -z-10">
+                <ShieldCheck className="w-64 h-64 text-emerald-500" />
               </div>
-              <h4 className="text-xl font-bold text-white mb-3">Akun Pemain & Admin Terpisah</h4>
-              <p className="text-neutral-400 leading-relaxed text-sm">
-                Login aman, data terlindungi. Kami memisahkan akses akun pemain (untuk booking) dengan akun pemilik GOR (untuk atur lapangan).
-              </p>
-            </div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-transform duration-300">
+                  <ShieldCheck className="text-black w-7 h-7" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-4">Privasi & Keamanan Terjamin</h4>
+                <p className="text-neutral-400 leading-relaxed">
+                  Dilengkapi enkripsi standar industri dan pemisahan arsitektur akses antara pengguna reguler dan mitra pengelola untuk menjamin integritas data Anda.
+                </p>
+              </div>
+            </TiltCard>
 
             {/* Feature 4: Admin Dashboard */}
-            <div className="col-span-1 lg:col-span-2 bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 hover:bg-[#111] transition-colors group relative overflow-hidden">
-              <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4">
+            <TiltCard 
+              variants={itemVariants}
+              className="col-span-1 lg:col-span-2 bg-gradient-to-br from-[#1a1500] to-[#0a0a0a] border border-[#D4AF37]/30 rounded-3xl p-8 group overflow-hidden shadow-[0_0_30px_rgba(212,175,55,0.05)]"
+            >
+              <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700 -z-10">
                 <LayoutDashboard className="w-64 h-64 text-[#D4AF37]" />
               </div>
               <div className="relative z-10">
-                <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mb-6 border border-[#D4AF37]/20 group-hover:scale-110 transition-transform">
-                  <LayoutDashboard className="text-[#D4AF37] w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform duration-300">
+                  <LayoutDashboard className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-3">Kelola GOR Lewat HP</h4>
-                <p className="text-neutral-400 leading-relaxed max-w-md">
-                  Punya GOR? Atur harga, tambah lapangan, sampai pantau pemasukan harian cukup dari satu dashboard simpel. Tinggalkan buku catatan manual Anda sekarang juga.
+                <h4 className="text-3xl font-black text-white mb-4">Manajemen GOR Komprehensif</h4>
+                <p className="text-neutral-300 leading-relaxed max-w-lg text-lg">
+                  Bagi mitra pengelola, sistem kami menyediakan dashboard terpusat untuk mengatur harga, ketersediaan lapangan, hingga rekapitulasi laporan pendapatan secara otomatis.
                 </p>
+                <div className="mt-8">
+                  <Link to="/register-mitra" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:text-white transition-colors">
+                    Pelajari Fitur Mitra <span className="text-xl">→</span>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </div>
+            </TiltCard>
+          </motion.div>
         </div>
       </section>
 
       {/* 4. HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="relative z-20 bg-[#050505] py-24 px-6 border-y border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
-          <div className="flex-1 space-y-6">
-            <h2 className="text-[#D4AF37] text-sm font-bold tracking-widest uppercase">Cara Booking</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              Cuma Butuh <br/>3 Langkah
+      <section id="how-it-works" className="relative z-20 bg-[#050505] py-24 px-4 sm:px-6 border-y border-white/10 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center relative z-10">
+          
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, type: "spring" }}
+            className="flex-1 space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+              <span className="text-xs font-bold tracking-widest uppercase text-white">Cara Booking</span>
+            </div>
+            <h3 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-tight">
+              Reservasi Mudah <br/><span className="text-[#D4AF37]">dalam 3 Tahapan</span>
             </h3>
-            <p className="text-neutral-400 text-lg">
-              Dari rebahan sampai keringetan di lapangan, prosesnya secepat ini. Nggak ada lagi drama nunggu balasan chat GOR yang lama.
+            <p className="text-neutral-400 text-lg sm:text-xl leading-relaxed">
+              Lupakan proses pemesanan manual yang memakan waktu. Ekosistem digital kami mengotomatisasi seluruh alur reservasi Anda dalam hitungan detik.
             </p>
-          </div>
+          </motion.div>
           
           <div className="flex-1 relative">
             {/* Vertical Line */}
-            <div className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-[#D4AF37] via-white/10 to-transparent" />
+            <div className="absolute left-8 sm:left-10 top-8 bottom-8 w-px bg-gradient-to-b from-[#D4AF37] via-white/10 to-transparent" />
             
-            <div className="space-y-12 relative z-10">
-              <div className="flex gap-6 items-start">
-                <div className="w-16 h-16 rounded-full bg-[#111] border border-white/10 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
-                  <Search className="w-6 h-6 text-[#D4AF37]" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white mb-2">1. Cari GOR Langgananmu</h4>
-                  <p className="text-neutral-400">Jelajahi berbagai GOR di Yogyakarta. Cek info harga sewa per jam, lokasi, sampai foto-foto fasilitasnya langsung.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start">
-                <div className="w-16 h-16 rounded-full bg-[#111] border border-white/10 flex items-center justify-center shrink-0">
-                  <CalendarCheck className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white mb-2">2. Pilih Jam & Lapangan</h4>
-                  <p className="text-neutral-400">Kalender pintar kita nunjukin jadwal kosong secara real-time. Slot incaran timmu masih kosong? Langsung sikat!</p>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start">
-                <div className="w-16 h-16 rounded-full bg-[#111] border border-white/10 flex items-center justify-center shrink-0">
-                  <CreditCard className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white mb-2">3. Bayar & Main</h4>
-                  <p className="text-neutral-400">Transfer pembayaran, lalu jadwalmu otomatis terkunci. Datang ke GOR, tunjukkan HP-mu, dan langsung smash!</p>
-                </div>
-              </div>
-            </div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="space-y-12 relative z-10"
+            >
+              {[
+                { icon: Search, color: "text-[#D4AF37]", bg: "bg-[#D4AF37]/10", border: "border-[#D4AF37]/30", title: "1. Eksplorasi & Bandingkan GOR", desc: "Temukan lapangan terbaik di Yogyakarta dengan informasi transparan meliputi ketersediaan, harga aktual, ulasan, hingga dokumentasi fasilitas." },
+                { icon: CalendarCheck, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "2. Pilih Waktu Secara Real-Time", desc: "Sistem sinkronisasi kami menampilkan ketersediaan jadwal secara langsung (live). Tidak perlu lagi konfirmasi manual untuk mengecek slot kosong." },
+                { icon: CreditCard, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "3. Selesaikan Pembayaran Instan", desc: "Konfirmasi pesanan dengan berbagai metode pembayaran aman. Jadwal akan terenkripsi atas nama Anda—cukup tunjukkan bukti reservasi di lokasi." }
+              ].map((step, idx) => (
+                <motion.div key={idx} variants={itemVariants} className="flex gap-6 sm:gap-8 items-start group">
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ${step.bg} border ${step.border} flex items-center justify-center shrink-0 backdrop-blur-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                    <step.icon className={`w-8 h-8 sm:w-10 sm:h-10 ${step.color}`} />
+                  </div>
+                  <div className="pt-2">
+                    <h4 className="text-2xl font-bold text-white mb-3 group-hover:text-[#D4AF37] transition-colors">{step.title}</h4>
+                    <p className="text-neutral-400 text-lg leading-relaxed">{step.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* 5. GALLERY SHOWCASE SECTION (Animated Gallery) */}
-      <section id="venues" className="relative bg-black text-white w-full border-b border-white/5 pb-[10vh]">
-        <ContainerStagger className="relative z-50 place-self-center px-6 pt-32 text-center">
+      {/* 5. GALLERY SHOWCASE SECTION (Fan Carousel) */}
+      <section id="venues" className="relative bg-black text-white w-full border-b border-white/5 overflow-hidden">
+        <ContainerStagger className="relative z-50 place-self-center px-6 pt-12 pb-2 text-center">
           <ContainerAnimated>
-            <h2 className="text-[#D4AF37] text-sm font-bold tracking-widest uppercase mb-4">Pilihan GOR</h2>
-            <h3 className="font-sans text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter">
-              GOR{" "}
-              <span className="text-white border-b-4 border-[#D4AF37]">
-                Rekomendasi
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 mb-6">
+              <span className="text-[#D4AF37] text-xs font-bold tracking-widest uppercase">GOR di Yogyakarta</span>
+            </div>
+            <h3 className="font-sans text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter">
+              Cek Jadwal,{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#D4AF37]">
+                Langsung Booking
               </span>
             </h3>
           </ContainerAnimated>
           
-          <ContainerAnimated className="my-6">
-            <p className="leading-relaxed tracking-tight text-neutral-400 max-w-xl mx-auto text-lg">
-              Dari lapangan vinyl standar BWF sampai lapangan karpet empuk buat mabar santai bareng teman sekantor. Semuanya ada di sini.
+          <ContainerAnimated className="mt-6 mb-4">
+            <p className="leading-relaxed tracking-tight text-neutral-400 max-w-2xl mx-auto text-lg sm:text-xl">
+              Lihat slot jam yang tersedia, pilih lapangan, lalu bayar — selesai. Nggak perlu WA admin atau datang dulu ke tempat buat nanya jadwal.
             </p>
           </ContainerAnimated>
         </ContainerStagger>
 
-        {/* Ambient background glow for gallery */}
-        <div className="pointer-events-none absolute top-[30vh] z-10 h-[60vh] w-full"
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute top-0 z-10 h-full w-full"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(212, 175, 55, 0.15), transparent 70%)",
-            filter: "blur(80px)",
-            mixBlendMode: "screen",
+            background: "radial-gradient(ellipse at 50% 60%, rgba(212, 175, 55, 0.08), transparent 70%)",
           }}
         />
 
-        <ContainerScroll className="relative h-[350vh] mt-12 md:mt-24">
-          <ContainerSticky className="h-svh flex items-center justify-center px-2 md:px-8">
-            <GalleryContainer className="max-w-7xl mx-auto w-full">
-              <GalleryCol yRange={["-30%", "25%"]} className="-mt-8 md:-mt-16">
-                {VENUES_1.map((venue, index) => (
-                  <div key={index} className="relative group overflow-hidden rounded-xl md:rounded-2xl shadow-2xl shadow-black/50 border border-white/5">
-                    <img
-                      className="aspect-[4/5] md:aspect-video block h-auto max-h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      src={venue.img}
-                      alt={venue.name}
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-4 lg:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div>
-                        <span className="text-white font-bold text-lg md:text-xl tracking-tight block">{venue.name}</span>
-                        <span className="text-[#D4AF37] text-xs font-semibold uppercase tracking-wider">Mulai Rp 40k/Jam</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </GalleryCol>
-              
-              <GalleryCol className="mt-[-30%] md:mt-[-50%]" yRange={["35%", "-25%"]}>
-                {VENUES_2.map((venue, index) => (
-                  <div key={index} className="relative group overflow-hidden rounded-xl md:rounded-2xl shadow-2xl shadow-black/50 border border-white/5">
-                    <img
-                      className="aspect-[4/5] md:aspect-[3/4] block h-auto max-h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      src={venue.img}
-                      alt={venue.name}
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-4 lg:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div>
-                        <span className="text-white font-bold text-lg md:text-xl tracking-tight block">{venue.name}</span>
-                        <span className="text-[#D4AF37] text-xs font-semibold uppercase tracking-wider">Premium Court</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </GalleryCol>
-              
-              <GalleryCol yRange={["-30%", "25%"]} className="-mt-8 md:-mt-16">
-                {VENUES_3.map((venue, index) => (
-                  <div key={index} className="relative group overflow-hidden rounded-xl md:rounded-2xl shadow-2xl shadow-black/50 border border-white/5">
-                    <img
-                      className="aspect-[4/5] md:aspect-video block h-auto max-h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      src={venue.img}
-                      alt={venue.name}
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-4 lg:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div>
-                        <span className="text-white font-bold text-lg md:text-xl tracking-tight block">{venue.name}</span>
-                        <span className="text-[#D4AF37] text-xs font-semibold uppercase tracking-wider">Standard BWF</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </GalleryCol>
-            </GalleryContainer>
-          </ContainerSticky>
-        </ContainerScroll>
+        {/* Fan Carousel - self-contained with GSAP animations */}
+        <div className="relative z-20 px-4 pb-8 md:pb-12">
+          <CardFanCarousel cards={FAN_CARDS} />
+        </div>
       </section>
 
       {/* 5.5 TESTIMONI (What They Say) */}

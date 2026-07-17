@@ -192,6 +192,7 @@ async def get_revenue_share(
     if current_user.role == RoleEnum.admin:
         stmt = stmt.where(Venue.owner_id == current_user.id)
         
+    stmt = stmt.limit(5000)
     res = await db.execute(stmt)
     rows = res.all()
 
@@ -283,6 +284,7 @@ async def get_live_monitor(
     if current_user.role == RoleEnum.admin:
         stmt_courts = stmt_courts.where(Venue.owner_id == current_user.id)
     
+    stmt_courts = stmt_courts.limit(200)
     res_courts = await db.execute(stmt_courts)
     courts_data = res_courts.all()
 
@@ -300,6 +302,7 @@ async def get_live_monitor(
     if current_user.role == RoleEnum.admin:
         stmt_bookings = stmt_bookings.where(Venue.owner_id == current_user.id)
     
+    stmt_bookings = stmt_bookings.limit(1000)
     res_bookings = await db.execute(stmt_bookings)
     today_bookings = res_bookings.all()
 

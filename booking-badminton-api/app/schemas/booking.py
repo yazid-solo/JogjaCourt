@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import date, time, datetime
 from decimal import Decimal
@@ -15,13 +15,19 @@ class BookingBase(BaseModel):
     end_time: time
 
 class BookingCreate(BookingBase):
-    pass
+    # Optional fields for monthly sessions
+    sessions: Optional[List[Dict[str, Any]]] = None
+    days_of_week: Optional[List[int]] = None
+    is_full_access: Optional[bool] = True
 
 class BookingResponse(BookingBase):
     id: UUID
     user_id: UUID
     total_price: Decimal
     status: BookingStatusEnum
+    sessions: Optional[List[Dict[str, Any]]] = None
+    days_of_week: Optional[List[int]] = None
+    is_full_access: bool = True
     created_at: datetime
     expires_at: Optional[datetime] = None
     
@@ -50,3 +56,9 @@ class BookingUpdateAdmin(BaseModel):
     status: Optional[BookingStatusEnum] = None
     total_price: Optional[Decimal] = None
 
+class BookingPaginatedResponse(BaseModel):
+    total_count: int
+    total_pages: int
+    current_page: int
+    limit: int
+    data: List[BookingDetailResponse]

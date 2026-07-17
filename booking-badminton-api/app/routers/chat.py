@@ -62,28 +62,11 @@ async def get_chat_contacts(
     contact_ids = set()
     
     if current_user.role == RoleEnum.admin:
-        # Admin bisa melihat Super Admin
+        # Admin HANYA bisa melihat Super Admin
         sa_query = select(User.id).where(User.role == RoleEnum.super_admin)
         sa_res = await db.execute(sa_query)
         for row in sa_res.all():
             contact_ids.add(row[0])
-            
-        # Admin juga bisa melihat user yang pernah chat dengannya
-        sent_to = select(Message.receiver_id).where(Message.sender_id == current_user.id)
-        received_from = select(Message.sender_id).where(Message.receiver_id == current_user.id)
-        
-        contact_ids_query = union(sent_to, received_from)
-        result_ids = await db.execute(contact_ids_query)
-        for row in result_ids.all():
-            contact_ids.add(row[0])
-            
-        # TAPI tidak bisa melihat admin mitra lainnya
-        admin_query = select(User.id).where(User.role == RoleEnum.admin)
-        admin_res = await db.execute(admin_query)
-        for row in admin_res.all():
-            if row[0] in contact_ids:
-                contact_ids.remove(row[0])
-                
             
     elif current_user.role == RoleEnum.super_admin:
         # Super Admin bisa melihat semua Admin dan user lain yang pernah chat dengannya
@@ -101,13 +84,10 @@ async def get_chat_contacts(
             contact_ids.add(row[0])
             
     else:
-        # Role lain (seperti Customer) hanya melihat yang pernah chat
-        sent_to = select(Message.receiver_id).where(Message.sender_id == current_user.id)
-        received_from = select(Message.sender_id).where(Message.receiver_id == current_user.id)
-        
-        contact_ids_query = union(sent_to, received_from)
-        result_ids = await db.execute(contact_ids_query)
-        for row in result_ids.all():
+        # Role lain (seperti Customer) HANYA bisa melihat Super Admin
+        sa_query = select(User.id).where(User.role == RoleEnum.super_admin)
+        sa_res = await db.execute(sa_query)
+        for row in sa_res.all():
             contact_ids.add(row[0])
     
     # Hapus user dirinya sendiri dari daftar kontak agar tidak bisa chat diri sendiri
@@ -170,10 +150,11 @@ async def get_chat_history(
             and_(Message.sender_id == current_user.id, Message.receiver_id == contact_id),
             and_(Message.sender_id == contact_id, Message.receiver_id == current_user.id)
         )
-    ).order_by(Message.created_at.asc())
+    ).order_by(Message.created_at.desc()).limit(200)
     
     result = await db.execute(query)
-    messages = result.scalars().all()
+    messages = list(result.scalars().all())
+    messages.reverse()
     
     # Tandai pesan sebagai dibaca (is_read = True) jika penerimanya adalah current_user
     messages_updated = False
@@ -243,12 +224,23 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                     continue
                 
                 if receiver_id and (content or attachment_url):
-                    # Simpan pesan biasa ke database
+                    # Simpan pesan biasa ke database dengan validasi
                     async with async_session() as db:
                         sender_query = select(User).where(User.id == uuid.UUID(user_id))
                         sender_res = await db.execute(sender_query)
                         sender_user = sender_res.scalars().first()
                         
+                        receiver_query = select(User).where(User.id == uuid.UUID(receiver_id))
+                        receiver_res = await db.execute(receiver_query)
+                        receiver_user = receiver_res.scalars().first()
+
+                        if not sender_user or not receiver_user:
+                            continue
+
+                        # Anti-Fraud: Customer & Admin hanya boleh chat dengan Super Admin
+                        if sender_user.role in [RoleEnum.customer, RoleEnum.admin] and receiver_user.role != RoleEnum.super_admin:
+                            continue # BLOKIR PESAN
+
                         new_message = Message(
                             sender_id=uuid.UUID(user_id),
                             receiver_id=uuid.UUID(receiver_id),

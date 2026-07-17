@@ -101,7 +101,7 @@ export default function Legal({ type }) {
           </Link>
           
           <Link to="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+            <img src="/Logo.svg" alt="Logo" className="w-8 h-8 object-contain" />
             <span className="font-bold text-xl hidden sm:block">JogjaCourt</span>
           </Link>
         </div>

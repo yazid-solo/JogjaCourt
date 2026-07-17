@@ -140,13 +140,13 @@ const STYLES = `
 
 /* Giant Background Text Masking */
 .footer-giant-bg-text {
-  font-size: 20vw;
-  line-height: 0.75;
+  font-size: clamp(10vw, 15vw, 18vw); /* Responsive clamp to prevent mobile clipping */
+  line-height: 1;
   font-weight: 900;
   letter-spacing: -0.05em;
   color: transparent;
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 80%);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -332,7 +332,7 @@ export function CinematicFooter() {
           {/* Giant background text */}
           <div
             ref={giantTextRef}
-            className="footer-giant-bg-text absolute -bottom-[5vh] left-1/2 -translate-x-1/2 whitespace-nowrap z-0 pointer-events-none select-none"
+            className="footer-giant-bg-text absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap z-0 pointer-events-none select-none"
           >
             JOGJACOURT
           </div>
@@ -356,14 +356,14 @@ export function CinematicFooter() {
 
             <h2
               ref={headingRef}
-              className="text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-4 text-center uppercase flex items-center justify-center gap-2 md:gap-4"
+              className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter mb-4 text-center uppercase flex items-center justify-center gap-2 md:gap-4"
             >
-              <span className="footer-text-glow pr-1 md:pr-2">SIAP</span> 
-              <span className="text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">MABAR?</span>
+              <span className="footer-text-glow pr-1 md:pr-2">MULAI</span> 
+              <span className="text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">RESERVASI?</span>
             </h2>
             
-            <p className="text-neutral-400 max-w-xl text-center mb-8 text-sm md:text-lg leading-relaxed">
-              Ribuan anak badminton Jogja udah gampang cari lapangan tiap minggu. Masa kamu masih ribet nanya satu-satu via WA? <span className="text-white font-bold">Gabung sekarang!</span>
+            <p className="text-neutral-400 max-w-2xl text-center mb-8 text-sm md:text-lg leading-relaxed">
+              Tinggalkan metode pemesanan manual yang tidak efisien. Optimalkan waktu Anda dengan ekosistem penjadwalan cerdas kami. <span className="text-white font-bold">Daftar sekarang!</span>
             </p>
 
             {/* Interactive Magnetic Pills Layout */}
@@ -405,7 +405,7 @@ export function CinematicFooter() {
 
             {/* Copyright (Left) */}
             <div className="text-neutral-500 text-[10px] md:text-xs font-semibold tracking-widest uppercase flex items-center gap-2">
-              <img src="/logo.png" alt="JogjaCourt" className="w-5 h-5 rounded-full border border-white/10" />
+              <img src="/Logo.svg" alt="JogjaCourt" className="w-5 h-5 rounded-full border border-white/10" />
               JogjaCourt © 2026
             </div>
 

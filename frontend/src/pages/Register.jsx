@@ -62,7 +62,7 @@ export default function Register() {
       <div className="w-full max-w-md relative z-10 py-10">
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-8 cursor-pointer group">
-          <img src="/logo.png" alt="JogjaCourt" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
+          <img src="/Logo.svg" alt="JogjaCourt" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
           <span className="text-3xl font-black text-white tracking-tighter">JogjaCourt</span>
         </Link>
 

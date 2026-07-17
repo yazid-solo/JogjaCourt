@@ -17,21 +17,19 @@ interface ContainerScrollContextValue {
 
 const SPRING_CONFIG: any = {
   type: "spring",
-  stiffness: 100,
-  damping: 16,
-  mass: 0.75,
-  restDelta: 0.005,
-  duration: 0.3,
+  stiffness: 90,
+  damping: 20,
+  mass: 0.8,
 }
 
 const blurVariants: Variants = {
   hidden: {
-    filter: "blur(10px)",
     opacity: 0,
+    y: 15,
   },
   visible: {
-    filter: "blur(0px)",
     opacity: 1,
+    y: 0,
   },
 }
 
@@ -58,6 +56,7 @@ export const ContainerScroll = ({
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: scrollRef,
+    offset: ["start end", "end start"]
   })
   
   return (
@@ -69,6 +68,7 @@ export const ContainerScroll = ({
           perspective: "1000px",
           perspectiveOrigin: "center top",
           transformStyle: "preserve-3d",
+          willChange: "transform",
           ...style,
         }}
         {...props}
@@ -111,8 +111,8 @@ export const GalleryContainer = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & HTMLMotionProps<"div">) => {
   const { scrollYProgress } = useContainerScrollContext()
-  const rotateX = useTransform(scrollYProgress, [0, 0.5], [75, 0])
-  const scale = useTransform(scrollYProgress, [0.5, 0.9], [1.2, 1])
+  const rotateX = useTransform(scrollYProgress, [0, 0.35], [30, 0])
+  const scale = useTransform(scrollYProgress, [0.35, 0.8], [1.1, 1])
 
   return (
     <motion.div
@@ -123,8 +123,7 @@ export const GalleryContainer = ({
       style={{
         rotateX,
         scale,
-        transformStyle: "preserve-3d",
-        perspective: "1000px",
+        willChange: "transform",
         ...style,
       }}
       {...props}
@@ -138,17 +137,18 @@ GalleryContainer.displayName = "GalleryContainer"
 export const GalleryCol = ({
   className,
   style,
-  yRange = ["0%", "-10%"],
+  yRange = ["0%", "-9%"],
   ...props
 }: HTMLMotionProps<"div"> & { yRange?: string[] }) => {
   const { scrollYProgress } = useContainerScrollContext()
-  const y = useTransform(scrollYProgress, [0.5, 1], yRange)
+  const y = useTransform(scrollYProgress, [0, 1], yRange, { clamp: false })
 
   return (
     <motion.div
       className={cn("relative flex w-full flex-col gap-2 md:gap-4", className)}
       style={{
         y,
+        willChange: "transform",
         ...style,
       }}
       {...props}

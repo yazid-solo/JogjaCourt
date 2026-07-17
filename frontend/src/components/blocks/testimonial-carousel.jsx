@@ -143,25 +143,25 @@ export function TestimonialCarousel() {
       <div className="container mx-auto px-4 mb-16 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Apa Kata <span className="text-[#D4AF37]">Mereka?</span>
+            Kepercayaan <span className="text-[#D4AF37]">Komunitas</span>
           </h2>
-          <p className="text-neutral-400 mb-6">
-            Ribuan pebulutangkis telah menggunakan JogjaCourt. Temukan pengalaman mereka memesan lapangan dengan mudah dan cepat.
+          <p className="text-neutral-400 mb-6 leading-relaxed">
+            Bergabung dengan ribuan atlet dan pegiat olahraga di Yogyakarta yang telah mengandalkan infrastruktur reservasi kami untuk setiap pertandingan mereka.
           </p>
           <button 
             onClick={handleWriteReview}
             className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-full transition-all border border-white/10 hover:border-white/30"
           >
             <PenSquare className="w-4 h-4" />
-            Tulis Ulasan Anda
+            Bagikan Pengalaman Anda
           </button>
         </div>
       </div>
 
       <div className="relative w-full flex overflow-hidden group">
         {/* Left/Right Fading Edges */}
-        <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-black to-transparent z-10" />
-        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-black to-transparent z-10" />
+        <div className="absolute left-0 top-0 w-12 sm:w-32 h-full bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 w-12 sm:w-32 h-full bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
         
         <div 
           ref={testimonials.length >= 3 ? containerRef : null}
@@ -175,8 +175,8 @@ export function TestimonialCarousel() {
 
       {/* Write Review Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-          <div className="bg-[#111] max-w-md w-full rounded-3xl border border-white/10 relative p-6 md:p-8 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-[#111] max-w-md w-full rounded-2xl sm:rounded-3xl border border-white/10 relative p-5 sm:p-8 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
             <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
