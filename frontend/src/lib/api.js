@@ -1,0 +1,42 @@
+import axios from 'axios';
+
+// Konfigurasi endpoint backend FastAPI Anda
+export const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `http://${window.location.hostname}:8000` : 'http://localhost:8000');
+export const WS_URL = API_URL.replace('http://', 'ws://').replace('https://', 'wss://');
+
+const api = axios.create({
+  baseURL: API_URL,
+});
+
+// Interceptor untuk menyematkan JWT Token secara otomatis jika pengguna sudah login
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor untuk menangani error respons secara global
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Jika token kedaluwarsa atau tidak valid (401), otomatis logout
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Arahkan ke halaman login (bisa reload halaman agar AuthContext membaca ulang state)
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+        window.location.href = '/login?expired=true';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
