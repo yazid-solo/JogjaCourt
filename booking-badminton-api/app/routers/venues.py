@@ -21,8 +21,8 @@ router = APIRouter(prefix="/venues", tags=["Venues"])
 from sqlalchemy import func
 
 @router.get("", response_model=VenuePaginatedResponse)
-async def get_venues(
     area_id: UUID = None, 
+    is_public: bool = False,
     page: int = 1,
     size: int = 50,
     db: AsyncSession = Depends(get_db), 
@@ -32,12 +32,12 @@ async def get_venues(
     count_stmt = select(func.count(Venue.id))
     stmt = select(Venue).options(selectinload(Venue.owner), selectinload(Venue.area))
     
-    if current_user and current_user.role == RoleEnum.admin:
-        # Regular admin sees their own venues
+    if current_user and current_user.role == RoleEnum.admin and not is_public:
+        # Regular admin sees their own venues in dashboard
         count_stmt = count_stmt.where(Venue.owner_id == current_user.id)
         stmt = stmt.where(Venue.owner_id == current_user.id)
     else:
-        # Public / Super Admin sees active venues.
+        # Public / Super Admin (or Admin in public mode) sees active venues.
         count_stmt = count_stmt.where(Venue.is_active == True)
         stmt = stmt.where(Venue.is_active == True)
 
