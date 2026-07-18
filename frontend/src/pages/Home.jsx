@@ -31,55 +31,14 @@ const FAN_CARDS = [
   { imgUrl: "/assets/bg-badminton-7.jpg", alt: "GOR Klebengan" }
 ];
 
-// 3D Tilt Card Component for Features
 const TiltCard = ({ children, className, variants }) => {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["8deg", "-8deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"]);
-
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
     <motion.div
       variants={variants}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateY,
-        rotateX,
-        transformStyle: "preserve-3d",
-        perspective: 1000
-      }}
       whileHover={{ scale: 1.02, y: -5 }}
       className={`relative ${className}`}
     >
-      <div 
-        style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }} 
-        className="w-full h-full relative"
-      >
+      <div className="w-full h-full relative">
         {children}
       </div>
     </motion.div>
@@ -230,10 +189,10 @@ export default function Home() {
               Kenapa Pakai JogjaCourt?
               <span className="w-8 h-px bg-[#D4AF37]"></span>
             </h2>
-            <h3 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight">
+            <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight">
               Sistem Cerdas, Efisiensi Waktu
             </h3>
-            <p className="mt-6 text-neutral-400 max-w-2xl mx-auto text-base sm:text-lg">
+            <p className="mt-4 sm:mt-6 text-neutral-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg">
               Infrastruktur digital yang dirancang khusus untuk memodernisasi ekosistem badminton di Yogyakarta. Menyelesaikan permasalahan double-booking dan bentrok jadwal secara presisi.
             </p>
           </motion.div>
@@ -314,8 +273,8 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <LayoutDashboard className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-3xl font-black text-white mb-4">Manajemen GOR Komprehensif</h4>
-                <p className="text-neutral-300 leading-relaxed max-w-lg text-lg">
+                <h4 className="text-2xl sm:text-3xl font-black text-white mb-4">Manajemen GOR Komprehensif</h4>
+                <p className="text-neutral-300 leading-relaxed max-w-lg text-base sm:text-lg">
                   Bagi mitra pengelola, sistem kami menyediakan dashboard terpusat untuk mengatur harga, ketersediaan lapangan, hingga rekapitulasi laporan pendapatan secara otomatis.
                 </p>
                 <div className="mt-8">
@@ -345,10 +304,10 @@ export default function Home() {
               <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
               <span className="text-xs font-bold tracking-widest uppercase text-white">Cara Booking</span>
             </div>
-            <h3 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-tight">
+            <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
               Reservasi Mudah <br/><span className="text-[#D4AF37]">dalam 3 Tahapan</span>
             </h3>
-            <p className="text-neutral-400 text-lg sm:text-xl leading-relaxed">
+            <p className="text-neutral-400 text-base sm:text-lg lg:text-xl leading-relaxed">
               Lupakan proses pemesanan manual yang memakan waktu. Ekosistem digital kami mengotomatisasi seluruh alur reservasi Anda dalam hitungan detik.
             </p>
           </motion.div>
@@ -391,7 +350,7 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 mb-6">
               <span className="text-[#D4AF37] text-xs font-bold tracking-widest uppercase">GOR di Yogyakarta</span>
             </div>
-            <h3 className="font-sans text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter">
+            <h3 className="font-sans text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black uppercase tracking-tighter">
               Cek Jadwal,{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#D4AF37]">
                 Langsung Booking
