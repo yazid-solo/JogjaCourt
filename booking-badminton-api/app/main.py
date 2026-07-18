@@ -1,39 +1,18 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.database import engine, Base
-import app.models  # noqa: F401 — registers all ORM models with Base.metadata
+import app.models  # noqa: F401
 from app.routers import auth, areas, venues, courts, bookings, payments, dashboard, users, notifications, payouts, settings as sys_settings, testimonials, chat, kyc
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.services.scheduler import cancel_expired_bookings
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Setup scheduler
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(cancel_expired_bookings, 'interval', minutes=1)
-    scheduler.start()
-    print("Scheduler started.")
-    
-    yield
-    
-    # Cleanup on shutdown
-    scheduler.shutdown()
-    print("Scheduler shutdown.")
-
-app = FastAPI(title="JogjaCourt API", version="1.0.0", lifespan=lifespan)
-
-# Mount static files for uploads
-import os
-os.makedirs("app/static/uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="app/static/uploads"), name="uploads")
+app = FastAPI(title="JogjaCourt API", version="1.0.0")
 
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For production, restrict this to frontend domain
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,4 +36,10 @@ app.include_router(kyc.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to JogjaCourt API", "docs": "/docs"}
+    return {"message": "Welcome to JogjaCourt API (Serverless)", "docs": "/docs"}
+
+@app.get("/api/cron/cancel-expired")
+async def trigger_cancel_expired():
+    """Endpoint untuk dipanggil oleh Vercel Cron atau cron-job.org setiap menit"""
+    await cancel_expired_bookings()
+    return {"message": "Cron job executed: Expired bookings cancelled"}

@@ -41,17 +41,17 @@ manager = ConnectionManager()
 @router.post("/upload")
 async def upload_chat_file(file: UploadFile = File(...)):
     """Menerima dan menyimpan lampiran file/gambar untuk Chat"""
-    upload_dir = "app/static/uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    file_ext = file.filename.split('.')[-1]
-    unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-    file_path = os.path.join(upload_dir, unique_filename)
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        contents = await file.read()
+        file_ext = file.filename.split('.')[-1]
+        unique_filename = f"chat_{uuid.uuid4().hex}.{file_ext}"
         
-    return {"attachment_url": f"/uploads/{unique_filename}"}
+        # Simpan di bucket "payments" sebagai default Supabase Storage bucket.
+        image_url = await upload_image_to_supabase(contents, unique_filename, bucket_name="payments")
+        
+        return {"attachment_url": image_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/contacts")
 async def get_chat_contacts(
