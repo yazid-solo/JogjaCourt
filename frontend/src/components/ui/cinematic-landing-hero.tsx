@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-// @ts-ignore
 import Lenis from '@studio-freight/lenis';
 import { cn } from "@/lib/utils";
 
@@ -291,7 +290,7 @@ export function CinematicHero({
     if (window.innerWidth >= 768) {
       const lenis = new Lenis({
         duration: 1.0, // snappier duration
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
         orientation: 'vertical',
         gestureOrientation: 'vertical',
         smoothWheel: true,
