@@ -55,8 +55,8 @@ export default function Chat() {
   };
 
   // Fetch history when active contact changes
-  const fetchHistory = async (contactId) => {
-    setLoadingHistory(true);
+  const fetchHistory = async (contactId, isPolling = false) => {
+    if (!isPolling) setLoadingHistory(true);
     try {
       const res = await api.get(`/chat/history/${contactId}`);
       setMessages(res.data.messages || []);
@@ -72,7 +72,7 @@ export default function Chat() {
     } catch (error) {
       console.error("Failed to fetch chat history:", error);
     } finally {
-      setLoadingHistory(false);
+      if (!isPolling) setLoadingHistory(false);
     }
   };
 
@@ -161,9 +161,18 @@ export default function Chat() {
   }, [user]);
 
   useEffect(() => {
+    let intervalId;
     if (activeContact) {
       fetchHistory(activeContact.id);
       setShowEmojiPicker(false);
+      
+      // Polling pesan chat setiap 4 detik (Fallback Vercel)
+      intervalId = setInterval(() => {
+        fetchHistory(activeContact.id, true);
+      }, 4000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
     }
   }, [activeContact]);
 
@@ -435,9 +444,14 @@ export default function Chat() {
       return updated;
     });
 
-    if (ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(payload));
-    }
+    // Send to backend via REST POST (Mendukung Push Notification & Vercel)
+    api.post('/chat/send', payload).catch(err => {
+      console.error("Gagal mengirim pesan via API:", err);
+      // Fallback ke WebSocket (jika berjalan di environment yang mendukung WS)
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify(payload));
+      }
+    });
   };
 
   const handleFileUpload = async (e) => {

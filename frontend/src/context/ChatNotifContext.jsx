@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { WS_URL } from '@/lib/api';
+import api from '@/lib/api';
 
 const ChatNotifContext = createContext();
 
@@ -11,11 +11,24 @@ export function useChatNotif() {
 export function ChatNotifProvider({ children }) {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [latestMsg, setLatestMsg] = useState(null); // { sender_name, content }
-  const ws = useRef(null);
-  const reconnectTimer = useRef(null);
+  const [latestMsg, setLatestMsg] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const previousUnreadCount = useRef(0);
+  const pollInterval = useRef(null);
+  const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BBY03YcvnV2vPEOCOCD6cILSgEEcNKk1f4W16fC9YIlhWLnZnGWuyn0qyJegBYqSMg8jPMV6MS2BTP_e71S6yDo';
 
-  // Nada notifikasi ringan via Web Audio API (tidak butuh file .mp3)
+  // Function untuk merubah Base64 URL-safe VAPID key
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   const playNotifSound = useCallback(() => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -31,65 +44,98 @@ export function ChatNotifProvider({ children }) {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.4);
     } catch (e) {
-      // Tidak semua browser mendukung AudioContext saat tidak ada interaksi pengguna
+      // Ignore
     }
   }, []);
 
-  const connectWs = useCallback(() => {
+  const fetchContactsAndUnread = useCallback(async () => {
     if (!user) return;
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
+    try {
+      const res = await api.get('/chat/contacts');
+      const contactList = res.data.contacts || [];
+      setContacts(contactList);
+      
+      let totalUnread = 0;
+      let newestUnreadMsg = null;
+      let newestTime = 0;
 
-    ws.current = new WebSocket(`${WS_URL}/chat/ws/${user.id}`);
-
-    ws.current.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        // Hanya proses pesan teks biasa (bukan sinyal WebRTC / read_receipt)
-        if (msg.message_type && ['offer','answer','ice_candidate','call_end','read_receipt'].includes(msg.message_type)) return;
-        if (msg.sender_id && msg.sender_id !== user.id && msg.content) {
-          setUnreadCount(prev => prev + 1);
-          setLatestMsg({ sender_name: msg.sender_name || 'Pesan Baru', content: msg.content });
-          playNotifSound();
-          // Browser Notification jika tab tidak aktif
-          if (document.hidden && Notification.permission === 'granted') {
-            new Notification(`💬 ${msg.sender_name || 'Pesan Baru'}`, {
-              body: msg.content,
-              icon: '/favicon.ico',
-            });
+      contactList.forEach(c => {
+        totalUnread += c.unreadCount;
+        if (c.unreadCount > 0) {
+          const msgTime = new Date(c.time).getTime();
+          if (msgTime > newestTime) {
+            newestTime = msgTime;
+            newestUnreadMsg = {
+              sender_name: c.name,
+              content: c.lastMessage
+            };
           }
         }
-      } catch (e) { /* abaikan */ }
-    };
+      });
 
-    ws.current.onclose = () => {
-      reconnectTimer.current = setTimeout(connectWs, 4000);
-    };
+      setUnreadCount(totalUnread);
 
-    ws.current.onerror = () => {
-      ws.current?.close();
-    };
+      // Jika ada pesan baru yang belum pernah di toast
+      if (totalUnread > previousUnreadCount.current && newestUnreadMsg) {
+        setLatestMsg(newestUnreadMsg);
+        playNotifSound();
+      }
+      
+      previousUnreadCount.current = totalUnread;
+
+    } catch (err) {
+      console.error("Gagal polling pesan:", err);
+    }
   }, [user, playNotifSound]);
+
+  // Subscribe ke Push Notif
+  const subscribeToPush = useCallback(async () => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+
+        // Kirim ke backend
+        await api.post('/notifications/subscribe', subscription);
+      } catch (err) {
+        console.error("Gagal subscribe push notification:", err);
+      }
+    }
+  }, [VAPID_PUBLIC_KEY]);
 
   useEffect(() => {
     if (!user) return;
-    // Minta izin Browser Notification
+
     if (Notification.permission === 'default') {
-      Notification.requestPermission();
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') subscribeToPush();
+      });
+    } else if (Notification.permission === 'granted') {
+      subscribeToPush();
     }
-    connectWs();
+
+    // Awal load
+    fetchContactsAndUnread();
+    
+    // Polling tiap 4 detik karena Vercel blokir WebSocket
+    pollInterval.current = setInterval(fetchContactsAndUnread, 4000);
+
     return () => {
-      clearTimeout(reconnectTimer.current);
-      ws.current?.close();
+      clearInterval(pollInterval.current);
     };
-  }, [user, connectWs]);
+  }, [user, fetchContactsAndUnread, subscribeToPush]);
 
   const clearUnread = useCallback(() => {
     setUnreadCount(0);
     setLatestMsg(null);
+    previousUnreadCount.current = 0;
   }, []);
 
   return (
-    <ChatNotifContext.Provider value={{ unreadCount, latestMsg, clearUnread }}>
+    <ChatNotifContext.Provider value={{ unreadCount, latestMsg, clearUnread, contacts, fetchContactsAndUnread }}>
       {children}
     </ChatNotifContext.Provider>
   );

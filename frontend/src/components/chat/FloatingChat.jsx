@@ -52,18 +52,23 @@ export default function FloatingChat({ forceOpen = false }) {
     if (!user || !isOpen || !adminId) return;
 
     // Fetch initial history
-    const fetchHistory = async () => {
-      setLoading(true);
+    const fetchHistory = async (isPolling = false) => {
+      if (!isPolling) setLoading(true);
       try {
         const res = await api.get(`/chat/history/${adminId}`);
         setMessages(res.data.messages || []);
       } catch (error) {
         console.error("Gagal memuat riwayat chat", error);
       } finally {
-        setLoading(false);
+        if (!isPolling) setLoading(false);
       }
     };
     fetchHistory();
+    
+    // Polling setiap 4 detik karena Vercel blokir WebSocket
+    const intervalId = setInterval(() => {
+      fetchHistory(true);
+    }, 4000);
 
     // Connect WebSocket
     const connectWs = () => {
@@ -89,6 +94,7 @@ export default function FloatingChat({ forceOpen = false }) {
     connectWs();
 
     return () => {
+      if (intervalId) clearInterval(intervalId);
       if (ws.current) {
         ws.current.close();
       }
@@ -97,7 +103,7 @@ export default function FloatingChat({ forceOpen = false }) {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !ws.current || !adminId) return;
+    if (!newMessage.trim() || !adminId) return;
 
     const payload = {
       receiver_id: adminId,
@@ -115,9 +121,13 @@ export default function FloatingChat({ forceOpen = false }) {
     setMessages(prev => [...prev, optimisticMsg]);
     setNewMessage('');
 
-    if (ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(payload));
-    }
+    // Kirim via REST POST
+    api.post('/chat/send', payload).catch(err => {
+      console.error("Gagal mengirim via API:", err);
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify(payload));
+      }
+    });
   };
 
   const formatTime = (isoString) => {
