@@ -21,6 +21,7 @@ router = APIRouter(prefix="/venues", tags=["Venues"])
 from sqlalchemy import func
 
 @router.get("", response_model=VenuePaginatedResponse)
+async def get_venues(
     area_id: UUID = None, 
     is_public: bool = False,
     page: int = 1,
