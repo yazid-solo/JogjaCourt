@@ -32,7 +32,7 @@ const INJECTED_STYLES = `
       -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
   }
 
-  /* Parallax background layers */
+  /* Parallax background layers - Ultra HD */
   .parallax-bg-layer {
       position: absolute;
       inset: 0;
@@ -40,11 +40,14 @@ const INJECTED_STYLES = `
       height: 120%;
       top: -10%;
       object-fit: cover;
+      object-position: center center;
       will-change: transform;
       transform: translateZ(0) translate3d(0,0,0);
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
       image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      -ms-interpolation-mode: bicubic;
   }
 
   /* OUTSIDE THE CARD: Theme-aware text */
@@ -199,12 +202,14 @@ const INJECTED_STYLES = `
     will-change: transform;
   }
 
-  /* Vignette overlay for cinematic depth */
+  /* Vignette overlay for cinematic depth - Ultra HD deep */
   .vignette-overlay {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    background: 
+      radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.75) 100%),
+      linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.5) 100%);
   }
 `;
 
@@ -402,31 +407,43 @@ export function CinematicHero({
     >
       <style dangerouslySetInnerHTML={{ __html: INJECTED_STYLES }} />
 
-      {/* === PARALLAX BACKGROUND LAYERS === */}
+      {/* === PARALLAX BACKGROUND LAYERS === Ultra HD Dark */}
       {/* Layer 1: Deepest - farthest away, moves slowest */}
       <div className="parallax-wrapper-1 absolute inset-0 z-[1] overflow-hidden pointer-events-none bg-black">
         <img 
           src="/assets/bg-badminton-5.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-1 gsap-reveal opacity-30"
+          className="parallax-bg-layer parallax-bg-layer-1 gsap-reveal"
+          style={{ opacity: 0.45 }}
+          loading="eager"
+          decoding="sync"
         />
       </div>
 
+      {/* Dark overlay on top of layer 1 for depth */}
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(5,10,30,0.6) 100%)' }} />
+
       {/* Layer 2: Middle depth */}
-      <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none bg-black/40">
+      <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none">
         <img 
           src="/assets/bg-badminton-2.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal opacity-25"
+          className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal"
+          style={{ opacity: 0.18 }}
+          loading="eager"
+          decoding="sync"
         />
       </div>
 
       {/* Layer 3: Closest - soft overlay */}
-      <div className="parallax-wrapper-3 absolute inset-0 z-[3] overflow-hidden pointer-events-none bg-black/50">
+      <div className="parallax-wrapper-3 absolute inset-0 z-[3] overflow-hidden pointer-events-none">
         <img 
           src="/assets/bg-badminton-8.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal opacity-20"
+          className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal"
+          style={{ opacity: 0.12 }}
+          loading="eager"
+          decoding="sync"
         />
       </div>
 
