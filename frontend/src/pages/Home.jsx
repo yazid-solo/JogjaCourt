@@ -92,7 +92,7 @@ export default function Home() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className={`fixed top-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md border-b border-white/10 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'bg-gradient-to-b from-black/80 to-transparent py-6'}`}
+        className={`fixed top-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/95 border-b border-white/10 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'bg-gradient-to-b from-black/80 to-transparent py-6'}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group">
@@ -329,7 +329,7 @@ export default function Home() {
                 { icon: CreditCard, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "3. Selesaikan Pembayaran Instan", desc: "Konfirmasi pesanan dengan berbagai metode pembayaran aman. Jadwal akan terenkripsi atas nama Anda—cukup tunjukkan bukti reservasi di lokasi." }
               ].map((step, idx) => (
                 <motion.div key={idx} variants={itemVariants} className="flex gap-6 sm:gap-8 items-start group">
-                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ${step.bg} border ${step.border} flex items-center justify-center shrink-0 backdrop-blur-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ${step.bg} border ${step.border} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                     <step.icon className={`w-8 h-8 sm:w-10 sm:h-10 ${step.color}`} />
                   </div>
                   <div className="pt-2">

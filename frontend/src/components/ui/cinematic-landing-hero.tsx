@@ -19,6 +19,9 @@ const INJECTED_STYLES = `
       pointer-events: none; z-index: 50; opacity: 0.03;
       background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
   }
+  @media (max-width: 768px) {
+    .film-grain { display: none; }
+  }
 
   .bg-grid-theme {
       background-size: 60px 60px;
@@ -284,6 +287,8 @@ export function CinematicHero({
 
   // Lenis Super Lightweight - Dioptimalkan untuk Mobile & GSAP
   useEffect(() => {
+    if (window.innerWidth < 768) return; // Disable Lenis entirely on mobile to use native scroll
+
     const lenis = new Lenis({
       duration: 1.0, // snappier duration
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
@@ -291,7 +296,7 @@ export function CinematicHero({
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      smoothTouch: false, // MATIKAN smooth touch untuk mobile agar menggunakan native scroll (60fps tanpa lag)
+      smoothTouch: false,
       touchMultiplier: 1, 
       infinite: false,
     });
@@ -337,7 +342,7 @@ export function CinematicHero({
           start: "top top",
           end: "+=3800",
           pin: true,
-          scrub: 0.5,
+          scrub: true, // Use true instead of numeric for better performance on some devices
           anticipatePin: 1,
         },
       });
