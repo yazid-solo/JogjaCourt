@@ -69,7 +69,7 @@ export default function ExploreVenues() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const res = await api.get('/venues?size=500');
+        const res = await api.get('/venues?size=500&is_public=true');
         // Hanya tampilkan yang aktif untuk publik
         setVenues(res.data.data.filter(v => v.is_active));
       } catch (error) {
