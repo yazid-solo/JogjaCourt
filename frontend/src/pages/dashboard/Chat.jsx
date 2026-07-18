@@ -15,6 +15,7 @@ export default function Chat() {
   const [loadingContacts, setLoadingContacts] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   // Interactive States
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,6 +34,7 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const menuRef = useRef(null);
+  const lastSendTime = useRef(0);
   
   const peerConnection = useRef(null);
   const localVideoRef = useRef(null);
@@ -168,7 +170,10 @@ export default function Chat() {
       
       // Polling pesan chat setiap 4 detik (Fallback Vercel)
       intervalId = setInterval(() => {
-        fetchHistory(activeContact.id, true);
+        // Pause polling briefly after sending a message to prevent optimistic UI overwrite
+        if (Date.now() - lastSendTime.current > 3000) {
+          fetchHistory(activeContact.id, true);
+        }
       }, 4000);
     }
     return () => {
@@ -404,8 +409,9 @@ export default function Chat() {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeContact || !ws.current) return;
+    if (!newMessage.trim() || !activeContact || !ws.current || isSending) return;
 
+    setIsSending(true);
     const payload = {
       receiver_id: activeContact.id,
       message_type: 'text',
@@ -431,6 +437,7 @@ export default function Chat() {
     setMessages(prev => [...prev, optimisticMsg]);
     setNewMessage('');
     setShowEmojiPicker(false);
+    lastSendTime.current = Date.now();
 
     setContacts(prev => {
       const updated = [...prev];
@@ -451,6 +458,8 @@ export default function Chat() {
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify(payload));
       }
+    }).finally(() => {
+      setIsSending(false);
     });
   };
 

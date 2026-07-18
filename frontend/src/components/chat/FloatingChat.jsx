@@ -10,12 +10,14 @@ export default function FloatingChat({ forceOpen = false }) {
   const [isOpen, setIsOpen] = useState(forceOpen);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [adminId, setAdminId] = useState(null);
   const adminName = "Admin Pusat";
   
   const ws = useRef(null);
   const messagesEndRef = useRef(null);
+  const lastSendTime = useRef(0);
   
   // Auto-scroll to bottom
   useEffect(() => {
@@ -67,7 +69,10 @@ export default function FloatingChat({ forceOpen = false }) {
     
     // Polling setiap 4 detik karena Vercel blokir WebSocket
     const intervalId = setInterval(() => {
-      fetchHistory(true);
+      // Pause polling briefly after sending a message to prevent optimistic UI overwrite
+      if (Date.now() - lastSendTime.current > 3000) {
+        fetchHistory(true);
+      }
     }, 4000);
 
     // Connect WebSocket
@@ -101,10 +106,11 @@ export default function FloatingChat({ forceOpen = false }) {
     };
   }, [user, isOpen, adminId]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !adminId) return;
+    if (!newMessage.trim() || !adminId || isSending) return;
 
+    setIsSending(true);
     const payload = {
       receiver_id: adminId,
       content: newMessage.trim()
@@ -117,17 +123,21 @@ export default function FloatingChat({ forceOpen = false }) {
       content: newMessage.trim(),
       created_at: new Date().toISOString()
     };
-    
     setMessages(prev => [...prev, optimisticMsg]);
     setNewMessage('');
+    lastSendTime.current = Date.now();
 
     // Kirim via REST POST
-    api.post('/chat/send', payload).catch(err => {
+    try {
+      await api.post('/chat/send', payload);
+    } catch (err) {
       console.error("Gagal mengirim via API:", err);
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify(payload));
       }
-    });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const formatTime = (isoString) => {
@@ -241,9 +251,12 @@ export default function FloatingChat({ forceOpen = false }) {
               />
               <button 
                 type="submit"
-                disabled={!newMessage.trim()}
-                className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-black disabled:opacity-50 hover:bg-yellow-500 transition-all flex-shrink-0 shadow-[0_0_10px_rgba(212,175,55,0.3)]"
-              >
+                disabled={isSending || !newMessage.trim()}
+                className={`p-3 rounded-full flex items-center justify-center transition-all ${
+                  isSending || !newMessage.trim() 
+                    ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' 
+                    : 'bg-[#D4AF37] text-black hover:bg-yellow-400 hover:scale-105 shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+                }`}>
                 <Send className="w-4 h-4 ml-[-2px]" />
               </button>
             </form>
