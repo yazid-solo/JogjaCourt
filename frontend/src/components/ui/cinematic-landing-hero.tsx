@@ -342,7 +342,7 @@ export function CinematicHero({
           start: "top top",
           end: "+=3800",
           pin: true,
-          scrub: true, // Use true instead of numeric for better performance on some devices
+          scrub: 1, // Use 1 for smoother interpolation instead of rigid true
           anticipatePin: 1,
         },
       });
@@ -404,32 +404,29 @@ export function CinematicHero({
 
       {/* === PARALLAX BACKGROUND LAYERS === */}
       {/* Layer 1: Deepest - farthest away, moves slowest */}
-      <div className="parallax-wrapper-1 absolute inset-0 z-[1] overflow-hidden pointer-events-none">
+      <div className="parallax-wrapper-1 absolute inset-0 z-[1] overflow-hidden pointer-events-none bg-black">
         <img 
           src="/assets/bg-badminton-5.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-1 gsap-reveal"
-          style={{ filter: "brightness(0.35) saturate(0.8)" }}
+          className="parallax-bg-layer parallax-bg-layer-1 gsap-reveal opacity-30"
         />
       </div>
 
       {/* Layer 2: Middle depth */}
-      <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none">
+      <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none bg-black/40">
         <img 
           src="/assets/bg-badminton-2.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal"
-          style={{ filter: "brightness(0.35) saturate(0.7)", opacity: 0.6 }}
+          className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal opacity-25"
         />
       </div>
 
       {/* Layer 3: Closest - soft overlay */}
-      <div className="parallax-wrapper-3 absolute inset-0 z-[3] overflow-hidden pointer-events-none">
+      <div className="parallax-wrapper-3 absolute inset-0 z-[3] overflow-hidden pointer-events-none bg-black/50">
         <img 
           src="/assets/bg-badminton-8.jpg" 
           alt="" 
-          className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal"
-          style={{ filter: "brightness(0.3) saturate(0.6)", opacity: 0.4 }}
+          className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal opacity-20"
         />
       </div>
 
