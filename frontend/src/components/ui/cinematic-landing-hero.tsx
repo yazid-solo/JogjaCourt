@@ -242,53 +242,9 @@ export function CinematicHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCardRef = useRef<HTMLDivElement>(null);
   const mockupRef = useRef<HTMLDivElement>(null);
-  const requestRef = useRef<number>(0);
 
-  useEffect(() => {
-    let lastMoveTime = 0;
-    const throttleDelay = 50; // throttle setiap 50ms
-    
-    const handleMouseMove = (e: MouseEvent) => {
-      // Nonaktifkan efek parallax mouse di mobile untuk menghemat baterai & CPU
-      if (window.innerWidth < 768) return;
+  // Mouse parallax DISABLED - conflicts with GSAP scroll scrub causing jank
 
-      const now = Date.now();
-      if (now - lastMoveTime < throttleDelay) return;
-      lastMoveTime = now;
-      
-      if (window.scrollY > window.innerHeight * 2) return;
-
-      cancelAnimationFrame(requestRef.current);
-      
-      requestRef.current = requestAnimationFrame(() => {
-        if (mainCardRef.current && mockupRef.current) {
-          const rect = mainCardRef.current.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-          
-          mainCardRef.current.style.setProperty("--mouse-x", `${mouseX}px`);
-          mainCardRef.current.style.setProperty("--mouse-y", `${mouseY}px`);
-
-          const xVal = (e.clientX / window.innerWidth - 0.5) * 2;
-          const yVal = (e.clientY / window.innerHeight - 0.5) * 2;
-
-          gsap.to(mockupRef.current, {
-            rotationY: xVal * 18, // dikurangi dari 22 ke 18
-            rotationX: -yVal * 18,
-            ease: "power2.out", // diubah dari power3.out
-            duration: 0.6, // dikurangi dari 0.8
-            overwrite: true,
-          });
-        }
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(requestRef.current);
-    };
-  },[]);
 
   // Lenis Super Lightweight - Dioptimalkan untuk Mobile & GSAP
   useEffect(() => {
@@ -402,7 +358,7 @@ export function CinematicHero({
     <div
       ref={containerRef}
       className={cn("relative w-full h-[100dvh] overflow-hidden flex items-center justify-center bg-black text-white font-sans antialiased", className)}
-      style={{ perspective: "1500px" }}
+      style={{ contain: "layout style" }}
       {...props}
     >
       <style dangerouslySetInnerHTML={{ __html: INJECTED_STYLES }} />
@@ -763,8 +719,8 @@ export function CinematicHero({
                   </div>
                 </div>
 
-                {/* Floating Glass Badges */}
-                <div className="floating-badge absolute flex top-6 lg:top-12 left-[-15px] lg:left-[-120px] rounded-2xl p-3 items-center gap-3 z-30 shadow-2xl bg-[#0a0a0a]/80 border border-white/10 backdrop-blur-xl">
+                {/* Floating Glass Badges - backdrop-blur removed for performance */}
+                <div className="floating-badge absolute flex top-6 lg:top-12 left-[-15px] lg:left-[-120px] rounded-2xl p-3 items-center gap-3 z-30 shadow-2xl bg-[#0d0d0d]/95 border border-white/10">
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 shrink-0 bg-neutral-800">
                       <img src="/Logo.svg" alt="Admin" className="w-full h-full object-cover p-1" />
                     </div>
@@ -777,7 +733,7 @@ export function CinematicHero({
                     </div>
                   </div>
 
-                  <div className="floating-badge absolute flex bottom-12 lg:bottom-20 right-[-15px] lg:right-[-100px] rounded-2xl p-3 items-center gap-3 z-30 shadow-2xl bg-[#0a0a0a]/80 border border-emerald-500/20 backdrop-blur-xl">
+                  <div className="floating-badge absolute flex bottom-12 lg:bottom-20 right-[-15px] lg:right-[-100px] rounded-2xl p-3 items-center gap-3 z-30 shadow-2xl bg-[#0d0d0d]/95 border border-emerald-500/20">
                     <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30 shrink-0">
                       <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                     </div>
