@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
-import { api, WS_URL, API_URL } from '@/lib/api';
+import api, { WS_URL, API_URL } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 export default function Chat() {
