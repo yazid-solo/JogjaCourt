@@ -367,7 +367,7 @@ export function CinematicHero({
       {/* Layer 1: Deepest - farthest away, moves slowest */}
       <div className="parallax-wrapper-1 absolute inset-0 z-[1] overflow-hidden pointer-events-none bg-black">
         <img 
-          src="/assets/bg-badminton-5.jpg" 
+          src="/assets/bg-badminton-0.png" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-1 gsap-reveal"
           style={{ opacity: 0.45 }}
@@ -382,7 +382,7 @@ export function CinematicHero({
       {/* Layer 2: Middle depth */}
       <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none">
         <img 
-          src="/assets/bg-badminton-2.jpg" 
+          src="/assets/bg-badminton-9.png" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal"
           style={{ opacity: 0.18 }}
