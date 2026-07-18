@@ -287,33 +287,33 @@ export function CinematicHero({
 
   // Lenis Super Lightweight - Dioptimalkan untuk Mobile & GSAP
   useEffect(() => {
-    if (window.innerWidth < 768) return; // Disable Lenis entirely on mobile to use native scroll
+    if (window.innerWidth >= 768) {
+      const lenis = new Lenis({
+        duration: 1.0, // snappier duration
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        smoothTouch: false,
+        touchMultiplier: 1, 
+        infinite: false,
+      });
 
-    const lenis = new Lenis({
-      duration: 1.0, // snappier duration
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      smoothTouch: false,
-      touchMultiplier: 1, 
-      infinite: false,
-    });
+      lenis.on('scroll', ScrollTrigger.update);
 
-    lenis.on('scroll', ScrollTrigger.update);
-
-    let rafId;
-    const raf = (time: number) => {
-      lenis.raf(time);
+      let rafId: number;
+      const raf = (time: number) => {
+        lenis.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
       rafId = requestAnimationFrame(raf);
-    };
-    rafId = requestAnimationFrame(raf);
 
-    return () => {
-      lenis.destroy();
-      cancelAnimationFrame(rafId);
-    };
+      return () => {
+        lenis.destroy();
+        cancelAnimationFrame(rafId);
+      };
+    }
   }, []);
 
   useEffect(() => {
