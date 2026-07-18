@@ -293,9 +293,7 @@ export function CinematicFooter() {
           ease: "power3.out",
           scrollTrigger: {
             trigger: wrapperRef.current,
-            start: "top 40%",
-            end: "bottom bottom",
-            scrub: 1,
+            start: "top 80%",
           },
         }
       );
