@@ -13,11 +13,78 @@ from app.models.message import Message
 from app.models.user import User, RoleEnum
 from app.schemas.message import ChatHistoryResponse, MessageResponse
 from app.utils.dependencies import get_current_user
+from pydantic import BaseModel
+from app.services.notification_service import send_web_push
+
+class SendMessageRequest(BaseModel):
+    receiver_id: str
+    content: str
+    message_type: str = "text"
+    attachment_url: str = None
 
 router = APIRouter(
     prefix="/chat",
     tags=["Chat"]
 )
+
+@router.post("/send")
+async def send_message_rest(
+    payload: SendMessageRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    HTTP POST Endpoint untuk mengirim pesan (Fallback dari WebSocket)
+    Mendukung Web Push Notification secara langsung
+    """
+    receiver_query = select(User).where(User.id == uuid.UUID(payload.receiver_id))
+    receiver_res = await db.execute(receiver_query)
+    receiver_user = receiver_res.scalars().first()
+    
+    if not receiver_user:
+        raise HTTPException(status_code=404, detail="Receiver not found")
+
+    # Anti-Fraud: Customer & Admin hanya boleh chat dengan Super Admin
+    if current_user.role in [RoleEnum.customer, RoleEnum.admin] and receiver_user.role != RoleEnum.super_admin:
+        raise HTTPException(status_code=403, detail="Tidak diizinkan chat dengan user ini")
+
+    new_message = Message(
+        sender_id=current_user.id,
+        receiver_id=uuid.UUID(payload.receiver_id),
+        content=payload.content,
+        message_type=payload.message_type,
+        attachment_url=payload.attachment_url
+    )
+    
+    db.add(new_message)
+    await db.commit()
+    await db.refresh(new_message)
+    
+    msg_json = json.dumps({
+        "id": str(new_message.id),
+        "sender_id": str(new_message.sender_id),
+        "receiver_id": str(new_message.receiver_id),
+        "content": new_message.content,
+        "message_type": new_message.message_type,
+        "attachment_url": new_message.attachment_url,
+        "created_at": new_message.created_at.isoformat(),
+        "sender_name": current_user.name,
+        "sender_role": current_user.role.value if current_user.role else ""
+    })
+    
+    # Broadcast via WebSocket jika secara kebetulan terhubung (lokal/non-serverless)
+    await manager.send_personal_message(msg_json, payload.receiver_id)
+    
+    # TRIGER WEB PUSH NOTIFICATION KE PENERIMA
+    title = f"Pesan dari {current_user.name}"
+    body = payload.content[:100] + ("..." if len(payload.content) > 100 else "")
+    if payload.attachment_url:
+        body = "📷 Mengirim lampiran"
+    
+    await send_web_push(db=db, user_id=payload.receiver_id, title=title, body=body)
+
+    return {"status": "success", "message": "Pesan terkirim"}
+
 
 class ConnectionManager:
     def __init__(self):
