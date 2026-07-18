@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
-import api, { WS_URL, API_URL } from '@/lib/api';
+import { api, WS_URL, API_URL } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 export default function Chat() {
   const { user } = useAuth();
@@ -35,10 +36,12 @@ export default function Chat() {
   const emojiPickerRef = useRef(null);
   const menuRef = useRef(null);
   const lastSendTime = useRef(0);
+  const typingTimeoutRef = useRef(null);
   
   const peerConnection = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const [typingUsers, setTypingUsers] = useState({});
 
   const rtcConfig = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -57,30 +60,23 @@ export default function Chat() {
   };
 
   // Fetch history when active contact changes
-  const fetchHistory = async (contactId, isPolling = false) => {
-    if (!isPolling) setLoadingHistory(true);
+  const fetchHistory = async (contactId) => {
+    setLoadingHistory(true);
     try {
       const res = await api.get(`/chat/history/${contactId}`);
       setMessages(res.data.messages || []);
-      
-      // Kirim real-time read receipt ke lawan bicara
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({
-          receiver_id: contactId,
-          message_type: 'read_receipt',
-          content: 'read'
-        }));
-      }
+      api.post(`/chat/read/${contactId}`);
     } catch (error) {
       console.error("Failed to fetch chat history:", error);
     } finally {
-      if (!isPolling) setLoadingHistory(false);
+      setLoadingHistory(false);
     }
   };
 
   // WebSocket connection
   useEffect(() => {
     if (!user) return;
+
     fetchContacts();
 
     const connectWs = () => {
@@ -107,17 +103,15 @@ export default function Chat() {
             return;
           }
 
-          // Regular Message
+          // Regular Message via WebSocket fallback
           const currentActive = activeContactRef.current;
           
           if (currentActive && currentActive.id === msg.sender_id) {
-            setMessages((prevMsgs) => [...prevMsgs, msg]);
-            // Jika kita sedang melihat chat ini, kirim balik read receipt
-            ws.current.send(JSON.stringify({
-              receiver_id: msg.sender_id,
-              message_type: 'read_receipt',
-              content: 'read'
-            }));
+            setMessages((prevMsgs) => {
+              if (prevMsgs.some(m => m.id === msg.id)) return prevMsgs;
+              return [...prevMsgs, msg];
+            });
+            api.post(`/chat/read/${msg.sender_id}`);
           }
 
           setContacts((prevContacts) => {
@@ -128,7 +122,6 @@ export default function Chat() {
               updatedContacts[contactIdx].lastMessage = msg.message_type === 'file' ? '[Lampiran]' : msg.content;
               updatedContacts[contactIdx].time = msg.created_at;
               
-              // Increment unreadCount jika bukan kontak yang sedang dibuka
               if (!currentActive || currentActive.id !== msg.sender_id) {
                 updatedContacts[contactIdx].unreadCount = (updatedContacts[contactIdx].unreadCount || 0) + 1;
               } else {
@@ -163,23 +156,100 @@ export default function Chat() {
   }, [user]);
 
   useEffect(() => {
-    let intervalId;
     if (activeContact) {
       fetchHistory(activeContact.id);
       setShowEmojiPicker(false);
-      
-      // Polling pesan chat setiap 4 detik (Fallback Vercel)
-      intervalId = setInterval(() => {
-        // Pause polling briefly after sending a message to prevent optimistic UI overwrite
-        if (Date.now() - lastSendTime.current > 3000) {
-          fetchHistory(activeContact.id, true);
-        }
-      }, 4000);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
+      api.post(`/chat/read/${activeContact.id}`);
     }
   }, [activeContact]);
+
+  // Supabase Realtime Subscription & Typing Indicator
+  useEffect(() => {
+    if (!user) return;
+
+    // Listen to new messages
+    const messageChannel = supabase.channel('public:messages')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, (payload) => {
+        const newMsg = payload.new;
+        
+        const currentActive = activeContactRef.current;
+        const isActive = currentActive && currentActive.id === newMsg.sender_id;
+        
+        if (isActive) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+          api.post(`/chat/read/${newMsg.sender_id}`);
+        }
+
+        try {
+          const audio = new Audio('/ting.mp3');
+          audio.play().catch(e => console.log('Audio autoplay blocked', e));
+        } catch(e) {}
+
+        setContacts(prev => {
+          const updated = [...prev];
+          const contactIdx = updated.findIndex(c => c.id === newMsg.sender_id);
+          
+          if (contactIdx >= 0) {
+            updated[contactIdx].lastMessage = newMsg.message_type === 'file' ? '[Lampiran]' : newMsg.content;
+            updated[contactIdx].time = newMsg.created_at;
+            if (!isActive) {
+              updated[contactIdx].unreadCount = (updated[contactIdx].unreadCount || 0) + 1;
+            } else {
+              updated[contactIdx].is_read = true;
+            }
+            const [moved] = updated.splice(contactIdx, 1);
+            updated.unshift(moved);
+          } else {
+            fetchContacts();
+          }
+          return updated;
+        });
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id}`
+      }, (payload) => {
+        const updatedMsg = payload.new;
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
+      })
+      .subscribe();
+
+    // Typing Indicators
+    const typingChannel = supabase.channel('typing_indicators')
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload.receiver_id === user.id) {
+          setTypingUsers(prev => ({
+            ...prev,
+            [payload.payload.sender_id]: true
+          }));
+          
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => {
+            setTypingUsers(prev => ({
+              ...prev,
+              [payload.payload.sender_id]: false
+            }));
+          }, 2000);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messageChannel);
+      supabase.removeChannel(typingChannel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -407,9 +477,20 @@ export default function Chat() {
     );
   };
 
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    if (activeContact) {
+      supabase.channel('typing_indicators').send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { sender_id: user.id, receiver_id: activeContact.id }
+      });
+    }
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeContact || !ws.current || isSending) return;
+    if (!newMessage.trim() || !activeContact || isSending) return;
 
     setIsSending(true);
     const payload = {
@@ -454,10 +535,6 @@ export default function Chat() {
     // Send to backend via REST POST (Mendukung Push Notification & Vercel)
     api.post('/chat/send', payload).catch(err => {
       console.error("Gagal mengirim pesan via API:", err);
-      // Fallback ke WebSocket (jika berjalan di environment yang mendukung WS)
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify(payload));
-      }
     }).finally(() => {
       setIsSending(false);
     });
@@ -868,6 +945,17 @@ export default function Chat() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Typing Indicator */}
+            {typingUsers[activeContact.id] && (
+              <div className="flex justify-start px-6 pb-2 bg-[#111]">
+                <div className="bg-[#1A1A1A] border border-[#333] text-neutral-400 py-2 px-4 rounded-2xl rounded-tl-sm text-sm italic flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                </div>
+              </div>
+            )}
+
             <div className="p-4 px-6 border-t border-white/10 bg-[#161616] z-10 relative">
               {showEmojiPicker && (
                 <div ref={emojiPickerRef} className="absolute bottom-24 left-6 z-50 animate-in slide-in-from-bottom-2 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
@@ -880,27 +968,25 @@ export default function Chat() {
                 </div>
               )}
 
-              <form onSubmit={handleSendMessage} className="flex gap-3 items-end relative">
-                <div className="flex-1 bg-[#222] border border-white/5 rounded-3xl flex items-center px-2 py-1 shadow-inner focus-within:ring-1 focus-within:ring-[#D4AF37]/50 focus-within:border-[#D4AF37]/50 transition-all">
-                  <button id="emoji-trigger-btn" type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-3 transition-colors rounded-full hover:bg-white/5 ${showEmojiPicker ? 'text-[#D4AF37]' : 'text-neutral-400'}`}>
-                    <Smile className="w-6 h-6" />
-                  </button>
-                  
-                  <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-                  <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="p-3 text-neutral-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-white/5 mr-1 disabled:opacity-50">
-                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-                  </button>
-                  
-                  <textarea 
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); } }}
-                    placeholder={uploading ? "Mengunggah..." : "Ketik pesan Anda..."} 
-                    disabled={uploading}
-                    className="flex-1 bg-transparent border-none px-2 py-3.5 text-white focus:outline-none text-[15px] max-h-32 resize-none custom-scroll placeholder:text-neutral-600 disabled:opacity-50"
-                    rows="1"
-                  />
-                </div>
+              <form onSubmit={handleSendMessage} className="flex gap-3 items-center relative">
+                <button id="emoji-trigger-btn" type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-3 transition-colors rounded-full hover:bg-white/5 ${showEmojiPicker ? 'text-[#D4AF37]' : 'text-neutral-400'}`}>
+                  <Smile className="w-6 h-6" />
+                </button>
+                
+                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="p-3 text-neutral-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-white/5 mr-1 disabled:opacity-50">
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                </button>
+                
+                <input 
+                  type="text"
+                  value={newMessage}
+                  onChange={handleTyping}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); } }}
+                  placeholder={uploading ? "Mengunggah..." : "Ketik pesan Anda..."} 
+                  disabled={uploading}
+                  className="flex-1 bg-[#222] border border-white/5 rounded-full px-5 py-3 text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-neutral-600 disabled:opacity-50"
+                />
                 
                 <button type="submit" disabled={!newMessage.trim() || uploading} className="w-14 h-14 bg-[#D4AF37] rounded-full flex items-center justify-center text-black hover:bg-yellow-500 disabled:opacity-50 disabled:hover:bg-[#D4AF37] transition-all hover:scale-105 flex-shrink-0 shadow-lg shadow-[#D4AF37]/20">
                   <Send className="w-6 h-6 ml-[-2px]" />

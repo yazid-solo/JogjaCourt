@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, UserCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatNotif } from '@/context/ChatNotifContext';
-import api, { WS_URL } from '@/lib/api';
+import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 export default function FloatingChat({ forceOpen = false }) {
   const { user } = useAuth();
@@ -15,9 +16,9 @@ export default function FloatingChat({ forceOpen = false }) {
   const [adminId, setAdminId] = useState(null);
   const adminName = "Admin Pusat";
   
-  const ws = useRef(null);
   const messagesEndRef = useRef(null);
-  const lastSendTime = useRef(0);
+  const typingTimeoutRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
   
   // Auto-scroll to bottom
   useEffect(() => {
@@ -49,62 +50,85 @@ export default function FloatingChat({ forceOpen = false }) {
     if (isOpen) clearUnread();
   }, [isOpen, clearUnread]);
 
-  // Handle WebSocket Connection & History
+  // Handle Supabase Realtime Connection & History
   useEffect(() => {
     if (!user || !isOpen || !adminId) return;
 
     // Fetch initial history
-    const fetchHistory = async (isPolling = false) => {
-      if (!isPolling) setLoading(true);
+    const fetchHistory = async () => {
+      setLoading(true);
       try {
         const res = await api.get(`/chat/history/${adminId}`);
         setMessages(res.data.messages || []);
+        // Tandai sebagai sudah dibaca
+        api.post(`/chat/read/${adminId}`);
       } catch (error) {
         console.error("Gagal memuat riwayat chat", error);
       } finally {
-        if (!isPolling) setLoading(false);
+        setLoading(false);
       }
     };
     fetchHistory();
-    
-    // Polling setiap 4 detik karena Vercel blokir WebSocket
-    const intervalId = setInterval(() => {
-      // Pause polling briefly after sending a message to prevent optimistic UI overwrite
-      if (Date.now() - lastSendTime.current > 3000) {
-        fetchHistory(true);
-      }
-    }, 4000);
 
-    // Connect WebSocket
-    const connectWs = () => {
-      ws.current = new WebSocket(`${WS_URL}/chat/ws/${user.id}`);
-      
-      ws.current.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          // Hanya tangkap pesan jika berasal dari admin yang sedang kita chat
-          if (msg.sender_id === adminId) {
-            setMessages(prev => [...prev, msg]);
-          }
-        } catch (error) {
-          console.error("Format pesan tidak valid");
+    const messageChannel = supabase.channel('public:messages')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, (payload) => {
+        const newMsg = payload.new;
+        if (newMsg.sender_id === adminId) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+          api.post(`/chat/read/${adminId}`);
+          
+          try {
+            const audio = new Audio('/ting.mp3');
+            audio.play().catch(() => {});
+          } catch(e) {}
         }
-      };
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id}`
+      }, (payload) => {
+        const updatedMsg = payload.new;
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
+      })
+      .subscribe();
 
-      ws.current.onclose = () => {
-        setTimeout(connectWs, 3000);
-      };
-    };
-
-    connectWs();
+    const typingChannel = supabase.channel('typing_indicators')
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload.receiver_id === user.id && payload.payload.sender_id === adminId) {
+          setIsTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 2000);
+        }
+      })
+      .subscribe();
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
-      if (ws.current) {
-        ws.current.close();
-      }
+      supabase.removeChannel(messageChannel);
+      supabase.removeChannel(typingChannel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [user, isOpen, adminId]);
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    if (adminId) {
+      supabase.channel('typing_indicators').send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { sender_id: user.id, receiver_id: adminId }
+      });
+    }
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -125,16 +149,11 @@ export default function FloatingChat({ forceOpen = false }) {
     };
     setMessages(prev => [...prev, optimisticMsg]);
     setNewMessage('');
-    lastSendTime.current = Date.now();
-
     // Kirim via REST POST
     try {
       await api.post('/chat/send', payload);
     } catch (err) {
       console.error("Gagal mengirim via API:", err);
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify(payload));
-      }
     } finally {
       setIsSending(false);
     }
@@ -237,6 +256,17 @@ export default function FloatingChat({ forceOpen = false }) {
               })
             )}
             <div ref={messagesEndRef} />
+            
+            {/* Typing Indicator */}
+            {isTyping && (
+              <div className="flex justify-start px-5 mt-2">
+                <div className="bg-[#1A1A1A] border border-[#333] text-neutral-400 py-2 px-4 rounded-2xl rounded-tl-sm text-sm italic flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Input Area */}
@@ -245,8 +275,8 @@ export default function FloatingChat({ forceOpen = false }) {
               <input 
                 type="text" 
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Ketik pesan..." 
+                onChange={handleTyping}
+                placeholder="Tulis pesan ke Pusat..." 
                 className="flex-1 bg-black border border-white/10 rounded-full px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37] transition-colors"
               />
               <button 

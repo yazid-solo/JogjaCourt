@@ -264,6 +264,31 @@ async def get_chat_history(
     
     return {"messages": msg_list}
 
+@router.post("/read/{contact_id}")
+async def mark_messages_as_read(
+    contact_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Tandai semua pesan dari contact_id sebagai telah dibaca"""
+    query = select(Message).where(
+        and_(
+            Message.sender_id == contact_id,
+            Message.receiver_id == current_user.id,
+            Message.is_read == False
+        )
+    )
+    result = await db.execute(query)
+    messages = result.scalars().all()
+    
+    for msg in messages:
+        msg.is_read = True
+        
+    if messages:
+        await db.commit()
+        
+    return {"status": "success", "updated_count": len(messages)}
+
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket, user_id)
