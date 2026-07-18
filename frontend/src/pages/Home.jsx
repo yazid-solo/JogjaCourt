@@ -17,7 +17,7 @@ import {
 import { TestimonialCarousel } from "@/components/blocks/testimonial-carousel"
 import { CinematicFooter } from "@/components/ui/motion-footer"
 import NotificationBell from "@/components/blocks/NotificationBell"
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { motion } from "framer-motion"
 import CardFanCarousel from "@/components/ui/card-fan-carousel"
 
 // Fan carousel cards - local badminton images
