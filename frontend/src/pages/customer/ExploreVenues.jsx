@@ -88,11 +88,23 @@ export default function ExploreVenues() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const checkRegionMatch = (address, regionId) => {
-    if (!address) return false;
-    const addr = address.toLowerCase();
+  const checkRegionMatch = (venue, regionId) => {
+    if (regionId === 'semua') return true;
+
+    if (venue.area && venue.area.name) {
+      const areaName = venue.area.name.toLowerCase();
+      switch(regionId) {
+        case 'sleman': return areaName.includes('sleman');
+        case 'bantul': return areaName.includes('bantul');
+        case 'kota': return areaName.includes('kota') || areaName.includes('yogyakarta');
+        case 'gunungkidul': return areaName.includes('gunungkidul') || areaName.includes('gunung kidul');
+        case 'kulonprogo': return areaName.includes('kulonprogo') || areaName.includes('kulon progo');
+        default: return true;
+      }
+    }
+
+    const addr = (venue.address || '').toLowerCase();
     switch (regionId) {
-      case 'semua': return true;
       case 'sleman': return addr.includes('sleman');
       case 'bantul': return addr.includes('bantul');
       case 'kota': return addr.includes('kota yogyakarta') || (addr.includes('yogyakarta') && !addr.includes('sleman') && !addr.includes('bantul') && !addr.includes('gunung') && !addr.includes('kulon'));
@@ -104,7 +116,7 @@ export default function ExploreVenues() {
 
   const filteredVenues = venues.filter(v => {
     const matchesSearch = v.name.toLowerCase().includes(searchQuery.toLowerCase()) || v.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRegion = selectedRegion ? checkRegionMatch(v.address, selectedRegion.id) : true;
+    const matchesRegion = selectedRegion ? checkRegionMatch(v, selectedRegion.id) : true;
     return matchesSearch && matchesRegion;
   });
 
