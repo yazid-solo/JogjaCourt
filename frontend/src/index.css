@@ -109,7 +109,6 @@
     select,
     textarea {
       @apply text-base; /* Prevents zoom-on-focus on iOS */
-      @apply p-4; /* Larger padding for touch */
     }
 
     button {

@@ -67,7 +67,7 @@ export default function Register() {
         </Link>
 
         {/* Card */}
-        <div className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-2xl">
+        <div className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-8 shadow-2xl">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-white mb-2">Buat Akun Baru</h1>
             <p className="text-neutral-400 text-sm">Bergabunglah dan nikmati kemudahan booking</p>
