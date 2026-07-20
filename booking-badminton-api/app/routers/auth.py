@@ -60,7 +60,7 @@ async def login(
 
 @router.post("/google", response_model=Token)
 async def google_login(req: GoogleLoginRequest, db: AsyncSession = Depends(get_db)):
-    """Simulated Google Login"""
+    """Google OAuth2 Login"""
     user = await process_google_login(
         db, 
         req.token, 

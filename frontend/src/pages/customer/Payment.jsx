@@ -23,10 +23,8 @@ export default function Payment() {
   const handleSimulatePayment = async () => {
     setLoading(true);
     try {
-      // Panggil endpoint backend asli untuk men-generate Invoice Xendit
       const res = await api.post(`/payments/${booking.id}/xendit-invoice`);
       if (res.data.invoice_url) {
-        // Alihkan (redirect) pengguna secara nyata ke halaman pembayaran Xendit
         window.location.href = res.data.invoice_url;
       } else {
         alert("Gagal mendapatkan link pembayaran.");
@@ -76,7 +74,7 @@ export default function Payment() {
       {/* Premium Background Effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg h-[400px] bg-[#D4AF37]/5 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Mockup Payment Gateway Wrapper */}
+      {/* Payment Gateway Wrapper */}
       <div className="w-full max-w-md bg-[#111]/90 backdrop-blur-2xl rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden relative z-10">
         
         {/* PG Header */}

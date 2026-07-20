@@ -122,13 +122,12 @@ async def create_xendit_invoice(
     elif payment.status not in [PaymentStatusEnum.pending, PaymentStatusEnum.failed]:
         raise HTTPException(status_code=400, detail="Pembayaran sudah diproses")
 
-    # SIMULATION MODE jika kunci Xendit kosong
+    # Enforce realistic payment - No Simulation/Demo allowed
     if not settings.XENDIT_SECRET_KEY:
-        # Otomatis jadikan lunas (hanya untuk simulasi/demo)
-        payment.status = PaymentStatusEnum.paid
-        booking.status = BookingStatusEnum.confirmed
-        await db.commit()
-        return {"invoice_url": "simulated_success"}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Gateway pembayaran Xendit belum dikonfigurasi oleh Super Admin. Transaksi tidak dapat diproses secara realistis."
+        )
 
     # Siapkan request ke Xendit Invoices API
     xendit_url = "https://api.xendit.co/v2/invoices"

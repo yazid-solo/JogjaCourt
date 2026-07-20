@@ -63,8 +63,8 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 class GoogleLoginRequest(BaseModel):
-    token: str # Simulated Google token / ID
-    is_mitra: Optional[bool] = False
+    token: str # Google OAuth2 token / ID
+    is_mitra: bool = False
     mitra_gor_name: Optional[str] = None
     mitra_gor_address: Optional[str] = None
 

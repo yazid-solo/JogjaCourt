@@ -165,10 +165,10 @@ async def approve_kyc_request(
     area_result = await db.execute(select(Area).limit(1))
     area = area_result.scalar_one_or_none()
     if not area:
-        # Create a dummy area if none exist
-        area = Area(name="Umum")
-        db.add(area)
-        await db.flush()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sistem belum dikonfigurasi dengan Area operasional. Harap tunggu Super Admin menambahkan Area terlebih dahulu."
+        )
         
     # 3. Create Venue
     new_venue = Venue(
