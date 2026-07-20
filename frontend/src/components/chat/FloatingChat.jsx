@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, UserCircle, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, UserCircle, Loader2, Smile, Paperclip } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatNotif } from '@/context/ChatNotifContext';
-import api from '@/lib/api';
+import api, { API_URL } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 const notificationSound = typeof window !== 'undefined' ? new Audio('/ting.mp3') : null;
@@ -21,7 +22,13 @@ export default function FloatingChat({ forceOpen = false }) {
   const [adminId, setAdminId] = useState(null);
   const adminName = "Admin Pusat";
   
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+  const fileInputRef = useRef(null);
+  
   const typingTimeoutRef = useRef(null);
   const [isTyping, setIsTyping] = useState(false);
   
@@ -35,6 +42,17 @@ export default function FloatingChat({ forceOpen = false }) {
   useEffect(() => {
     if (forceOpen) setIsOpen(true);
   }, [forceOpen]);
+
+  // Handle click outside emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target) && !event.target.closest('#emoji-trigger-btn')) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Fetch Super Admin ID
   useEffect(() => {
@@ -150,16 +168,6 @@ export default function FloatingChat({ forceOpen = false }) {
       content: newMessage.trim()
     };
 
-    const optimisticMsg = {
-      id: Date.now().toString(),
-      sender_id: user.id,
-      receiver_id: adminId,
-      content: newMessage.trim(),
-      created_at: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, optimisticMsg]);
-    setNewMessage('');
-    // Kirim via REST POST
     try {
       await api.post('/chat/send', payload);
     } catch (err) {
@@ -256,7 +264,23 @@ export default function FloatingChat({ forceOpen = false }) {
                         ? 'bg-[#D4AF37] text-black rounded-tr-sm shadow-[0_4px_15px_rgba(212,175,55,0.2)]' 
                         : 'bg-white/10 text-white rounded-tl-sm border border-white/5'
                     }`}>
-                      <p className="text-[13px] leading-relaxed">{msg.content}</p>
+                      {/* File Attachment */}
+                      {msg.attachment_url && (
+                        <div className="mb-1.5">
+                          {msg.attachment_url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                            <img src={`${API_URL.replace('/api/v1', '')}${msg.attachment_url}`} alt="Attachment" className="max-w-[150px] sm:max-w-[200px] rounded-xl object-contain max-h-48" />
+                          ) : (
+                            <a href={`${API_URL.replace('/api/v1', '')}${msg.attachment_url}`} target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-xl border ${isMe ? 'bg-black/10 border-black/10' : 'bg-white/5 border-white/10'}`}>
+                              <Paperclip className="w-4 h-4" />
+                              <span className="text-xs font-bold underline truncate max-w-[120px]">{msg.content || 'Download File'}</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {/* Text Message */}
+                      {msg.content && msg.message_type !== 'file' && (
+                        <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                      )}
                       <p className={`text-[9px] mt-1 text-right ${isMe ? 'text-black/60' : 'text-neutral-500'}`}>
                         {formatTime(msg.created_at)}
                       </p>
@@ -280,19 +304,38 @@ export default function FloatingChat({ forceOpen = false }) {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-black/40 border-t border-white/10">
-            <form onSubmit={handleSendMessage} className="flex gap-2 relative">
+          <div className="p-3 bg-black/40 border-t border-white/10 relative">
+            {showEmojiPicker && (
+              <div ref={emojiPickerRef} className="absolute bottom-16 left-4 z-50 animate-in slide-in-from-bottom-2 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
+                <EmojiPicker 
+                  theme="dark" 
+                  onEmojiClick={(emojiData) => setNewMessage(prev => prev + emojiData.emoji)} 
+                  width={280}
+                  height={350}
+                />
+              </div>
+            )}
+            <form onSubmit={handleSendMessage} className="flex gap-2 relative items-center">
+              <button id="emoji-trigger-btn" type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-2 transition-colors rounded-full hover:bg-white/5 ${showEmojiPicker ? 'text-[#D4AF37]' : 'text-neutral-400'}`}>
+                <Smile className="w-5 h-5" />
+              </button>
+              
+              <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+              <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="p-2 text-neutral-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-white/5 disabled:opacity-50">
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+              </button>
+
               <input 
                 type="text" 
                 value={newMessage}
                 onChange={handleTyping}
-                placeholder="Tulis pesan ke Pusat..." 
-                className="flex-1 bg-black border border-white/10 rounded-full px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37] transition-colors"
+                placeholder="Tulis pesan..." 
+                className="flex-1 bg-black border border-white/10 rounded-full px-3 py-2 text-white text-sm focus:outline-none focus:border-[#D4AF37] transition-colors min-w-0"
               />
               <button 
                 type="submit"
                 disabled={isSending || !newMessage.trim()}
-                className={`p-3 rounded-full flex items-center justify-center transition-all ${
+                className={`p-2 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
                   isSending || !newMessage.trim() 
                     ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' 
                     : 'bg-[#D4AF37] text-black hover:bg-yellow-400 hover:scale-105 shadow-[0_0_15px_rgba(212,175,55,0.3)]'
