@@ -278,7 +278,7 @@ export default function Home() {
                   Bagi mitra pengelola, sistem kami menyediakan dashboard terpusat untuk mengatur harga, ketersediaan lapangan, hingga rekapitulasi laporan pendapatan secara otomatis.
                 </p>
                 <div className="mt-8">
-                  <Link to="/register-mitra" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:text-white transition-colors">
+                  <Link to="/mitra-register" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:text-white transition-colors">
                     Pelajari Fitur Mitra <span className="text-xl">→</span>
                   </Link>
                 </div>
