@@ -20,8 +20,9 @@ Sistem ini beroperasi secara **Otomatis, Real-Time, dan Realistis** tanpa data *
 - Fitur sewa per bulan tidak terkunci pada awal bulan (kalender konvensional), melainkan menggunakan sistem hitung mundur 30 Hari (Date Range) yang presisi.
 - Sistem otomatis menghitung 30 hari ke depan dan mendeteksi bentrok jadwal di hari-hari yang dipilih.
 
-### 4. Chat Sentralisasi Anti-Fraud (Live WebSocket)
-- Sistem obrolan dua arah secara *real-time* (tanpa perlu reload halaman).
+### 4. Chat Sentralisasi Anti-Fraud (Supabase Realtime)
+- Sistem obrolan dua arah secara *real-time* dengan latensi nol (0ms latency), dilengkapi fitur **Typing Indicators (sedang mengetik...)** dan **Read Receipts (centang biru)** layaknya WhatsApp.
+- Ditenagai oleh **Supabase Realtime (PostgreSQL CDC)** untuk menggantikan *WebSocket polling* konvensional, memastikan pesan langsung disiarkan ke layar pengguna seketika.
 - **Anti-Fraud Architecture**: Pelanggan (Customer) dan Pemilik GOR (Mitra) tidak diizinkan berkomunikasi langsung di luar pengawasan sistem. Semua pesan dari Pelanggan dan Mitra masuk terpusat ke satu akun **Super Admin (Pemilik Platform)** untuk menjaga keamanan transaksi.
 
 ### 5. Pencairan Dana Otomatis (Auto-Payouts)
@@ -74,7 +75,7 @@ Sistem menerapkan **Role-Based Access Control (RBAC)** dengan tiga level:
 | **Backend** | FastAPI, Python 3.10+, Uvicorn | API super cepat & *asynchronous* |
 | **Database** | PostgreSQL, SQLAlchemy (Async), Alembic | Database relasional untuk transaksi data skala besar |
 | **Payments** | Xendit API, Webhooks | Payment gateway & Payout gateway (Real Money) |
-| **Messaging** | Fonnte API, Python SMTP, WebSockets | Kirim WA, Email, Lupa Sandi, dan Live Chat |
+| **Messaging** | Fonnte API, Python SMTP, Supabase Realtime | Kirim WA, Email, Lupa Sandi, dan Live Chat (Zero-Latency) |
 | **Background**| APScheduler | Menjalankan robot pengecekan pembatalan otomatis 15-menit |
 
 ---

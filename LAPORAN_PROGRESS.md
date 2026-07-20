@@ -34,10 +34,17 @@ Dokumen ini adalah ringkasan dari seluruh pencapaian, fitur, dan arsitektur kela
 - Menggunakan sistem **Berlangganan 30 Hari** yang presisi, bukan sekadar siklus awal-akhir bulan.
 - **Deteksi Bentrok Kompleks:** Mesin *backend* memeriksa jadwal hari-hari yang dipilih dalam rentang 30 hari tersebut terhadap pesanan *per-jam* milik pengguna lain. Risiko *double-booking* = 0%.
 
-## 6. Sentralisasi Chat (Anti-Bypass System)
-**Status: Selesai 100% (Live WebSockets)**
+## 6. Sentralisasi Chat (Zero-Latency Realtime)
+**Status: Selesai 100% (Supabase PostgreSQL CDC)**
 - Untuk mencegah kecurangan (transaksi di luar sistem), **fitur Chat antara Pelanggan dan Admin Mitra dikunci mati**.
-- Semua *Live Chat* bermuara ke **Super Admin (Pemilik Platform)**. Aplikasi dilengkapi pengaman di level API (*Backend Firewall*) yang menolak pesan lintas pihak di luar Super Admin.
+- Semua *Live Chat* bermuara ke **Super Admin (Pemilik Platform)**. Aplikasi dilengkapi pengaman di level API (*Backend Firewall*) yang menolak pesan lintas pihak.
+- **WhatsApp-like Experience**: Sistem perpesanan telah dirombak menggunakan **Supabase Realtime** sehingga memberikan pengalaman *chatting* seketika (*zero-latency*). Dilengkapi fitur indikator *Typing* (sedang mengetik...) dan *Read Receipts* (centang dua biru).
+- **Instant Audio Notification**: Fitur suara notifikasi *Ting!* telah dioptimasi dengan teknik *Memory Preloading* sehingga audio terputar 0 milidetik tepat bersamaan dengan visual pesan masuk.
+
+## 6.5. Perbaikan Bug Geospasial & Pencarian GOR
+**Status: Selesai 100% (Relational Area Matching)**
+- Sistem penyaringan (filter) lokasi pada *Explore Venues* (Halaman Publik Pelanggan) sebelumnya hanya mengandalkan deteksi string/teks manual dari input alamat Mitra. Ini menyebabkan GOR "hilang" dari daftar publik jika Mitra tidak mengetik nama kabupaten dengan benar.
+- Telah diperbaiki menjadi **Database Area Relationship Matching**, memastikan 100% akurasi kemunculan GOR di halaman publik wilayah yang dipilih tanpa bergantung pada ketikan manual Mitra.
 
 ## 7. Penjaga Latar Belakang (Cron Jobs & Row-Locking)
 **Status: Selesai 100%**
