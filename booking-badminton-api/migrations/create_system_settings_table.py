@@ -16,7 +16,7 @@ async def run():
             ("maintenance_mode", "false", "Status Maintenance Mode (true/false)"),
             ("platform_fee_hourly", "5000", "Potongan platform per transaksi sewa per jam"),
             ("platform_fee_monthly", "15000", "Potongan platform per transaksi member bulanan"),
-            ("xendit_api_key", "xnd_production_key_dummy", "API Key untuk Xendit"),
+            ("xendit_api_key", "xnd_production_key_placeholder", "API Key untuk Xendit"),
             ("webhook_url", "https://api.jogjacourt.com/payments/webhook", "Webhook URL untuk gateway pembayaran")
         ]
         

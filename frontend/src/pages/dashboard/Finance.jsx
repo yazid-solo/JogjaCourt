@@ -190,7 +190,7 @@ export default function Finance() {
             </span>
           </div>
           <p className="text-neutral-500 font-bold text-[11px] uppercase tracking-widest mb-1">Total Nilai Transaksi</p>
-          <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">{formatIDR(totalGross)}</h3>
+          <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight break-words">{formatIDR(totalGross)}</h3>
         </div>
         
         {/* Card 3: Platform Fee */}
@@ -206,7 +206,7 @@ export default function Finance() {
             </span>
           </div>
           <p className="text-neutral-500 font-bold text-[11px] uppercase tracking-widest mb-1">Total Biaya Platform</p>
-          <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">{formatIDR(totalPlatformFee)}</h3>
+          <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight break-words">{formatIDR(totalPlatformFee)}</h3>
         </div>
       </motion.div>
 
@@ -222,7 +222,7 @@ export default function Finance() {
           </h3>
           <div className="h-[250px] sm:h-[300px] w-full relative z-10">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.6}/>

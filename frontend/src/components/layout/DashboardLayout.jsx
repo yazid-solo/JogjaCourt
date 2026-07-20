@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import { 
@@ -30,6 +30,8 @@ export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { unreadCount: chatUnread, clearUnread: clearChatUnread } = useChatNotif();
+  const location = useLocation();
+  const isChatPage = location.pathname === '/dashboard/chat';
 
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [expanded, setExpanded]         = useState(false);
@@ -346,27 +348,27 @@ export default function DashboardLayout() {
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         
         {/* Header */}
-        <header className="h-[72px] flex-shrink-0 flex items-center justify-between px-4 sm:px-6 z-30 relative"
+        <header className="h-[72px] flex-shrink-0 flex items-center justify-between px-3 sm:px-6 z-30 relative"
           style={{ background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           
-          <div className="flex items-center gap-4">
-            <button className="lg:hidden w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
+            <button className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
               onClick={() => setSidebarOpen(true)}>
               <Menu className="w-4 h-4" />
             </button>
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg,#D4AF37,#f5d778)' }} />
-              <h2 className="text-[15px] font-black text-white tracking-tight">Dashboard</h2>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <div className="w-1 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg,#D4AF37,#f5d778)' }} />
+              <h2 className="text-[12px] sm:text-[15px] font-black text-white tracking-tight truncate">Dashboard</h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <Link to="/dashboard/chat"
-              className="relative w-9 h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
               onClick={clearChatUnread}>
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               {chatUnread > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#080808] animate-pulse flex items-center justify-center text-[7px] font-black text-white">
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-red-500 rounded-full border border-[#080808] sm:border-2 animate-pulse flex items-center justify-center text-[6px] sm:text-[7px] font-black text-white">
                   {chatUnread > 9 ? '9+' : chatUnread}
                 </span>
               )}
@@ -374,23 +376,23 @@ export default function DashboardLayout() {
 
             <NotificationBell />
 
-            <Link to="/dashboard/settings" className="flex items-center gap-2.5 pl-4 border-l border-white/10 hover:opacity-80 transition-opacity">
-              <div className="hidden md:block text-right">
-                <p className="text-[13px] font-black text-white leading-none truncate max-w-[130px]">{user?.name}</p>
-                <p className="text-[10px] text-neutral-500 mt-0.5 truncate max-w-[130px]">{user?.email}</p>
+            <Link to="/dashboard/settings" className="flex items-center gap-1.5 sm:gap-2.5 pl-2 sm:pl-4 border-l border-white/10 hover:opacity-80 transition-opacity min-w-0">
+              <div className="text-right">
+                <p className="text-[10px] sm:text-[13px] font-black text-white leading-none truncate max-w-[60px] sm:max-w-[130px]">{user?.name}</p>
+                <p className="text-[8px] sm:text-[10px] text-neutral-500 mt-0.5 truncate max-w-[60px] sm:max-w-[130px]">{user?.email}</p>
               </div>
-              <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
                 style={{ border: '2px solid rgba(212,175,55,0.4)', boxShadow: '0 0 12px rgba(212,175,55,0.2)' }}>
                 {user?.profile_image
                   ? <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover" />
-                  : <UserCircle className="w-5 h-5 text-[#D4AF37]/60" />}
+                  : <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37]/60" />}
               </div>
             </Link>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-8 scroll-smooth">
+        <div className={`flex-1 overflow-y-auto scroll-smooth ${isChatPage ? 'p-0' : 'p-3 sm:p-6 md:p-8 pb-8'}`}>
           <Outlet />
         </div>
       </main>

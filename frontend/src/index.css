@@ -105,7 +105,7 @@
 @layer components {
   /* Better touch targets on mobile */
   @media (max-width: 768px) {
-    input,
+    input:not(.chat-input),
     select,
     textarea {
       @apply text-base; /* Prevents zoom-on-focus on iOS */

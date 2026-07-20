@@ -261,7 +261,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Total Pendapatan</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
                 <AnimatedNumber value={stats?.total_revenue_today} />
               </h3>
             </div>
@@ -281,8 +281,8 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Booking Berhasil</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
-                <AnimatedInteger value={stats?.total_bookings_today} /> <span className="text-lg text-neutral-500 font-medium">Sesi</span>
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
+                <AnimatedInteger value={stats?.total_bookings_today} /> <span className="text-sm sm:text-lg text-neutral-500 font-medium">Sesi</span>
               </h3>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 flex items-center justify-center shadow-lg">
@@ -301,8 +301,8 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Menunggu Bayar</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
-                <AnimatedInteger value={stats?.pending_payments_count} /> <span className="text-lg text-neutral-500 font-medium">Pesanan</span>
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
+                <AnimatedInteger value={stats?.pending_payments_count} /> <span className="text-sm sm:text-lg text-neutral-500 font-medium">Pesanan</span>
               </h3>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 border border-orange-500/20 flex items-center justify-center shadow-lg">
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
           <div className="flex-1 w-full relative z-10">
             {revenueData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#D4AF37" stopOpacity={1}/>

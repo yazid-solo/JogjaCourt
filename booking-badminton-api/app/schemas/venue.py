@@ -14,7 +14,7 @@ class VenueBase(BaseModel):
     image_url: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    area_id: UUID
+    area_id: Optional[UUID] = None
     facilities: Optional[list[str]] = []
 
 class VenueCreate(VenueBase):
@@ -43,7 +43,7 @@ class VenueResponse(VenueBase):
     model_config = ConfigDict(from_attributes=True)
 
 class VenueDetailResponse(VenueResponse):
-    area: AreaResponse
+    area: Optional[AreaResponse] = None
     
     model_config = ConfigDict(from_attributes=True)
 

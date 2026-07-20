@@ -27,7 +27,7 @@ async def send_whatsapp_message(phone_number: str, message: str):
         
     if not settings.FONNTE_TOKEN:
         logger.warning(f"[WA GATEWAY] FONNTE_TOKEN belum diatur. Pesan ke {phone_number} dibatalkan.")
-        logger.info(f"[SIMULASI WA]:\n{message}")
+        logger.info(f"[DEBUG WA PENDING]:\n{message}")
         return
 
     url = "https://api.fonnte.com/send"

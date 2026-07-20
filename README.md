@@ -34,6 +34,7 @@ Sistem ini beroperasi secara **Otomatis, Real-Time, dan Realistis** tanpa data *
 
 ### 7. UI/UX Kelas Dunia (Native-Mobile Ready & 3D Glassmorphism)
 - **Super Responsif (100dvh):** Sistem mengadopsi standar aplikasi seluler menggunakan `100dvh` dan *safe-area insets* untuk menangani *Notch* dan *Home Indicator* di iOS/Android. Tampilan mengembang penuh tanpa terpotong *address bar browser*.
+- **Mobile-First UX:** Elemen *floating* yang mengganggu pada layar HP (seperti tombol obrolan melayang) otomatis disembunyikan dan diintegrasikan rapi ke dalam Panel Dashboard, mencegah tumpang tindih navigasi pada antarmuka sentuh.
 - **Animasi Super Mulus (Bebas Lag):** Menggunakan *Framer Motion* dan optimasi khusus *GSAP ScrollTrigger* untuk memberikan efek *3D Tilt*, *staggered lists*, tanpa layar *nge-blank* saat *scrolling*.
 - **Desain Premium:** Mengusung tema gelap elegan dengan efek kaca buram (*Backdrop-Blur Glassmorphism*), aksen pendaran emas, dan E-Tiket berkonsep holografik VIP.
 

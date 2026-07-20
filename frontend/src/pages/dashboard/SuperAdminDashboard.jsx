@@ -257,7 +257,7 @@ export default function SuperAdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Fee Platform (Bulan Ini)</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
                 <AnimatedNumber value={platformRevenue} />
               </h3>
             </div>
@@ -277,8 +277,8 @@ export default function SuperAdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Transaksi Global (Hari Ini)</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
-                <AnimatedInteger value={globalStats?.total_bookings_today} /> <span className="text-lg text-neutral-500 font-medium">Sesi</span>
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
+                <AnimatedInteger value={globalStats?.total_bookings_today} /> <span className="text-sm sm:text-lg text-neutral-500 font-medium">Sesi</span>
               </h3>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 flex items-center justify-center shadow-lg">
@@ -297,8 +297,8 @@ export default function SuperAdminDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Verifikasi GOR Baru (KYC)</p>
-              <h3 className="text-3xl sm:text-4xl font-black text-white truncate drop-shadow-md">
-                <AnimatedInteger value={kycPendingCount} /> <span className="text-lg text-neutral-500 font-medium">Mitra</span>
+              <h3 className="text-2xl sm:text-4xl font-black text-white break-words drop-shadow-md leading-tight">
+                <AnimatedInteger value={kycPendingCount} /> <span className="text-sm sm:text-lg text-neutral-500 font-medium">Mitra</span>
               </h3>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 border border-orange-500/20 flex items-center justify-center shadow-lg">
@@ -339,7 +339,7 @@ export default function SuperAdminDashboard() {
           <div className="flex-1 w-full relative z-10">
             {revenueData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorGlobalRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#10B981" stopOpacity={0.4}/>

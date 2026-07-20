@@ -592,7 +592,7 @@ export default function Chat() {
   const filteredContacts = contacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-10rem)] max-w-6xl mx-auto flex flex-col md:flex-row gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+    <div className="w-full h-[calc(100dvh-72px)] md:h-full flex flex-col md:flex-row md:p-6 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative bg-[#080808]">
       
       <style>{`
         .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -665,7 +665,7 @@ export default function Chat() {
       )}
 
       {/* Sidebar */}
-      <div className={`w-full md:w-1/3 md:min-w-[280px] bg-[#111] border border-white/10 rounded-3xl ${activeContact ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden shadow-xl`}>
+      <div className={`w-full h-full md:w-1/3 md:min-w-[320px] bg-[#111] border-r border-white/10 md:border md:rounded-3xl ${activeContact ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden shadow-xl`}>
         <div className="p-5 border-b border-white/10 bg-black/40 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-black text-white tracking-tight">Pesan</h2>
@@ -765,48 +765,50 @@ export default function Chat() {
       </div>
 
       {/* Chat Area */}
-      <div className={`flex-1 bg-[#111] border border-white/10 rounded-3xl ${!activeContact ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden relative shadow-2xl`}>
+      <div className={`flex-1 w-full h-full min-w-0 bg-[#111] md:border border-white/10 md:rounded-3xl ${!activeContact ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden relative shadow-2xl`}>
         <div className="absolute inset-0 z-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
 
         {activeContact ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 px-4 md:px-6 border-b border-white/10 flex justify-between items-center bg-[#161616] z-30">
-              <div className="flex items-center gap-2 md:gap-4">
-                <button onClick={() => setActiveContact(null)} className="md:hidden w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+            <div className="p-2.5 sm:p-4 px-3 md:px-6 border-b border-white/10 flex justify-between items-center bg-[#161616] z-30 min-h-[56px] sm:min-h-[70px]">
+              <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+                <button onClick={() => setActiveContact(null)} className="md:hidden w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors flex-shrink-0">
                   <ArrowLeft className="w-5 h-5 text-white" />
                 </button>
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-neutral-800 flex items-center justify-center border-2 border-white/5 flex-shrink-0">
                   <UserCircle className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
                 </div>
-                <div className="min-w-0">
-                  <h2 className="font-black text-white text-lg tracking-tight flex items-center gap-2">
-                    {activeContact.name}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h2 className="font-black text-white text-sm sm:text-lg tracking-tight truncate max-w-full">
+                      {activeContact.name}
+                    </h2>
                     {activeContact.role && (
-                      <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${
+                      <span className={`text-[8px] sm:text-[10px] uppercase tracking-widest font-bold px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0 ${
                         activeContact.role === 'super_admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-[#D4AF37]/20 text-[#D4AF37]'
                       }`}>
                         {activeContact.role === 'super_admin' ? 'Super Admin' : (activeContact.role === 'admin' ? 'Mitra GOR' : 'Pelanggan')}
                       </span>
                     )}
-                  </h2>
+                  </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                    <span className="text-xs text-[#10b981] font-bold tracking-wide">Online</span>
+                    <span className="text-[10px] sm:text-xs text-[#10b981] font-bold tracking-wide">Online</span>
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 text-neutral-400 relative">
-                <button onClick={() => startCall('audio')} className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
-                  <Phone className="w-5 h-5" />
+              <div className="flex items-center gap-1 sm:gap-2 text-neutral-400 relative flex-shrink-0 ml-2">
+                <button onClick={() => startCall('audio')} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-                <button onClick={() => startCall('video')} className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
-                  <Video className="w-5 h-5" />
+                <button onClick={() => startCall('video')} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <div className="w-px h-6 bg-white/10 mx-1"></div>
-                <button id="menu-trigger-btn" onClick={() => setShowMenu(!showMenu)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${showMenu ? 'bg-white/10 text-white' : 'hover:bg-white/10'}`}>
-                  <MoreVertical className="w-5 h-5" />
+                <button id="menu-trigger-btn" onClick={() => setShowMenu(!showMenu)} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${showMenu ? 'bg-white/10 text-white' : 'hover:bg-white/10'}`}>
+                  <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 
                 {/* Dropdown Menu */}
@@ -859,7 +861,7 @@ export default function Chat() {
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 z-10 custom-scroll flex flex-col">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 z-10 custom-scroll flex flex-col">
               {loadingHistory ? (
                 <div className="flex justify-center items-center h-full">
                   <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
@@ -880,7 +882,7 @@ export default function Chat() {
                     
                     return (
                       <div key={msg.id} className={`flex w-full mb-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`flex max-w-[85%] md:max-w-[70%] items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`flex max-w-[88%] md:max-w-[70%] items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                           
                           {/* Avatar */}
                           {!isMe && (
@@ -894,10 +896,10 @@ export default function Chat() {
                             
                             {/* Name Tag for received messages */}
                             {!isMe && (
-                              <span className="text-[10px] font-bold text-neutral-500 mb-1 ml-1 flex items-center gap-1.5">
-                                {msg.sender_name || activeContact.name}
+                              <span className="text-[10px] font-bold text-neutral-500 mb-1 ml-1 flex items-center gap-1.5 flex-wrap">
+                                <span className="truncate max-w-[120px]">{msg.sender_name || activeContact.name}</span>
                                 {(msg.sender_role || activeContact.role) && (
-                                  <span className="text-[8px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1.5 py-0.5 rounded-sm">
+                                  <span className="text-[8px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1.5 py-0.5 rounded-sm flex-shrink-0">
                                     {(msg.sender_role || activeContact.role) === 'super_admin' ? 'Super Admin' : ((msg.sender_role || activeContact.role) === 'admin' ? 'Mitra GOR' : 'Pelanggan')}
                                   </span>
                                 )}
@@ -966,7 +968,7 @@ export default function Chat() {
               </div>
             )}
 
-            <div className="p-4 px-6 border-t border-white/10 bg-[#161616] z-10 relative">
+            <div className="p-2 sm:p-4 px-3 sm:px-6 border-t border-white/10 bg-[#161616] z-10 relative">
               {showEmojiPicker && (
                 <div ref={emojiPickerRef} className="absolute bottom-24 left-6 z-50 animate-in slide-in-from-bottom-2 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
                   <EmojiPicker 
@@ -978,14 +980,14 @@ export default function Chat() {
                 </div>
               )}
 
-              <form onSubmit={handleSendMessage} className="flex gap-3 items-center relative">
-                <button id="emoji-trigger-btn" type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-3 transition-colors rounded-full hover:bg-white/5 ${showEmojiPicker ? 'text-[#D4AF37]' : 'text-neutral-400'}`}>
-                  <Smile className="w-6 h-6" />
+              <form onSubmit={handleSendMessage} className="flex gap-1.5 sm:gap-3 items-center relative w-full">
+                <button id="emoji-trigger-btn" type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-2 sm:p-3 transition-colors rounded-full hover:bg-white/5 flex-shrink-0 ${showEmojiPicker ? 'text-[#D4AF37]' : 'text-neutral-400'}`}>
+                  <Smile className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 
                 <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-                <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="p-3 text-neutral-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-white/5 mr-1 disabled:opacity-50">
-                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="p-2 sm:p-3 text-neutral-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-white/5 flex-shrink-0 disabled:opacity-50">
+                  {uploading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
                 
                 <input 
@@ -993,13 +995,13 @@ export default function Chat() {
                   value={newMessage}
                   onChange={handleTyping}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); } }}
-                  placeholder={uploading ? "Mengunggah..." : "Ketik pesan Anda..."} 
+                  placeholder={uploading ? "Mengunggah..." : "Ketik pesan..."} 
                   disabled={uploading}
-                  className="flex-1 bg-[#222] border border-white/5 rounded-full px-5 py-3 text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-neutral-600 disabled:opacity-50"
+                  className="flex-1 min-w-0 bg-[#222] border border-white/5 rounded-full px-4 py-2 sm:py-3 text-[14px] sm:text-sm text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all placeholder:text-neutral-600 disabled:opacity-50 chat-input"
                 />
                 
-                <button type="submit" disabled={!newMessage.trim() || uploading} className="w-14 h-14 bg-[#D4AF37] rounded-full flex items-center justify-center text-black hover:bg-yellow-500 disabled:opacity-50 disabled:hover:bg-[#D4AF37] transition-all hover:scale-105 flex-shrink-0 shadow-lg shadow-[#D4AF37]/20">
-                  <Send className="w-6 h-6 ml-[-2px]" />
+                <button type="submit" disabled={!newMessage.trim() || uploading} className="w-10 h-10 sm:w-14 sm:h-14 bg-[#D4AF37] rounded-full flex items-center justify-center text-black hover:bg-yellow-500 disabled:opacity-50 disabled:hover:bg-[#D4AF37] transition-all hover:scale-105 flex-shrink-0 shadow-lg shadow-[#D4AF37]/20 ml-1">
+                  <Send className="w-4 h-4 sm:w-6 sm:h-6 ml-[-2px]" />
                 </button>
               </form>
             </div>

@@ -60,24 +60,36 @@ export default function ExploreVenues() {
   const { user } = useAuth();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   // State untuk alur (Flow)
   const [step, setStep] = useState('region'); // 'region' | 'venues'
   const [selectedRegion, setSelectedRegion] = useState(null);
 
+  const fetchVenues = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get('/venues?size=500&is_public=true', {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      // Hanya tampilkan yang aktif untuk publik
+      const fetchedData = res.data?.data || [];
+      setVenues(fetchedData.filter(v => v.is_active));
+    } catch (err) {
+      console.error("Gagal memuat venue", err);
+      setError("Gagal memuat daftar GOR. Periksa koneksi Anda.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const res = await api.get('/venues?size=500&is_public=true');
-        // Hanya tampilkan yang aktif untuk publik
-        setVenues(res.data.data.filter(v => v.is_active));
-      } catch (error) {
-        console.error("Gagal memuat venue", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchVenues();
   }, []);
 
@@ -291,6 +303,22 @@ export default function ExploreVenues() {
                   <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mb-4" />
                   <p className="text-neutral-500 font-medium animate-pulse">Menyiapkan daftar GOR...</p>
                 </div>
+              ) : error ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16 border-2 border-red-500/20 rounded-3xl bg-red-500/5 backdrop-blur-md max-w-2xl mx-auto"
+                >
+                  <MapPin className="w-16 h-16 text-red-500 mx-auto mb-4 opacity-70" />
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{error}</h3>
+                  <p className="text-neutral-400 max-w-md mx-auto mb-6">Ada sedikit masalah saat memuat data dari server. Silakan coba lagi.</p>
+                  <button 
+                    onClick={fetchVenues}
+                    className="px-6 py-2.5 bg-[#D4AF37] text-black font-bold rounded-full hover:scale-105 transition-transform"
+                  >
+                    Coba Lagi
+                  </button>
+                </motion.div>
               ) : filteredVenues.length === 0 ? (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.9 }}

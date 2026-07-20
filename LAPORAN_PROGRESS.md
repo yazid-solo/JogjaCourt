@@ -46,6 +46,12 @@ Dokumen ini adalah ringkasan dari seluruh pencapaian, fitur, dan arsitektur kela
 - Sistem penyaringan (filter) lokasi pada *Explore Venues* (Halaman Publik Pelanggan) sebelumnya hanya mengandalkan deteksi string/teks manual dari input alamat Mitra. Ini menyebabkan GOR "hilang" dari daftar publik jika Mitra tidak mengetik nama kabupaten dengan benar.
 - Telah diperbaiki menjadi **Database Area Relationship Matching**, memastikan 100% akurasi kemunculan GOR di halaman publik wilayah yang dipilih tanpa bergantung pada ketikan manual Mitra.
 
+## 6.6. Perbaikan Stabilitas API & UI Mobile
+**Status: Selesai 100% (Crash-Free)**
+- **API Explore Venues Crash Fix:** Telah memperbaiki *bug fatal* (HTTP 500) yang terjadi saat sistem gagal melakukan serialisasi data GOR pada halaman publik (menyebabkan tampilan daftar GOR menjadi kosong). Skema respons `Pydantic` telah disesuaikan agar mampu menangani data secara dinamis tanpa merusak koneksi, memastikan GOR muncul dengan sempurna untuk semua *role*.
+- **Pembersihan Layar Ponsel:** Fitur *Floating Chat* (Tombol Obrolan Melayang) kini otomatis disembunyikan pada perangkat HP seluler untuk menghindari tumpang tindih UI, mengingat fitur obrolan sudah terintegrasi secara rapi di dalam Panel Dasbor khusus ponsel.
+
+
 ## 7. Penjaga Latar Belakang (Cron Jobs & Row-Locking)
 **Status: Selesai 100%**
 - **APScheduler:** Robot *backend* memantau batas waktu pembayaran 15 menit. Jika lewat, pesanan dibatalkan otomatis dan slot lapangan dikembalikan.

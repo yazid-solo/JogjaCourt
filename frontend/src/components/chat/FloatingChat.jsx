@@ -190,7 +190,7 @@ export default function FloatingChat({ forceOpen = false }) {
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center hover:scale-110 transition-transform z-[60]"
+          className="hidden md:flex fixed bottom-6 right-6 w-14 h-14 bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] items-center justify-center hover:scale-110 transition-transform z-[60]"
         >
           <MessageSquare className="w-6 h-6" />
           {/* Badge Notifikasi Merah */}
@@ -206,7 +206,7 @@ export default function FloatingChat({ forceOpen = false }) {
       {!isOpen && latestMsg && (
         <div
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="fixed bottom-24 right-6 z-50 max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
+          className="hidden md:block fixed bottom-24 right-6 z-50 max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
         >
           <p className="text-[11px] font-bold text-[#D4AF37] mb-0.5">💬 {latestMsg.sender_name}</p>
           <p className="text-xs text-white/80 line-clamp-2">{latestMsg.content}</p>
@@ -215,7 +215,7 @@ export default function FloatingChat({ forceOpen = false }) {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col z-50 animate-in slide-in-from-bottom-5 fade-in duration-300 overflow-hidden">
+        <div className="hidden md:flex fixed bottom-6 right-6 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex-col z-50 animate-in slide-in-from-bottom-5 fade-in duration-300 overflow-hidden">
           {/* Header */}
           <div className="p-4 border-b border-white/10 bg-black/40 flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(false)}>
             <div className="flex items-center gap-3">
