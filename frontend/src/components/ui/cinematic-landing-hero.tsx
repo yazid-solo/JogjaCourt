@@ -16,8 +16,7 @@ const INJECTED_STYLES = `
   /* Environment Overlays */
   .film-grain {
       position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 50; opacity: 0.03;
-      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+      pointer-events: none; z-index: 50; opacity: 0; /* Disabled SVG turbulence to fix scroll lag */
   }
   @media (max-width: 768px) {
     .film-grain { display: none; }
@@ -45,9 +44,7 @@ const INJECTED_STYLES = `
       transform: translateZ(0) translate3d(0,0,0);
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
-      -ms-interpolation-mode: bicubic;
+      /* Removed image-rendering: crisp-edges to fix pixelated/pecah issue on Ultra HD images */
   }
 
   /* OUTSIDE THE CARD: Theme-aware text */
@@ -382,10 +379,10 @@ export function CinematicHero({
       {/* Layer 2: Middle depth */}
       <div className="parallax-wrapper-2 absolute inset-0 z-[2] overflow-hidden pointer-events-none">
         <img 
-          src="/assets/bg-badminton-9.png" 
+          src="/bg-badminton.png" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-2 gsap-reveal"
-          style={{ opacity: 0.18 }}
+          style={{ opacity: 0.4 }}
           loading="eager"
           decoding="sync"
         />
@@ -394,10 +391,10 @@ export function CinematicHero({
       {/* Layer 3: Closest - soft overlay */}
       <div className="parallax-wrapper-3 absolute inset-0 z-[3] overflow-hidden pointer-events-none">
         <img 
-          src="/assets/bg-badminton-8.jpg" 
+          src="/assets/bg-badminton-0.png" 
           alt="" 
           className="parallax-bg-layer parallax-bg-layer-3 gsap-reveal"
-          style={{ opacity: 0.12 }}
+          style={{ opacity: 0.15 }}
           loading="eager"
           decoding="sync"
         />
