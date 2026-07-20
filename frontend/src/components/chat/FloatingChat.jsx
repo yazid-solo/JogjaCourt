@@ -5,6 +5,11 @@ import { useChatNotif } from '@/context/ChatNotifContext';
 import api from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
+const notificationSound = typeof window !== 'undefined' ? new Audio('/ting.mp3') : null;
+if (notificationSound) {
+  notificationSound.preload = 'auto';
+}
+
 export default function FloatingChat({ forceOpen = false }) {
   const { user } = useAuth();
   const { unreadCount, latestMsg, clearUnread } = useChatNotif();
@@ -86,8 +91,13 @@ export default function FloatingChat({ forceOpen = false }) {
           api.post(`/chat/read/${adminId}`);
           
           try {
-            const audio = new Audio('/ting.mp3');
-            audio.play().catch(() => {});
+            if (notificationSound) {
+              notificationSound.currentTime = 0;
+              const playPromise = notificationSound.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(e => console.log('Audio autoplay blocked', e));
+              }
+            }
           } catch(e) {}
         }
       })

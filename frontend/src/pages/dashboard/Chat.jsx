@@ -5,6 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import api, { WS_URL, API_URL } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
+const notificationSound = typeof window !== 'undefined' ? new Audio('/ting.mp3') : null;
+if (notificationSound) {
+  notificationSound.preload = 'auto';
+}
+
 export default function Chat() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState([]);
@@ -189,8 +194,13 @@ export default function Chat() {
         }
 
         try {
-          const audio = new Audio('/ting.mp3');
-          audio.play().catch(e => console.log('Audio autoplay blocked', e));
+          if (notificationSound) {
+            notificationSound.currentTime = 0;
+            const playPromise = notificationSound.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(e => console.log('Audio autoplay blocked', e));
+            }
+          }
         } catch(e) {}
 
         setContacts(prev => {
