@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft, Bot, Sparkles, HelpCircle, Calendar, CreditCard } from 'lucide-react';
+import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft, Bot, Sparkles, HelpCircle, Calendar, CreditCard, ShieldCheck, FileText, Wallet, Clock, CheckCircle, Star } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
 import api, { WS_URL, API_URL } from '@/lib/api';
@@ -1060,23 +1060,44 @@ export default function Chat() {
               </div>
             )}
 
-            {/* Quick Reply Chips */}
+            {/* Quick Reply Chips (Role Based) */}
             <div className="px-3 sm:px-6 py-3 bg-gradient-to-t from-[#161616] to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2">
-                {[
-                  { text: 'Tanya Jadwal', icon: <Calendar className="w-3.5 h-3.5" /> },
-                  { text: 'Cara Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
-                  { text: 'Bicara dgn Admin', icon: <UserCircle className="w-3.5 h-3.5" /> },
-                  { text: 'Butuh Bantuan', icon: <HelpCircle className="w-3.5 h-3.5" /> }
-                ].map((qr, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleQuickReply(qr.text)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-full text-xs font-bold text-[#D4AF37] whitespace-nowrap hover:bg-[#D4AF37] hover:text-black transition-all shadow-[0_0_10px_rgba(212,175,55,0.1)] hover:scale-105"
-                  >
-                    {qr.icon}
-                    {qr.text}
-                  </button>
-                ))}
+                {(() => {
+                  let quickReplies = [];
+                  if (user?.role === 'super_admin') {
+                    quickReplies = [
+                      { text: 'Akun Diaktifkan', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+                      { text: 'Mohon Lengkapi KYC', icon: <FileText className="w-3.5 h-3.5" /> },
+                      { text: 'Dana Diteruskan', icon: <Wallet className="w-3.5 h-3.5" /> },
+                      { text: 'Sedang Diproses', icon: <Clock className="w-3.5 h-3.5" /> }
+                    ];
+                  } else if (user?.role === 'admin') {
+                    quickReplies = [
+                      { text: 'Jadwal Kosong', icon: <Calendar className="w-3.5 h-3.5" /> },
+                      { text: 'Tentu Bisa', icon: <CheckCircle className="w-3.5 h-3.5" /> },
+                      { text: 'Ada yg dibantu?', icon: <HelpCircle className="w-3.5 h-3.5" /> },
+                      { text: 'Terima kasih', icon: <Star className="w-3.5 h-3.5" /> }
+                    ];
+                  } else {
+                    quickReplies = [
+                      { text: 'Tanya Jadwal', icon: <Calendar className="w-3.5 h-3.5" /> },
+                      { text: 'Cara Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
+                      { text: 'Bicara dgn Admin', icon: <UserCircle className="w-3.5 h-3.5" /> },
+                      { text: 'Butuh Bantuan', icon: <HelpCircle className="w-3.5 h-3.5" /> }
+                    ];
+                  }
+
+                  return quickReplies.map((qr, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleQuickReply(qr.text)}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-full text-xs font-bold text-[#D4AF37] whitespace-nowrap hover:bg-[#D4AF37] hover:text-black transition-all shadow-[0_0_10px_rgba(212,175,55,0.1)] hover:scale-105"
+                    >
+                      {qr.icon}
+                      {qr.text}
+                    </button>
+                  ));
+                })()}
               </div>
 
 
