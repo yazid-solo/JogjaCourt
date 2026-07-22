@@ -134,8 +134,8 @@ export default function SuperAdminDashboard() {
         setPlatformRevenue(revShareRes.data.total_platform_fee || 0);
         
         // Extract top mitra sorted by platform fee contribution
-        if (revShareRes.data.owner_stats && Array.isArray(revShareRes.data.owner_stats)) {
-          const sortedMitra = [...revShareRes.data.owner_stats].sort((a, b) => b.platform_fee - a.platform_fee).slice(0, 5);
+        if (revShareRes.data.items && Array.isArray(revShareRes.data.items)) {
+          const sortedMitra = [...revShareRes.data.items].sort((a, b) => b.platform_fee - a.platform_fee).slice(0, 5);
           setTopMitra(sortedMitra);
         }
       }
