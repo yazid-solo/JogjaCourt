@@ -21,7 +21,9 @@ export function AuthProvider({ children }) {
           setUser(res.data);
         } catch (error) {
           console.error("Gagal mendapatkan data user:", error);
-          localStorage.removeItem('token');
+          if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+          }
         }
       }
       setLoading(false);
