@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import update
 from fastapi import HTTPException
 from datetime import datetime
 from uuid import UUID
@@ -31,11 +32,23 @@ async def confirm_payment(db: AsyncSession, payment_id: UUID, admin_id: UUID, is
     if is_approved:
         payment.status = PaymentStatusEnum.paid
         booking.status = BookingStatusEnum.confirmed
-        # Notifikasi Pembayaran Berhasil
+        
+        # Update Notifikasi user agar tidak disuruh bayar lagi
+        await db.execute(update(Notification).where(
+            Notification.related_entity_type == "booking",
+            Notification.related_entity_id == booking.id,
+            Notification.target_role == "customer"
+        ).values(
+            title="Pembayaran Diverifikasi 🎉",
+            message=f"Pembayaran untuk booking pada {booking.booking_date} telah diverifikasi. Jadwal Anda berstatus CONFIRMED.",
+            is_read=False
+        ))
+        
+        # Notifikasi Pembayaran Berhasil (Tambahan untuk history)
         db.add(Notification(
             user_id=booking.user_id,
             title="Pembayaran Berhasil",
-            message=f"Pembayaran untuk booking pada {booking.booking_date} telah diverifikasi. Booking dikonfirmasi.",
+            message=f"Pembayaran manual untuk booking pada {booking.booking_date} telah disetujui admin.",
             target_role="customer",
             related_entity_type="payment",
             related_entity_id=payment.id

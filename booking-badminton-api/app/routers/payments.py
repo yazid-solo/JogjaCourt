@@ -22,7 +22,9 @@ from app.utils.dependencies import get_current_user, require_admin
 from app.services.payment_service import confirm_payment, process_upload_proof
 from app.models.court import Court
 from app.models.venue import Venue
+from app.models.notification import Notification
 from app.services.notification_service import send_whatsapp_message, send_email
+from sqlalchemy import update
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
@@ -222,6 +224,29 @@ async def xendit_webhook(request: Request, background_tasks: BackgroundTasks, db
             
             background_tasks.add_task(send_whatsapp_message, b.user.phone, wa_message)
             background_tasks.add_task(send_email, b.user.email, f"E-Tiket: Konfirmasi Pembayaran {venue_name}", email_body)
+            
+            # Update Notifikasi user agar tidak disuruh bayar lagi
+            await db.execute(update(Notification).where(
+                Notification.related_entity_type == "booking",
+                Notification.related_entity_id == b.id,
+                Notification.target_role == "customer"
+            ).values(
+                title="Pembayaran Berhasil 🎉",
+                message=f"Pembayaran Anda untuk jadwal {court_name} di {venue_name} telah kami terima. Jadwal Anda berstatus CONFIRMED.",
+                is_read=False
+            ))
+            
+            # Update Notifikasi admin (jika ada owner_id)
+            if b.court and b.court.venue and b.court.venue.owner_id:
+                await db.execute(update(Notification).where(
+                    Notification.related_entity_type == "booking",
+                    Notification.related_entity_id == b.id,
+                    Notification.target_role == "admin"
+                ).values(
+                    title="Pembayaran Diterima 💰",
+                    message=f"Pembayaran untuk booking di {court_name} ({waktu_str}) telah diterima dan otomatis dikonfirmasi.",
+                    is_read=False
+                ))
             
     elif status == 'EXPIRED':
         payment.status = PaymentStatusEnum.failed
