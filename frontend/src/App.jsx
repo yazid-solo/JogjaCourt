@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ChatNotifProvider } from './context/ChatNotifContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import GlobalToast from './components/ui/GlobalToast';
+import api from './lib/api';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home'));
@@ -61,6 +62,23 @@ const BlankPage = ({ title }) => (
 );
 
 function App() {
+    useEffect(() => {
+        // 1. Wake up backend (for Free Tier hosting like Render/Railway)
+        // This fires instantly when the app loads, ensuring the backend is awake when the user navigates
+        api.get('/').catch(() => {});
+
+        // 2. Prefetch critical chunks after 2 seconds to make navigation instant (Zero loading spinner!)
+        const prefetchTimer = setTimeout(() => {
+            const prefetch = (importFunc) => importFunc().catch(() => {});
+            prefetch(() => import('./pages/Login'));
+            prefetch(() => import('./pages/Register'));
+            prefetch(() => import('./pages/customer/ExploreVenues'));
+            prefetch(() => import('./pages/dashboard/Dashboard'));
+        }, 2000);
+
+        return () => clearTimeout(prefetchTimer);
+    }, []);
+
     return (
         <GoogleOAuthProvider clientId="801087464391-ula551k2nsbdlpbt0o0r56jc6pvr8b0m.apps.googleusercontent.com">
             <ErrorBoundary>
