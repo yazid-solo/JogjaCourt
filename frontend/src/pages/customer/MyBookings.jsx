@@ -12,6 +12,7 @@ export default function MyBookings() {
   const { user, logout } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [reviewModal, setReviewModal] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, content: '' });
@@ -20,11 +21,13 @@ export default function MyBookings() {
 
   const fetchBookings = async () => {
     try {
+      setFetchError(false);
       const res = await api.get('/bookings');
       // Tangani respon paginasi jika ada, atau array langsung
       setBookings(res.data?.data || res.data || []);
     } catch (error) {
       console.error("Gagal memuat jadwal saya", error);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -131,7 +134,30 @@ export default function MyBookings() {
           <p className="text-neutral-400 text-lg">Berikut adalah jadwal mabar dan riwayat pemesanan Anda.</p>
         </motion.div>
 
-        {bookings.length === 0 ? (
+        {fetchError ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-24 bg-[#111]/50 backdrop-blur-md border border-red-500/20 rounded-3xl"
+          >
+            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <X className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3 text-red-400">Gagal Memuat Data</h2>
+            <p className="text-neutral-400 mb-8 max-w-md mx-auto text-base">
+              Koneksi terputus atau server sedang sibuk. Silakan coba muat ulang halaman ini.
+            </p>
+            <button 
+              onClick={() => { setLoading(true); fetchBookings(); }}
+              className="inline-block relative group overflow-hidden bg-white/5 border border-white/10 text-white font-bold px-10 py-4 rounded-full hover:bg-white/10 transition-all"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <Loader2 className={`w-5 h-5 ${loading ? 'animate-spin' : 'hidden'}`} />
+                Coba Muat Ulang
+              </span>
+            </button>
+          </motion.div>
+        ) : bookings.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
