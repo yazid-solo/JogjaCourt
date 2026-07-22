@@ -16,7 +16,7 @@ from app.models.user import RoleEnum
 from app.schemas.court import CourtCreate, CourtUpdate, CourtResponse, CourtDetailResponse, CourtAvailability, TimeSlot
 from app.utils.dependencies import require_admin, require_super_admin, get_current_user, get_optional_user
 from app.services.booking_service import check_availability, calculate_price
-from app.models.booking import BookingTypeEnum
+from app.models.booking import BookingTypeEnum, Booking, BookingStatusEnum
 
 router = APIRouter(prefix="/courts", tags=["Courts"])
 
@@ -69,18 +69,102 @@ async def get_court(court_id: UUID, db: AsyncSession = Depends(get_db)):
 
 @router.get("/{court_id}/availability", response_model=CourtAvailability)
 async def check_court_availability(court_id: UUID, date_req: date, db: AsyncSession = Depends(get_db)):
-    """Cek slot tersedia per tanggal (publik)."""
+    """Cek slot tersedia per tanggal (publik) dengan Bulk Query (O(1) query)."""
     court_result = await db.execute(select(Court).where(Court.id == court_id))
     court = court_result.scalars().first()
     if not court:
         raise HTTPException(status_code=404, detail="Lapangan tidak ditemukan")
 
+    # 1. Bulk ambil CourtBlocks
+    blocks_res = await db.execute(select(CourtBlock).where(
+        CourtBlock.court_id == court_id,
+        CourtBlock.block_date == date_req
+    ))
+    blocks = blocks_res.scalars().all()
+    
+    # 2. Bulk ambil Hourly Bookings
+    hourly_res = await db.execute(select(Booking).where(
+        Booking.court_id == court_id,
+        Booking.booking_date == date_req,
+        Booking.booking_type == BookingTypeEnum.hourly,
+        Booking.status.in_([BookingStatusEnum.confirmed, BookingStatusEnum.pending])
+    ))
+    hourly_bookings = hourly_res.scalars().all()
+    
+    # 3. Bulk ambil Monthly Bookings (aktif pada tanggal ini)
+    monthly_res = await db.execute(select(Booking).where(
+        Booking.court_id == court_id,
+        Booking.booking_type == BookingTypeEnum.monthly,
+        Booking.status.in_([BookingStatusEnum.confirmed, BookingStatusEnum.pending]),
+        Booking.booking_date <= date_req,
+        Booking.end_date >= date_req
+    ))
+    monthly_bookings = monthly_res.scalars().all()
+
+    current_time = datetime.utcnow()
+    
+    def is_overlap(s1, e1, s2, e2):
+        return s1 < e2 and e1 > s2
+
     slots = []
-    for h in range(8, 24):
+    # Loop dari jam 06:00 sampai 24:00 (18 jam)
+    for h in range(6, 24):
         s_time = time(h, 0)
         e_time = time(23, 59) if h == 23 else time(h + 1, 0)
-        is_avail, _ = await check_availability(db, court_id, date_req, s_time, e_time)
-        price = await calculate_price(db, court_id, BookingTypeEnum.hourly, s_time, e_time)
+        is_avail = True
+        
+        # Cek Block
+        for blk in blocks:
+            if is_overlap(blk.start_time, blk.end_time, s_time, e_time):
+                is_avail = False; break
+        
+        # Cek Hourly
+        if is_avail:
+            for b in hourly_bookings:
+                if b.status == BookingStatusEnum.pending and b.expires_at:
+                    exp = b.expires_at.replace(tzinfo=None) if b.expires_at.tzinfo else b.expires_at
+                    if exp < current_time: continue
+                if is_overlap(b.start_time, b.end_time, s_time, e_time):
+                    is_avail = False; break
+                    
+        # Cek Monthly
+        if is_avail:
+            for mb in monthly_bookings:
+                if mb.status == BookingStatusEnum.pending and mb.expires_at:
+                    exp = mb.expires_at.replace(tzinfo=None) if mb.expires_at.tzinfo else mb.expires_at
+                    if exp < current_time: continue
+                
+                if mb.days_of_week and date_req.weekday() not in mb.days_of_week:
+                    continue
+                    
+                if mb.is_full_access:
+                    is_avail = False; break
+                    
+                if mb.sessions:
+                    for s in mb.sessions:
+                        tr = s.get("time_range")
+                        if tr:
+                            try:
+                                s_str, e_str = tr.split(" - ")
+                                ms_time = datetime.strptime(s_str.strip(), "%H:%M").time()
+                                me_time = datetime.strptime(e_str.strip(), "%H:%M").time()
+                                if is_overlap(s_time, e_time, ms_time, me_time):
+                                    is_avail = False
+                                    break
+                            except Exception:
+                                pass
+                    if not is_avail: break
+
+        # Hitung harga (simulasi dari calculate_price tanpa hit DB)
+        price = court.price_per_hour
+        if court.peak_hours:
+            try:
+                peak_start_str, peak_end_str = court.peak_hours.split("-")
+                peak_start = datetime.strptime(peak_start_str.strip(), "%H:%M").time()
+                if e_time > peak_start:
+                    price = court.price_peak
+            except: pass
+            
         slots.append(TimeSlot(
             start_time=s_time,
             end_time=e_time,
@@ -88,7 +172,9 @@ async def check_court_availability(court_id: UUID, date_req: date, db: AsyncSess
             price=price,
             is_peak=(float(price) == float(court.price_peak))
         ))
+        
     return CourtAvailability(date=date_req, slots=slots)
+
 
 @router.post("", response_model=CourtResponse, dependencies=[Depends(require_admin)])
 async def create_court(court: CourtCreate, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
