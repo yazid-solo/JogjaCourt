@@ -265,10 +265,6 @@ export default function VenueDetail() {
   const formatIDR = (number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number || 0);
 
-  const avgRating = testimonials.length > 0
-    ? (testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length).toFixed(1)
-    : null;
-
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
