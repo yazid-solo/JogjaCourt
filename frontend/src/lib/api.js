@@ -30,10 +30,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Arahkan ke halaman login (bisa reload halaman agar AuthContext membaca ulang state)
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
-        window.location.href = '/login?expired=true';
-      }
+      window.dispatchEvent(new Event('auth_unauthorized'));
     }
     return Promise.reject(error);
   }

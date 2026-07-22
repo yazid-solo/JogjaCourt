@@ -52,6 +52,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     initAuth();
+
+    const handleUnauthorized = () => {
+      setUser(null);
+      setLoading(false);
+    };
+
+    window.addEventListener('auth_unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth_unauthorized', handleUnauthorized);
+    };
   }, []);
 
   const login = async (email, password) => {

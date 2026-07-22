@@ -117,12 +117,14 @@ export function ChatNotifProvider({ children }) {
   useEffect(() => {
     if (!user) return;
 
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then(perm => {
-        if (perm === 'granted') subscribeToPush();
-      });
-    } else if (Notification.permission === 'granted') {
-      subscribeToPush();
+    if ('Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') subscribeToPush();
+        });
+      } else if (Notification.permission === 'granted') {
+        subscribeToPush();
+      }
     }
 
     // Awal load
