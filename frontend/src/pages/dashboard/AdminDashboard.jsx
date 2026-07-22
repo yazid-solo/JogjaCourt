@@ -131,8 +131,9 @@ export default function AdminDashboard() {
         setRevenueData(revenueRes.data);
       }
 
-      if (bookingsRes.data && Array.isArray(bookingsRes.data)) {
-        setRecentBookings(bookingsRes.data.slice(0, 5));
+      const bData = bookingsRes.data?.data || bookingsRes.data;
+      if (bData && Array.isArray(bData)) {
+        setRecentBookings(bData.slice(0, 5));
       }
 
     } catch (error) {
