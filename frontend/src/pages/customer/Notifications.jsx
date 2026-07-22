@@ -12,6 +12,7 @@ export default function Notifications() {
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
@@ -60,6 +61,12 @@ export default function Notifications() {
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const filteredNotifications = notifications.filter(n => {
+    if (filter === 'unread') return !n.is_read;
+    if (filter === 'read') return n.is_read;
+    return true;
+  });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -160,7 +167,36 @@ export default function Notifications() {
           )}
         </motion.div>
 
-        {notifications.length === 0 ? (
+        {/* Filter Tabs */}
+        {notifications.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
+            >
+              Semua Notifikasi
+            </button>
+            <button
+              onClick={() => setFilter('unread')}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${filter === 'unread' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
+            >
+              Belum Dibaca
+              {unreadCount > 0 && (
+                <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'unread' ? 'bg-black/20' : 'bg-[#D4AF37]/20 text-[#D4AF37]'}`}>
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setFilter('read')}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filter === 'read' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
+            >
+              Sudah Dibaca
+            </button>
+          </motion.div>
+        )}
+
+        {filteredNotifications.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -181,8 +217,8 @@ export default function Notifications() {
             animate="show"
             className="space-y-4"
           >
-            <AnimatePresence>
-              {notifications.map((notif) => (
+            <AnimatePresence mode="popLayout">
+              {filteredNotifications.map((notif) => (
                 <motion.div 
                   variants={itemVariants}
                   exit={{ opacity: 0, x: 20 }}
