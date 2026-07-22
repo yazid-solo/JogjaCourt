@@ -34,6 +34,7 @@ const Checkout = lazy(() => import('./pages/customer/Checkout'));
 const Payment = lazy(() => import('./pages/customer/Payment'));
 const MyBookings = lazy(() => import('./pages/customer/MyBookings'));
 const Profile = lazy(() => import('./pages/customer/Profile'));
+const CustomerNotifications = lazy(() => import('./pages/customer/Notifications'));
 const Legal = lazy(() => import('./pages/public/Legal'));
 const MitraRegister = lazy(() => import('./pages/MitraRegister'));
 
@@ -129,6 +130,12 @@ function App() {
                           element={<ProtectedRoute allowedRoles={['customer', 'admin', 'super_admin']} />}
                         >
                           <Route index element={<Profile />} />
+                        </Route>
+                        <Route 
+                          path="/notifications" 
+                          element={<ProtectedRoute allowedRoles={['customer', 'admin', 'super_admin']} />}
+                        >
+                          <Route index element={<CustomerNotifications />} />
                         </Route>
 
                         {/* Protected Dashboard Routes */}

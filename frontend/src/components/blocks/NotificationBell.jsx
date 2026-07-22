@@ -64,7 +64,7 @@ export default function NotificationBell() {
       navigate(notification.link);
     } else {
       if (user?.role === 'customer') {
-        navigate('/my-bookings');
+        navigate('/notifications');
       } else {
         navigate('/dashboard/notifications');
       }
@@ -140,7 +140,7 @@ export default function NotificationBell() {
 
           <div className="p-3 border-t border-white/5 bg-black/40 text-center">
             <Link 
-              to={user?.role === 'customer' ? '/my-bookings' : '/dashboard/notifications'} 
+              to={user?.role === 'customer' ? '/notifications' : '/dashboard/notifications'} 
               onClick={() => setIsOpen(false)}
               className="text-sm font-bold text-[#D4AF37] hover:text-white transition-colors"
             >
