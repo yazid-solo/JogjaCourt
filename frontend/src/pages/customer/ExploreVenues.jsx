@@ -67,8 +67,8 @@ export default function ExploreVenues() {
   const [step, setStep] = useState('region'); // 'region' | 'venues'
   const [selectedRegion, setSelectedRegion] = useState(null);
 
-  const fetchVenues = async () => {
-    setLoading(true);
+  const fetchVenues = async (retryCount = 0) => {
+    if (retryCount === 0) setLoading(true);
     setError(null);
     try {
       const res = await api.get('/venues?size=500&is_public=true', {
@@ -81,11 +81,18 @@ export default function ExploreVenues() {
       // Hanya tampilkan yang aktif untuk publik
       const fetchedData = res.data?.data || [];
       setVenues(fetchedData.filter(v => v.is_active));
+      setLoading(false); // Selesai loading
     } catch (err) {
-      console.error("Gagal memuat venue", err);
-      setError("Gagal memuat daftar GOR. Periksa koneksi Anda.");
-    } finally {
-      setLoading(false);
+      console.error(`Gagal memuat venue (Percobaan ke-${retryCount + 1}):`, err);
+      
+      // Auto-retry "Kelas Kakap": Jika gagal (biasanya karena server backend baru bangun dari mode sleep/cold-start),
+      // aplikasi tidak akan langsung memunculkan error merah, melainkan diam-diam mencoba lagi di latar belakang.
+      if (retryCount < 3) {
+        setTimeout(() => fetchVenues(retryCount + 1), 3000); // Coba lagi setelah 3 detik
+      } else {
+        setError("Gagal memuat daftar GOR. Periksa koneksi Anda.");
+        setLoading(false);
+      }
     }
   };
 

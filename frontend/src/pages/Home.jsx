@@ -59,19 +59,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    // Memuat GOR sungguhan (Real-time) dari database, bukan data dummy!
-    const fetchVenues = async () => {
+    // Memuat GOR sungguhan (Real-time) dari database dengan Auto-Retry
+    const fetchVenues = async (retryCount = 0) => {
       try {
         const res = await api.get('/venues?is_public=true');
         const venues = res.data.items || [];
         
         let cards = venues.map(v => ({
-          imgUrl: (v.foto_gor && v.foto_gor.length > 0) ? v.foto_gor[0] : "/assets/bg-badminton-1.jpg", // Gunakan foto asli jika ada
+          imgUrl: (v.foto_gor && v.foto_gor.length > 0) ? v.foto_gor[0] : "/assets/bg-badminton-1.jpg",
           alt: v.nama_gor
         }));
         
-        // FanCarousel membutuhkan 7 kartu agar animasi terlihat penuh layaknya kipas.
-        // Jika GOR di database kurang dari 7, kita duplikasi GOR yang ada agar animasi tidak rusak.
         if (cards.length > 0 && cards.length < 7) {
             const originalCards = [...cards];
             while(cards.length < 7) {
@@ -81,7 +79,10 @@ export default function Home() {
         
         setFanCards(cards.slice(0, 7));
       } catch (e) {
-        console.error("Gagal memuat GOR dari database:", e);
+        console.error(`Gagal memuat GOR dari database (Percobaan ke-${retryCount + 1}):`, e);
+        if (retryCount < 3) {
+            setTimeout(() => fetchVenues(retryCount + 1), 3000);
+        }
       }
     };
     
