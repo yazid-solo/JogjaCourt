@@ -67,54 +67,40 @@ export default function Chat() {
     try {
       // Create optimistic user message
       const tempId = `temp-${Date.now()}`;
-      const tempUserMsg = {
+      const payload = {
         id: tempId,
         sender_id: user.id,
         receiver_id: activeContact.id,
         content: text,
+        message_type: 'text',
         created_at: new Date().toISOString(),
-        is_read: false
+        sender_name: user.name,
+        sender_role: user.role
       };
-      setMessages(prev => [...prev, tempUserMsg]);
+      setMessages(prev => [...prev, payload]);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
-      // Send actual message
-      api.post('/chat/send', {
+      // Send to backend via REST POST
+      await api.post('/chat/send', {
         receiver_id: activeContact.id,
         content: text,
         message_type: 'text'
-      }).catch(err => console.error("Error sending quick reply:", err));
-
-      // Simulate Bot Response locally
-      setTimeout(() => {
-        let botResponse = "";
-        if (text.includes("Jadwal")) {
-          botResponse = "Anda dapat melihat ketersediaan jadwal terkini melalui menu 'Eksplor GOR'. Semua data jadwal 100% realtime dan sinkron dengan lapangan.";
-        } else if (text.includes("Pembayaran")) {
-          botResponse = "Kami mendukung berbagai metode seperti Transfer Bank, e-Wallet, maupun QRIS via Xendit. Batas waktu pembayaran untuk mengamankan jadwal adalah 15 menit.";
-        } else if (text.includes("Bantuan")) {
-          botResponse = "Mohon ketikkan keluhan atau kendala Anda secara detail. Admin resmi JogjaCourt akan segera mengambil alih obrolan ini dan membantu Anda.";
-        } else {
-          botResponse = "Terima kasih atas pesannya! Admin kami sedang *online* dan akan merespons Anda dalam beberapa menit ke depan.";
-        }
-
-        const botMsg = {
-          id: `bot-${Date.now()}`,
-          sender_id: 'system_bot',
-          sender_name: 'Asisten JogjaCourt',
-          sender_role: 'system',
-          receiver_id: user.id,
-          content: botResponse,
-          created_at: new Date().toISOString(),
-          is_bot: true,
-          is_read: true
-        };
-        setMessages(prev => [...prev, botMsg]);
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-      }, 1000);
+      });
       
+      // Update last message in contacts list
+      setContacts(prev => {
+        const updated = [...prev];
+        const idx = updated.findIndex(c => c.id === activeContact.id);
+        if (idx >= 0) {
+          updated[idx].lastMessage = text;
+          updated[idx].time = payload.created_at;
+          const [moved] = updated.splice(idx, 1);
+          updated.unshift(moved);
+        }
+        return updated;
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Gagal mengirim quick reply:", err);
     }
   };
 
@@ -595,29 +581,9 @@ export default function Chat() {
       }
       return updated;
     });
-
-    const isFirstManualMessage = messages.filter(m => m.sender_id === user.id && !m.is_bot).length === 0;
     
     // Send to backend via REST POST (Mendukung Push Notification & Vercel)
-    api.post('/chat/send', payload).then(() => {
-      if (isFirstManualMessage && payload.message_type === 'text') {
-        setTimeout(() => {
-          const handoffMsg = {
-            id: `bot-${Date.now()}`,
-            sender_id: 'system_bot',
-            sender_name: 'Asisten JogjaCourt',
-            sender_role: 'system',
-            receiver_id: user.id,
-            content: "Sistem telah meneruskan obrolan ini ke Super Admin / Tim Support kami. Pesan Anda berikutnya akan dibalas langsung oleh staf manusia. Mohon tunggu sebentar ya!",
-            created_at: new Date().toISOString(),
-            is_bot: true,
-            is_read: true
-          };
-          setMessages(prev => [...prev, handoffMsg]);
-          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-        }, 1000);
-      }
-    }).catch(err => {
+    api.post('/chat/send', payload).catch(err => {
       console.error("Gagal mengirim pesan via API:", err);
     }).finally(() => {
       setIsSending(false);
