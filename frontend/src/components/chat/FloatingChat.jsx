@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, UserCircle, Loader2, Smile, Paperclip } from 'lucide-react';
+import { MessageSquare, X, Send, UserCircle, Loader2, Smile, Paperclip, Bot, Sparkles, Calendar, CreditCard, HelpCircle } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
 import { useChatNotif } from '@/context/ChatNotifContext';
@@ -163,18 +163,102 @@ export default function FloatingChat({ forceOpen = false }) {
     if (!newMessage.trim() || !adminId || isSending) return;
 
     setIsSending(true);
+    const content = newMessage.trim();
     const payload = {
       receiver_id: adminId,
-      content: newMessage.trim()
+      content: content
     };
+
+    // Optimistically add message
+    const tempId = `temp-${Date.now()}`;
+    const tempUserMsg = {
+      id: tempId,
+      sender_id: user.id,
+      receiver_id: adminId,
+      content: content,
+      created_at: new Date().toISOString(),
+      is_read: false
+    };
+    
+    const isFirstManualMessage = messages.filter(m => m.sender_id === user.id && !m.is_bot).length === 0;
+    
+    setMessages(prev => [...prev, tempUserMsg]);
+    setNewMessage('');
 
     try {
       await api.post('/chat/send', payload);
+      
+      if (isFirstManualMessage) {
+        setTimeout(() => {
+          const handoffMsg = {
+            id: `bot-${Date.now()}`,
+            sender_id: 'system_bot',
+            sender_name: 'Asisten JogjaCourt',
+            receiver_id: user.id,
+            content: "Sistem telah meneruskan obrolan ini ke Tim Support kami. Pesan Anda berikutnya akan dibalas langsung oleh staf manusia. Mohon tunggu sebentar ya!",
+            created_at: new Date().toISOString(),
+            is_bot: true,
+            is_read: true
+          };
+          setMessages(prev => [...prev, handoffMsg]);
+          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        }, 1000);
+      }
     } catch (err) {
       console.error("Gagal mengirim via API:", err);
     } finally {
       setIsSending(false);
-      setNewMessage('');
+    }
+  };
+
+  const handleQuickReply = async (text) => {
+    if (!adminId) return;
+    try {
+      const tempId = `temp-${Date.now()}`;
+      const tempUserMsg = {
+        id: tempId,
+        sender_id: user.id,
+        receiver_id: adminId,
+        content: text,
+        created_at: new Date().toISOString(),
+        is_read: false
+      };
+      setMessages(prev => [...prev, tempUserMsg]);
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+      api.post('/chat/send', {
+        receiver_id: adminId,
+        content: text,
+        message_type: 'text'
+      }).catch(err => console.error("Error sending quick reply:", err));
+
+      setTimeout(() => {
+        let botResponse = "";
+        if (text.includes("Jadwal")) {
+          botResponse = "Anda dapat melihat ketersediaan jadwal terkini melalui menu 'Eksplor GOR'. Semua data jadwal 100% realtime.";
+        } else if (text.includes("Pembayaran")) {
+          botResponse = "Kami mendukung berbagai metode seperti Transfer Bank, e-Wallet, maupun QRIS. Batas waktu pembayaran adalah 15 menit.";
+        } else if (text.includes("Bantuan")) {
+          botResponse = "Mohon ketikkan keluhan atau kendala Anda secara detail. Admin JogjaCourt akan segera mengambil alih obrolan ini.";
+        } else {
+          botResponse = "Terima kasih atas pesannya! Admin kami sedang *online* dan akan merespons Anda dalam beberapa menit ke depan.";
+        }
+
+        const botMsg = {
+          id: `bot-${Date.now()}`,
+          sender_id: 'system_bot',
+          sender_name: 'Asisten JogjaCourt',
+          receiver_id: user.id,
+          content: botResponse,
+          created_at: new Date().toISOString(),
+          is_bot: true,
+          is_read: true
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }, 1000);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -275,10 +359,28 @@ export default function FloatingChat({ forceOpen = false }) {
                 <Loader2 className="w-6 h-6 text-[#D4AF37] animate-spin" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-neutral-500">
-                <MessageSquare className="w-10 h-10 mb-3 opacity-30" />
-                <p className="text-sm font-medium">Belum ada obrolan.</p>
-                <p className="text-xs mt-1">Kirim pesan pertama Anda sekarang!</p>
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className="relative mb-5">
+                  <div className="absolute inset-0 bg-[#D4AF37] blur-2xl opacity-20 rounded-full animate-pulse"></div>
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-yellow-600 rounded-full flex items-center justify-center relative shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                    <Bot className="w-8 h-8 text-black" />
+                    <div className="absolute -bottom-1 -right-1 bg-black rounded-full p-1 border border-[#111]">
+                      <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/10 p-4 rounded-3xl w-full shadow-xl">
+                  <h3 className="text-lg font-black text-white mb-1">Halo, {user?.name?.split(' ')[0]}! 👋</h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed mb-3">
+                    Saya adalah Asisten Virtual JogjaCourt. Ada yang bisa saya atau Admin bantu hari ini?
+                  </p>
+                  <div className="flex justify-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                  </div>
+                </div>
               </div>
             ) : (
               messages.map((msg) => {
@@ -286,14 +388,23 @@ export default function FloatingChat({ forceOpen = false }) {
                 return (
                   <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-1`}>
                     {!isMe && (
-                      <span className="text-[10px] font-bold text-neutral-500 mb-1 ml-1">
-                        {adminName}
-                      </span>
+                      <div className="flex items-center gap-1.5 mb-1 ml-1">
+                        {msg.is_bot ? (
+                          <div className="w-4 h-4 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                            <Bot className="w-2.5 h-2.5" />
+                          </div>
+                        ) : null}
+                        <span className="text-[10px] font-bold text-neutral-500">
+                          {msg.is_bot ? 'Asisten JogjaCourt' : adminName}
+                        </span>
+                      </div>
                     )}
                     <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                       isMe 
                         ? 'bg-[#D4AF37] text-black rounded-tr-sm shadow-[0_4px_15px_rgba(212,175,55,0.2)]' 
-                        : 'bg-white/10 text-white rounded-tl-sm border border-white/5'
+                        : msg.is_bot 
+                          ? 'bg-[#1a1a1a] text-white rounded-tl-sm border border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.1)]' 
+                          : 'bg-white/10 text-white rounded-tl-sm border border-white/5'
                     }`}>
                       {/* File Attachment */}
                       {msg.attachment_url && (
@@ -333,6 +444,27 @@ export default function FloatingChat({ forceOpen = false }) {
               </div>
             )}
           </div>
+
+          {/* Quick Reply Chips */}
+          {(!messages.length || messages.filter(m => m.sender_id === user.id).length < 2) && (
+            <div className="px-3 py-2.5 bg-gradient-to-t from-black/60 to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2 w-full">
+              {[
+                { text: 'Tanya Jadwal', icon: <Calendar className="w-3 h-3" /> },
+                { text: 'Cara Pembayaran', icon: <CreditCard className="w-3 h-3" /> },
+                { text: 'Bicara dgn Admin', icon: <UserCircle className="w-3 h-3" /> },
+                { text: 'Butuh Bantuan', icon: <HelpCircle className="w-3 h-3" /> }
+              ].map((qr, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickReply(qr.text)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-full text-[10px] font-bold text-[#D4AF37] whitespace-nowrap hover:bg-[#D4AF37] hover:text-black transition-all shadow-[0_0_10px_rgba(212,175,55,0.1)]"
+                >
+                  {qr.icon}
+                  {qr.text}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input Area */}
           <div className="p-3 bg-black/40 border-t border-white/10 relative">
