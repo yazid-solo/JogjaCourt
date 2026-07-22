@@ -1060,9 +1060,8 @@ export default function Chat() {
               </div>
             )}
 
-            {/* Quick Reply Chips (Only show if few messages or no recent user message) */}
-            {(!messages.length || messages.filter(m => m.sender_id === user.id).length < 2) && (
-              <div className="px-3 sm:px-6 py-3 bg-gradient-to-t from-[#161616] to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2">
+            {/* Quick Reply Chips */}
+            <div className="px-3 sm:px-6 py-3 bg-gradient-to-t from-[#161616] to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2">
                 {[
                   { text: 'Tanya Jadwal', icon: <Calendar className="w-3.5 h-3.5" /> },
                   { text: 'Cara Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
@@ -1079,7 +1078,7 @@ export default function Chat() {
                   </button>
                 ))}
               </div>
-            )}
+
 
             <div className="p-2 sm:p-4 px-3 sm:px-6 border-t border-white/10 bg-[#161616] z-10 relative">
               {showEmojiPicker && (

@@ -446,8 +446,7 @@ export default function FloatingChat({ forceOpen = false }) {
           </div>
 
           {/* Quick Reply Chips */}
-          {(!messages.length || messages.filter(m => m.sender_id === user.id).length < 2) && (
-            <div className="px-3 py-2.5 bg-gradient-to-t from-black/60 to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2 w-full">
+          <div className="px-3 py-2.5 bg-gradient-to-t from-black/60 to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2 w-full">
               {[
                 { text: 'Tanya Jadwal', icon: <Calendar className="w-3 h-3" /> },
                 { text: 'Cara Pembayaran', icon: <CreditCard className="w-3 h-3" /> },
@@ -464,7 +463,6 @@ export default function FloatingChat({ forceOpen = false }) {
                 </button>
               ))}
             </div>
-          )}
 
           {/* Input Area */}
           <div className="p-3 bg-black/40 border-t border-white/10 relative">
