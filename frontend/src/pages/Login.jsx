@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight, Loader2, KeyRound, User } from 'lucide-react';
@@ -12,6 +12,24 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const containerRef = useRef(null);
+  const [googleWidth, setGoogleWidth] = useState(undefined);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setGoogleWidth(containerRef.current.offsetWidth.toString());
+      }
+    };
+    
+    // Initial measurement
+    updateWidth();
+    
+    // Listen for resize
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -158,15 +176,19 @@ export default function Login() {
           </div>
 
           {/* Google Login Component */}
-          <div className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              theme="filled_black"
-              size="large"
-              text="signin_with"
-              shape="pill"
-            />
+          <div ref={containerRef} className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
+            {googleWidth && (
+              <GoogleLogin
+                key={googleWidth}
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="filled_black"
+                size="large"
+                text="signin_with"
+                shape="pill"
+                width={googleWidth}
+              />
+            )}
           </div>
 
           <div className="mt-8 text-center">
