@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import {
   Loader2, MapPin, Calendar, Clock, ArrowLeft, Star, Info,
-  ChevronRight, Check, Crown, Zap, CalendarRange, X
+  ChevronRight, Check, Crown, Zap, CalendarRange, X, MessageSquare
 } from 'lucide-react';
 import FloatingChat from '@/components/chat/FloatingChat';
 import MonthlySessionSelector from '@/components/booking/MonthlySessionSelector';
