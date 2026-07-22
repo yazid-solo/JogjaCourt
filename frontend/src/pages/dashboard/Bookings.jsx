@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
@@ -66,6 +67,22 @@ export default function Bookings() {
 
   useEffect(() => {
     fetchBookings(page);
+
+    // Supabase Realtime Listener for auto-refresh
+    const paymentSub = supabase.channel('public:payments_bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+        fetchBookings(page);
+      }).subscribe();
+      
+    const bookingSub = supabase.channel('public:bookings_bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchBookings(page);
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(paymentSub);
+      supabase.removeChannel(bookingSub);
+    };
   }, [page]);
 
   const handleCreateRecurring = async (e) => {

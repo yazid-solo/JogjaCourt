@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
 export default function Finance() {
   const { user } = useAuth();
@@ -19,8 +20,8 @@ export default function Finance() {
       setLoading(true);
       const [shareRes, revRes, occRes] = await Promise.all([
         api.get(`/dashboard/revenue-share?period=${period}`),
-        api.get('/dashboard/revenue'),
-        api.get('/dashboard/occupancy')
+        api.get(`/dashboard/revenue?period=${period}`),
+        api.get(`/dashboard/occupancy?period=${period}`)
       ]);
       setReport(shareRes.data);
       setRevenueData(revRes.data);
@@ -34,6 +35,22 @@ export default function Finance() {
 
   useEffect(() => {
     fetchFinance();
+
+    // Supabase Realtime Listener for auto-refresh
+    const paymentSub = supabase.channel('public:payments_finance')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+        fetchFinance();
+      }).subscribe();
+      
+    const bookingSub = supabase.channel('public:bookings_finance')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchFinance();
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(paymentSub);
+      supabase.removeChannel(bookingSub);
+    };
   }, [period]);
 
   const handlePayout = async (ownerId, ownerName, netIncome) => {

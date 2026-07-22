@@ -69,26 +69,58 @@ async def get_dashboard_stats(
 
 @router.get("/revenue")
 async def get_revenue(
+    period: str = "all",
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Laporan pendapatan per hari — 7 hari terakhir (Admin). Alias: /dashboard/weekly-revenue."""
-    today = datetime.utcnow().date()
-    result = []
+    """Laporan pendapatan dinamis berdasarkan period."""
+    now_date = datetime.utcnow().date()
     is_admin = current_user.role == RoleEnum.admin
 
-    for i in range(6, -1, -1):
-        day = today - timedelta(days=i)
-        stmt = select(func.coalesce(func.sum(Payment.amount), 0)).where(
-            func.date(Payment.confirmed_at) == day,
-            Payment.status == PaymentStatusEnum.paid
-        )
-        if is_admin:
-            stmt = stmt.join(Booking, Payment.booking_id == Booking.id).join(Court, Booking.court_id == Court.id).join(Venue, Court.venue_id == Venue.id).where(Venue.owner_id == current_user.id)
-        
-        res = await db.execute(stmt)
-        result.append({"date": day.strftime("%d %b"), "revenue": float(res.scalar() or 0)})
-    return result
+    stmt = select(Payment.confirmed_at, Payment.amount).where(
+        Payment.status == PaymentStatusEnum.paid,
+        Payment.confirmed_at != None
+    )
+
+    if is_admin:
+        stmt = stmt.join(Booking, Payment.booking_id == Booking.id).join(Court, Booking.court_id == Court.id).join(Venue, Court.venue_id == Venue.id).where(Venue.owner_id == current_user.id)
+
+    if period == "today":
+        stmt = stmt.where(func.date(Payment.confirmed_at) == now_date)
+    elif period == "this_month":
+        first_day = now_date.replace(day=1)
+        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day)
+    elif period == "last_month":
+        first_day_this_month = now_date.replace(day=1)
+        last_day_last_month = first_day_this_month - timedelta(days=1)
+        first_day_last_month = last_day_last_month.replace(day=1)
+        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day_last_month, func.date(Payment.confirmed_at) <= last_day_last_month)
+
+    res = await db.execute(stmt)
+    rows = res.all()
+
+    if period == "today":
+        data_map = {f"{i:02d}:00": 0 for i in range(24)}
+        for confirmed_at, amount in rows:
+            data_map[f"{confirmed_at.hour:02d}:00"] += float(amount)
+        return [{"date": k, "revenue": v} for k, v in sorted(data_map.items())]
+
+    elif period in ["this_month", "last_month"]:
+        grouped = {}
+        for confirmed_at, amount in rows:
+            d = confirmed_at.date()
+            if d not in grouped: grouped[d] = 0
+            grouped[d] += float(amount)
+        return [{"date": k.strftime("%d %b"), "revenue": v} for k, v in sorted(grouped.items())]
+
+    else:
+        grouped = {}
+        for confirmed_at, amount in rows:
+            sort_key = confirmed_at.strftime("%Y-%m")
+            if sort_key not in grouped:
+                grouped[sort_key] = {"label": confirmed_at.strftime("%b %Y"), "val": 0}
+            grouped[sort_key]["val"] += float(amount)
+        return [{"date": v["label"], "revenue": v["val"]} for k, v in sorted(grouped.items())]
 
 # Alias untuk kompatibilitas frontend lama
 @router.get("/weekly-revenue")
@@ -116,19 +148,30 @@ async def get_weekly_revenue_alias(
 
 @router.get("/occupancy")
 async def get_occupancy(
+    period: str = "all",
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Tingkat keterisian lapangan — 7 hari terakhir (Admin)."""
-    today = datetime.utcnow().date()
-    week_ago = today - timedelta(days=7)
+    """Tingkat keterisian lapangan dinamis berdasarkan period."""
+    now_date = datetime.utcnow().date()
     is_admin = current_user.role == RoleEnum.admin
 
-    stmt = (
-        select(Court.name, func.count(Booking.id).label("total"))
-        .outerjoin(Booking, (Booking.court_id == Court.id) & (Booking.booking_date >= week_ago))
-        .where(Court.is_active == True)
-    )
+    stmt = select(Court.name, func.count(Booking.id).label("total")).select_from(Court)
+    booking_cond = Booking.court_id == Court.id
+
+    if period == "today":
+        booking_cond = booking_cond & (Booking.booking_date == now_date)
+    elif period == "this_month":
+        first_day = now_date.replace(day=1)
+        booking_cond = booking_cond & (Booking.booking_date >= first_day)
+    elif period == "last_month":
+        first_day_this_month = now_date.replace(day=1)
+        last_day_last_month = first_day_this_month - timedelta(days=1)
+        first_day_last_month = last_day_last_month.replace(day=1)
+        booking_cond = booking_cond & (Booking.booking_date >= first_day_last_month) & (Booking.booking_date <= last_day_last_month)
+    
+    stmt = stmt.outerjoin(Booking, booking_cond).where(Court.is_active == True)
+
     if is_admin:
         stmt = stmt.join(Venue, Court.venue_id == Venue.id).where(Venue.owner_id == current_user.id)
 
