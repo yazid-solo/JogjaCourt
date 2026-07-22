@@ -103,7 +103,7 @@ export default function Finance() {
       const myDetail = report.items[0]; 
       totalGross = myDetail.gross_revenue;
       totalPlatformFee = myDetail.platform_fee;
-      totalAvailable = myDetail.net_income;
+      totalAvailable = myDetail.unpaid_balance;
     }
   }
 
@@ -385,11 +385,15 @@ export default function Finance() {
                         </div>
                       </div>
                       
+                      <div className="w-full text-center mt-3 mb-1">
+                        <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Saldo Tersedia: </span>
+                        <span className="text-sm font-black text-[#D4AF37]">{formatIDR(detail.unpaid_balance)}</span>
+                      </div>
                       <button
-                        onClick={() => handlePayout(detail.owner_id, detail.owner_name, detail.net_income)}
-                        disabled={payoutLoading === detail.owner_id || detail.net_income <= 0}
+                        onClick={() => handlePayout(detail.owner_id, detail.owner_name, detail.unpaid_balance)}
+                        disabled={payoutLoading === detail.owner_id || detail.unpaid_balance <= 0}
                         className={`w-full flex-shrink-0 flex items-center justify-center gap-2 px-6 h-12 rounded-xl text-sm font-black transition-all
-                          ${detail.net_income > 0 
+                          ${detail.unpaid_balance > 0 
                             ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-500 text-black hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:scale-105' 
                             : 'bg-white/5 text-neutral-500 cursor-not-allowed border border-white/10'}`}
                       >

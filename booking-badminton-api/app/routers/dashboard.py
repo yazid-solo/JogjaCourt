@@ -269,7 +269,8 @@ async def get_revenue_share(
                 "venues": set(),
                 "gross_revenue": 0,
                 "platform_fee": 0,
-                "net_income": 0
+                "net_income": 0,
+                "unpaid_balance": 0
             }
             
         stats = owner_stats[o_id]
@@ -294,13 +295,14 @@ async def get_revenue_share(
         # Gross dan Platform Fee selalu dihitung seumur hidup (berdasarkan filter periode)
         stats["gross_revenue"] += amount
         stats["platform_fee"] += fee
+        stats["net_income"] += (amount - fee)
         
         total_gross += amount
         total_platform_fee += fee
         
-        # HANYA hitung net_income (saldo tersedia) JIKA belum dicairkan (payout_id == None)
+        # HANYA hitung unpaid_balance (saldo tersedia) JIKA belum dicairkan (payout_id == None)
         if payment.payout_id is None:
-            stats["net_income"] += (amount - fee)
+            stats["unpaid_balance"] += (amount - fee)
             total_net += (amount - fee)
 
     items = []

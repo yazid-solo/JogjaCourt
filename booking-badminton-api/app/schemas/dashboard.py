@@ -42,6 +42,7 @@ class AdminRevenueShare(BaseModel):
     gross_revenue: Decimal
     platform_fee: Decimal
     net_income: Decimal
+    unpaid_balance: Decimal
 
 class RevenueShareReport(BaseModel):
     items: list[AdminRevenueShare]
