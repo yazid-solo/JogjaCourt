@@ -174,6 +174,37 @@ export default function FloatingChat({ forceOpen = false }) {
       console.error("Gagal mengirim via API:", err);
     } finally {
       setIsSending(false);
+      setNewMessage('');
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !adminId) return;
+    
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await api.post('/chat/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const payload = {
+        receiver_id: adminId,
+        message_type: 'file',
+        attachment_url: res.data.attachment_url,
+        content: file.name
+      };
+      
+      await api.post('/chat/send', payload);
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert("Gagal mengunggah file");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
