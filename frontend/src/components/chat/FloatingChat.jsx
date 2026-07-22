@@ -104,7 +104,7 @@ export default function FloatingChat({ forceOpen = false }) {
         if (newMsg.sender_id === adminId) {
           setMessages(prev => {
             if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
+            return [...prev, { ...newMsg, is_bot: newMsg.message_type === 'bot_text' }];
           });
           api.post(`/chat/read/${adminId}`);
           
@@ -190,18 +190,9 @@ export default function FloatingChat({ forceOpen = false }) {
       
       if (isFirstManualMessage) {
         setTimeout(() => {
-          const handoffMsg = {
-            id: `bot-${Date.now()}`,
-            sender_id: 'system_bot',
-            sender_name: 'Asisten JogjaCourt',
-            receiver_id: user.id,
-            content: "Sistem telah meneruskan obrolan ini ke Tim Support kami. Pesan Anda berikutnya akan dibalas langsung oleh staf manusia. Mohon tunggu sebentar ya!",
-            created_at: new Date().toISOString(),
-            is_bot: true,
-            is_read: true
-          };
-          setMessages(prev => [...prev, handoffMsg]);
-          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+          api.post('/chat/bot-send', { 
+            content: "Sistem telah meneruskan obrolan ini ke Tim Support kami. Pesan Anda berikutnya akan dibalas langsung oleh staf manusia. Mohon tunggu sebentar ya!" 
+          }).catch(err => console.error("Error triggering bot handoff:", err));
         }, 1000);
       }
     } catch (err) {
@@ -244,18 +235,8 @@ export default function FloatingChat({ forceOpen = false }) {
           botResponse = "Terima kasih atas pesannya! Admin kami sedang *online* dan akan merespons Anda dalam beberapa menit ke depan.";
         }
 
-        const botMsg = {
-          id: `bot-${Date.now()}`,
-          sender_id: 'system_bot',
-          sender_name: 'Asisten JogjaCourt',
-          receiver_id: user.id,
-          content: botResponse,
-          created_at: new Date().toISOString(),
-          is_bot: true,
-          is_read: true
-        };
-        setMessages(prev => [...prev, botMsg]);
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        api.post('/chat/bot-send', { content: botResponse })
+          .catch(err => console.error("Error triggering bot response:", err));
       }, 1000);
     } catch (err) {
       console.error(err);

@@ -22,6 +22,9 @@ class SendMessageRequest(BaseModel):
     message_type: str = "text"
     attachment_url: str = None
 
+class BotMessageRequest(BaseModel):
+    content: str
+
 router = APIRouter(
     prefix="/chat",
     tags=["Chat"]
@@ -84,6 +87,54 @@ async def send_message_rest(
     await send_web_push(db=db, user_id=payload.receiver_id, title=title, body=body)
 
     return {"status": "success", "message": "Pesan terkirim"}
+
+@router.post("/bot-send")
+async def send_bot_message(
+    payload: BotMessageRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Endpoint khusus agar sistem membalas pesan otomatis atas nama Super Admin ke current_user.
+    Hanya bisa dipicu oleh Customer.
+    """
+    if current_user.role != RoleEnum.customer:
+        raise HTTPException(status_code=403, detail="Hanya customer yang bisa memicu bot")
+
+    # Cari Super Admin
+    result = await db.execute(select(User).where(User.role == RoleEnum.super_admin).limit(1))
+    sa = result.scalars().first()
+    if not sa:
+        raise HTTPException(status_code=404, detail="Super Admin tidak ditemukan")
+
+    new_message = Message(
+        sender_id=sa.id,
+        receiver_id=current_user.id,
+        content=payload.content,
+        message_type="bot_text"
+    )
+    db.add(new_message)
+    await db.commit()
+    await db.refresh(new_message)
+
+    msg_json = json.dumps({
+        "id": str(new_message.id),
+        "sender_id": str(new_message.sender_id),
+        "receiver_id": str(new_message.receiver_id),
+        "content": new_message.content,
+        "message_type": new_message.message_type,
+        "created_at": new_message.created_at.isoformat(),
+        "sender_name": "Asisten JogjaCourt",
+        "is_bot": True
+    })
+
+    # Broadcast ke customer
+    await manager.send_personal_message(msg_json, str(current_user.id))
+    
+    # Web push (opsional, mungkin tidak perlu karena user sedang membuka chat)
+    await send_web_push(db=db, user_id=str(current_user.id), title="Asisten JogjaCourt", body=payload.content[:100])
+
+    return {"status": "success"}
 
 
 class ConnectionManager:
@@ -248,7 +299,8 @@ async def get_chat_history(
             "message_type": msg.message_type,
             "attachment_url": msg.attachment_url,
             "is_read": msg.is_read,
-            "created_at": msg.created_at
+            "created_at": msg.created_at,
+            "is_bot": msg.message_type == 'bot_text'
         }
         if msg.sender_id == current_user.id:
             msg_dict["sender_name"] = current_user.name
