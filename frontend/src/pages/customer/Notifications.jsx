@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-import { Bell, Check, CheckCircle2, AlertTriangle, ShieldCheck, UserCircle, Loader2 } from 'lucide-react';
+import { Bell, Check, CheckCircle2, AlertTriangle, ShieldCheck, UserCircle, Loader2, SlidersHorizontal, Filter, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -12,7 +12,13 @@ export default function Notifications() {
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  
+  // Filter States
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'unread', 'read'
+  const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'transaksi', 'peringatan'
+  
+  const filterRef = useRef(null);
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
@@ -29,6 +35,17 @@ export default function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
+  }, []);
+
+  // Handle click outside to close filter dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleMarkAsRead = async (notificationId) => {
@@ -63,10 +80,24 @@ export default function Notifications() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const filteredNotifications = notifications.filter(n => {
-    if (filter === 'unread') return !n.is_read;
-    if (filter === 'read') return n.is_read;
+    // 1. Status Filter
+    if (statusFilter === 'unread' && n.is_read) return false;
+    if (statusFilter === 'read' && !n.is_read) return false;
+    
+    // 2. Type Filter (Inferred from title)
+    if (typeFilter !== 'all') {
+      const titleLower = (n.title || '').toLowerCase();
+      const isTransaksi = titleLower.includes('bayar') || titleLower.includes('booking') || titleLower.includes('diverifikasi') || titleLower.includes('diterima');
+      const isPeringatan = titleLower.includes('tolak') || titleLower.includes('batal') || titleLower.includes('peringatan') || titleLower.includes('gagal');
+      
+      if (typeFilter === 'transaksi' && !isTransaksi) return false;
+      if (typeFilter === 'peringatan' && !isPeringatan) return false;
+    }
+    
     return true;
   });
+
+  const activeFiltersCount = (statusFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -81,14 +112,20 @@ export default function Notifications() {
     show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
-  const getIcon = (type, isRead) => {
+  const getIcon = (title, isRead) => {
+    const titleLower = (title || '').toLowerCase();
     const colorClass = isRead ? "text-neutral-500" : "text-[#D4AF37]";
-    switch(type) {
-      case 'success': return <CheckCircle2 className={`w-5 h-5 ${colorClass}`} />;
-      case 'warning': return <AlertTriangle className={`w-5 h-5 ${colorClass}`} />;
-      case 'security': return <ShieldCheck className={`w-5 h-5 ${colorClass}`} />;
-      default: return <Bell className={`w-5 h-5 ${colorClass}`} />;
+    
+    if (titleLower.includes('berhasil') || titleLower.includes('diverifikasi') || titleLower.includes('diterima')) {
+      return <CheckCircle2 className={`w-5 h-5 ${colorClass}`} />;
     }
+    if (titleLower.includes('tolak') || titleLower.includes('batal') || titleLower.includes('gagal')) {
+      return <AlertTriangle className={`w-5 h-5 ${colorClass}`} />;
+    }
+    if (titleLower.includes('login') || titleLower.includes('password') || titleLower.includes('keamanan')) {
+      return <ShieldCheck className={`w-5 h-5 ${colorClass}`} />;
+    }
+    return <Bell className={`w-5 h-5 ${colorClass}`} />;
   };
 
   if (loading) {
@@ -167,32 +204,113 @@ export default function Notifications() {
           )}
         </motion.div>
 
-        {/* Filter Tabs */}
         {notifications.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filter === 'all' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
-            >
-              Semua Notifikasi
-            </button>
-            <button
-              onClick={() => setFilter('unread')}
-              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${filter === 'unread' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
-            >
-              Belum Dibaca
-              {unreadCount > 0 && (
-                <span className={`px-2 py-0.5 rounded-full text-xs ${filter === 'unread' ? 'bg-black/20' : 'bg-[#D4AF37]/20 text-[#D4AF37]'}`}>
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setFilter('read')}
-              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filter === 'read' ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}`}
-            >
-              Sudah Dibaca
-            </button>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-center mb-6 relative" ref={filterRef}>
+            <div className="text-neutral-400 text-sm font-medium">
+              Menampilkan <strong className="text-white">{filteredNotifications.length}</strong> dari <strong className="text-white">{notifications.length}</strong>
+            </div>
+
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all border z-20 relative ${
+                  isFilterOpen || activeFiltersCount > 0
+                    ? 'bg-[#D4AF37]/10 border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)]' 
+                    : 'bg-[#111] border-white/10 text-neutral-400 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                Filter
+                {activeFiltersCount > 0 && (
+                  <span className="w-5 h-5 flex items-center justify-center rounded-full bg-[#D4AF37] text-black text-[10px] font-black ml-1 shadow-[0_0_10px_rgba(212,175,55,0.5)]">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    className="absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] bg-[#111]/95 backdrop-blur-3xl border border-[#D4AF37]/30 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-50 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/40">
+                      <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+                        <Filter className="w-4 h-4 text-[#D4AF37]" />
+                        Filter Notifikasi
+                      </h3>
+                      {activeFiltersCount > 0 && (
+                        <button 
+                          onClick={() => { setStatusFilter('all'); setTypeFilter('all'); }}
+                          className="text-xs font-bold text-[#D4AF37] hover:text-white transition-colors flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" />
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Body */}
+                    <div className="p-5 space-y-6">
+                      {/* Status */}
+                      <div>
+                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Berdasarkan Status</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { id: 'all', label: 'Semua Status' },
+                            { id: 'unread', label: 'Belum Dibaca' },
+                            { id: 'read', label: 'Sudah Dibaca' }
+                          ].map(opt => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setStatusFilter(opt.id)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                statusFilter === opt.id 
+                                  ? 'bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                                  : 'bg-black/50 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Kategori */}
+                      <div>
+                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3">Berdasarkan Kategori</p>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { id: 'all', label: 'Semua Kategori', icon: <Bell className="w-3.5 h-3.5" /> },
+                            { id: 'transaksi', label: 'Transaksi & Pemesanan', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                            { id: 'peringatan', label: 'Peringatan & Batal', icon: <AlertTriangle className="w-3.5 h-3.5" /> }
+                          ].map(opt => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setTypeFilter(opt.id)}
+                              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all border w-full text-left ${
+                                typeFilter === opt.id 
+                                  ? 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]' 
+                                  : 'bg-black/50 text-neutral-400 border-white/5 hover:bg-white/10 hover:text-white hover:border-white/20'
+                              }`}
+                            >
+                              <div className={`p-1.5 rounded-md ${typeFilter === opt.id ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-white/5 text-neutral-500'}`}>
+                                {opt.icon}
+                              </div>
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
         )}
 
@@ -202,13 +320,21 @@ export default function Notifications() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-24 bg-[#111]/50 backdrop-blur-md border border-white/5 rounded-3xl"
           >
-            <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
               <Bell className="w-10 h-10 text-neutral-600 opacity-50" />
             </div>
-            <h2 className="text-2xl font-bold mb-3">Belum ada notifikasi</h2>
+            <h2 className="text-2xl font-bold mb-3">Tidak ada notifikasi</h2>
             <p className="text-neutral-400 max-w-md mx-auto">
-              Saat ini Anda tidak memiliki notifikasi baru. Pembaruan akan muncul di sini.
+              {notifications.length > 0 ? "Tidak ada notifikasi yang sesuai dengan filter Anda." : "Saat ini Anda tidak memiliki notifikasi baru. Pembaruan akan muncul di sini."}
             </p>
+            {(statusFilter !== 'all' || typeFilter !== 'all') && (
+              <button 
+                onClick={() => { setStatusFilter('all'); setTypeFilter('all'); }}
+                className="mt-6 px-6 py-2.5 bg-[#D4AF37] text-black font-bold rounded-full hover:bg-white transition-colors shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+              >
+                Hapus Filter
+              </button>
+            )}
           </motion.div>
         ) : (
           <motion.div 
@@ -221,15 +347,18 @@ export default function Notifications() {
               {filteredNotifications.map((notif) => (
                 <motion.div 
                   variants={itemVariants}
-                  exit={{ opacity: 0, x: 20 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   key={notif.id}
                   onClick={() => handleNotificationClick(notif)}
-                  className={`bg-[#111]/80 backdrop-blur-xl border ${notif.is_read ? 'border-white/5 opacity-70' : 'border-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.1)]'} rounded-2xl p-5 sm:p-6 transition-all hover:border-[#D4AF37]/50 cursor-pointer group`}
+                  className={`bg-[#111]/80 backdrop-blur-xl border ${notif.is_read ? 'border-white/5 opacity-70' : 'border-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.1)]'} rounded-2xl p-5 sm:p-6 transition-all hover:border-[#D4AF37]/50 cursor-pointer group relative overflow-hidden`}
                 >
+                  {!notif.is_read && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.8)]"></div>
+                  )}
                   <div className="flex gap-4 sm:gap-5">
                     <div className="shrink-0 mt-1">
-                      <div className={`p-2 rounded-xl ${notif.is_read ? 'bg-white/5' : 'bg-[#D4AF37]/10'}`}>
-                        {getIcon(notif.type, notif.is_read)}
+                      <div className={`p-2 rounded-xl transition-colors ${notif.is_read ? 'bg-white/5 group-hover:bg-white/10' : 'bg-[#D4AF37]/10 group-hover:bg-[#D4AF37]/20'}`}>
+                        {getIcon(notif.title, notif.is_read)}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
