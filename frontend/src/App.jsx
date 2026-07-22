@@ -1,40 +1,56 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ResetPassword from './pages/ResetPassword';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import Dashboard from './pages/dashboard/Dashboard';
-import Venues from './pages/dashboard/Venues';
-import Bookings from './pages/dashboard/Bookings';
-import Finance from './pages/dashboard/Finance';
-import Users from './pages/dashboard/Users';
-import Chat from './pages/dashboard/Chat';
-import Settings from './pages/dashboard/Settings';
-import Testimonials from './pages/dashboard/Testimonials';
-import Notifications from './pages/dashboard/Notifications';
-import Areas from './pages/dashboard/Areas';
-import VenueVerification from './pages/dashboard/VenueVerification';
-import TicketScanner from './pages/dashboard/TicketScanner';
 // Customer Pages
-import ExploreVenues from './pages/customer/ExploreVenues';
-import VenueDetail from './pages/customer/VenueDetail';
-import Checkout from './pages/customer/Checkout';
-import Payment from './pages/customer/Payment';
-import MyBookings from './pages/customer/MyBookings';
-import Profile from './pages/customer/Profile';
-import Legal from './pages/public/Legal';
 import ErrorBoundary from './components/ErrorBoundary';
-import MitraRegister from './pages/MitraRegister';
 
 import { AuthProvider } from './context/AuthContext';
 import { ChatNotifProvider } from './context/ChatNotifContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import GlobalToast from './components/ui/GlobalToast';
 
+// Lazy loaded pages
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Venues = lazy(() => import('./pages/dashboard/Venues'));
+const Bookings = lazy(() => import('./pages/dashboard/Bookings'));
+const Finance = lazy(() => import('./pages/dashboard/Finance'));
+const Users = lazy(() => import('./pages/dashboard/Users'));
+const Chat = lazy(() => import('./pages/dashboard/Chat'));
+const Settings = lazy(() => import('./pages/dashboard/Settings'));
+const Testimonials = lazy(() => import('./pages/dashboard/Testimonials'));
+const Notifications = lazy(() => import('./pages/dashboard/Notifications'));
+const Areas = lazy(() => import('./pages/dashboard/Areas'));
+const VenueVerification = lazy(() => import('./pages/dashboard/VenueVerification'));
+const TicketScanner = lazy(() => import('./pages/dashboard/TicketScanner'));
+const ExploreVenues = lazy(() => import('./pages/customer/ExploreVenues'));
+const VenueDetail = lazy(() => import('./pages/customer/VenueDetail'));
+const Checkout = lazy(() => import('./pages/customer/Checkout'));
+const Payment = lazy(() => import('./pages/customer/Payment'));
+const MyBookings = lazy(() => import('./pages/customer/MyBookings'));
+const Profile = lazy(() => import('./pages/customer/Profile'));
+const Legal = lazy(() => import('./pages/public/Legal'));
+const MitraRegister = lazy(() => import('./pages/MitraRegister'));
+
+
 // Komponen Halaman Placeholder (Kosong)
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-neutral-800 border-t-[#D4AF37] rounded-full animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-6 h-6 border-4 border-neutral-800 border-b-white rounded-full animate-[spin_1.5s_linear_infinite_reverse]"></div>
+      </div>
+    </div>
+    <p className="text-[#D4AF37] font-bold text-sm tracking-widest animate-pulse">MEMUAT...</p>
+  </div>
+);
+
 const BlankPage = ({ title }) => (
     <div className="min-h-screen flex items-center justify-center bg-black text-white font-sans">
         <div className="text-center">
@@ -52,6 +68,7 @@ function App() {
                 <ChatNotifProvider>
                 <Router>
                     <GlobalToast />
+                    <Suspense fallback={<PageLoader />}>
                     <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<Home />} />
@@ -122,6 +139,7 @@ function App() {
                         {/* Fallback */}
                         <Route path="*" element={<BlankPage title="404 Not Found" />} />
                     </Routes>
+                    </Suspense>
                 </Router>
                 </ChatNotifProvider>
             </AuthProvider>
