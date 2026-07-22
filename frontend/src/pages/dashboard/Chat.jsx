@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft } from 'lucide-react';
+import { Send, UserCircle, MessageSquare, Loader2, Paperclip, Smile, Phone, Video, MoreVertical, Check, CheckCheck, Search, X, PhoneOff, MicOff, Trash2, Ban, ArrowLeft, Bot, Sparkles, HelpCircle, Calendar, CreditCard } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
 import api, { WS_URL, API_URL } from '@/lib/api';
@@ -52,15 +52,69 @@ export default function Chat() {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
   };
 
-  // Fetch contacts
   const fetchContacts = async () => {
     try {
       const res = await api.get('/chat/contacts');
       setContacts(res.data.contacts || []);
     } catch (error) {
-      console.error("Failed to fetch contacts:", error);
+      console.error("Gagal mengunggah:", error);
     } finally {
-      setLoadingContacts(false);
+      setUploading(false);
+    }
+  };
+
+  const handleQuickReply = async (text) => {
+    try {
+      // Create optimistic user message
+      const tempId = `temp-${Date.now()}`;
+      const tempUserMsg = {
+        id: tempId,
+        sender_id: user.id,
+        receiver_id: activeContact.id,
+        content: text,
+        created_at: new Date().toISOString(),
+        is_read: false
+      };
+      setMessages(prev => [...prev, tempUserMsg]);
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+      // Send actual message
+      api.post('/chat/send', {
+        receiver_id: activeContact.id,
+        content: text,
+        message_type: 'text'
+      }).catch(err => console.error("Error sending quick reply:", err));
+
+      // Simulate Bot Response locally
+      setTimeout(() => {
+        let botResponse = "";
+        if (text.includes("Jadwal")) {
+          botResponse = "Anda dapat melihat ketersediaan jadwal terkini melalui menu 'Eksplor GOR'. Semua data jadwal 100% realtime dan sinkron dengan lapangan.";
+        } else if (text.includes("Pembayaran")) {
+          botResponse = "Kami mendukung berbagai metode seperti Transfer Bank, e-Wallet, maupun QRIS via Xendit. Batas waktu pembayaran untuk mengamankan jadwal adalah 15 menit.";
+        } else if (text.includes("Bantuan")) {
+          botResponse = "Mohon ketikkan keluhan atau kendala Anda secara detail. Admin resmi JogjaCourt akan segera mengambil alih obrolan ini dan membantu Anda.";
+        } else {
+          botResponse = "Terima kasih atas pesannya! Admin kami sedang *online* dan akan merespons Anda dalam beberapa menit ke depan.";
+        }
+
+        const botMsg = {
+          id: `bot-${Date.now()}`,
+          sender_id: 'system_bot',
+          sender_name: 'Asisten JogjaCourt',
+          sender_role: 'system',
+          receiver_id: user.id,
+          content: botResponse,
+          created_at: new Date().toISOString(),
+          is_bot: true,
+          is_read: true
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }, 1000);
+      
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -867,11 +921,27 @@ export default function Chat() {
                   <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="bg-white/5 px-6 py-3 rounded-full text-xs font-bold text-neutral-400 mb-4 tracking-widest uppercase">Hari Ini</div>
-                  <div className="bg-[#1a1a1a] border border-white/5 p-4 rounded-2xl max-w-sm">
-                    <p className="text-sm font-bold text-white mb-1">Mulai Obrolan Baru</p>
-                    <p className="text-xs text-neutral-400">Pesan dan panggilan dijamin kerahasiaannya.</p>
+                <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-[#D4AF37] blur-3xl opacity-20 rounded-full animate-pulse"></div>
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37] to-yellow-600 rounded-full flex items-center justify-center relative shadow-[0_0_30px_rgba(212,175,55,0.4)]">
+                      <Bot className="w-10 h-10 text-black" />
+                      <div className="absolute -bottom-1 -right-1 bg-black rounded-full p-1 border-2 border-[#111]">
+                        <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/10 p-6 rounded-3xl max-w-sm shadow-2xl">
+                    <h3 className="text-xl font-black text-white mb-2">Halo, {user?.name?.split(' ')[0]}! 👋</h3>
+                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">
+                      Saya adalah Asisten Virtual JogjaCourt. Sistem kami mencatat belum ada riwayat obrolan di sini. Ada yang bisa saya atau Admin bantu hari ini?
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce"></span>
+                      <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                      <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -886,8 +956,8 @@ export default function Chat() {
                           
                           {/* Avatar */}
                           {!isMe && (
-                            <div className="w-8 h-8 rounded-full bg-neutral-800 flex-shrink-0 flex items-center justify-center mb-1">
-                              <UserCircle className="w-5 h-5 text-neutral-500" />
+                            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mb-1 ${msg.is_bot ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-neutral-800 text-neutral-500'}`}>
+                              {msg.is_bot ? <Bot className="w-5 h-5" /> : <UserCircle className="w-5 h-5" />}
                             </div>
                           )}
 
@@ -910,7 +980,9 @@ export default function Chat() {
                             <div className={`relative px-4 py-2 shadow-sm group ${
                               isMe 
                                 ? 'bg-[#D4AF37] text-black rounded-2xl rounded-br-sm shadow-[#D4AF37]/10' 
-                                : 'bg-[#222] text-white rounded-2xl rounded-bl-sm border border-white/5 shadow-black/50'
+                                : msg.is_bot 
+                                  ? 'bg-[#1a1a1a] text-white rounded-2xl rounded-bl-sm border border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.1)]' 
+                                  : 'bg-[#222] text-white rounded-2xl rounded-bl-sm border border-white/5 shadow-black/50'
                             }`}>
                               
                               {/* Delete Option */}
@@ -965,6 +1037,26 @@ export default function Chat() {
                   <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
                   <span className="w-1.5 h-1.5 bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
                 </div>
+              </div>
+            )}
+
+            {/* Quick Reply Chips (Only show if few messages or no recent user message) */}
+            {(!messages.length || messages.filter(m => m.sender_id === user.id).length < 2) && (
+              <div className="px-3 sm:px-6 py-3 bg-gradient-to-t from-[#161616] to-transparent z-10 overflow-x-auto scrollbar-hide flex gap-2">
+                {[
+                  { text: 'Tanya Jadwal', icon: <Calendar className="w-3.5 h-3.5" /> },
+                  { text: 'Cara Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
+                  { text: 'Butuh Bantuan', icon: <HelpCircle className="w-3.5 h-3.5" /> }
+                ].map((qr, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleQuickReply(qr.text)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-full text-xs font-bold text-[#D4AF37] whitespace-nowrap hover:bg-[#D4AF37] hover:text-black transition-all shadow-[0_0_10px_rgba(212,175,55,0.1)] hover:scale-105"
+                  >
+                    {qr.icon}
+                    {qr.text}
+                  </button>
+                ))}
               </div>
             )}
 
