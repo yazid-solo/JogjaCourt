@@ -128,8 +128,8 @@ export function ChatNotifProvider({ children }) {
     // Awal load
     fetchContactsAndUnread();
     
-    // Polling tiap 4 detik karena Vercel blokir WebSocket
-    pollInterval.current = setInterval(fetchContactsAndUnread, 4000);
+    // Polling tiap 15 detik untuk mengurangi beban serverless (Vercel)
+    pollInterval.current = setInterval(fetchContactsAndUnread, 15000);
 
     return () => {
       clearInterval(pollInterval.current);

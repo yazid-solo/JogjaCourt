@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
 
     for (let i = 0; i < retries; i++) {
       try {
-        const res = await api.get('/auth/me', { timeout: 10000 }); // 10s timeout
+        const res = await api.get('/auth/me', { timeout: 5000 }); // 5s timeout
         setUser(res.data);
         setLoading(false);
         return; // Success, exit retry loop
@@ -142,7 +142,14 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? (
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+          <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#D4AF37] mt-4 font-bold text-sm animate-pulse">Memuat Sesi...</p>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
