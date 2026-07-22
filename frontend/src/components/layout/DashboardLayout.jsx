@@ -33,7 +33,6 @@ export default function DashboardLayout() {
   const location = useLocation();
   const isChatPage = location.pathname === '/dashboard/chat';
 
-  const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [expanded, setExpanded]         = useState(false);
   const [pendingKycCount, setPendingKycCount] = useState(0);
   const [tooltip, setTooltip]           = useState(null); // { label, y, grad }
@@ -91,7 +90,7 @@ export default function DashboardLayout() {
   };
 
   const showTooltip = (e, label, grad) => {
-    if (expanded || sidebarOpen) return;
+    if (expanded) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({ label, y: rect.top + rect.height / 2, grad });
   };
@@ -104,16 +103,10 @@ export default function DashboardLayout() {
   return (
     <div className="h-screen bg-[#080808] text-white flex overflow-hidden font-sans">
 
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-md"
-          onClick={() => setSidebarOpen(false)} />
-      )}
-
       {/* ══════════════════════════════════════════
           GLOBAL TOOLTIP (rendered outside aside)
           ══════════════════════════════════════════ */}
-      {tooltip && !expanded && !sidebarOpen && (
+      {tooltip && !expanded && (
         <div
           className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-xl text-[12px] font-bold text-white whitespace-nowrap"
           style={{
@@ -144,14 +137,10 @@ export default function DashboardLayout() {
       <aside
         onMouseEnter={onSidebarEnter}
         onMouseLeave={onSidebarLeave}
-        className={`
-          fixed lg:static inset-y-0 left-0 z-50 flex flex-col flex-shrink-0
-          transition-[width] duration-300 ease-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
+        className="hidden lg:flex lg:static inset-y-0 left-0 z-50 flex-col flex-shrink-0 transition-[width] duration-300 ease-out"
         style={{
-          width: sidebarOpen ? 260 : sidebarW,
-          minWidth: sidebarOpen ? 260 : sidebarW,
+          width: sidebarW,
+          minWidth: sidebarW,
           background: 'linear-gradient(180deg,#0e0e0e 0%,#0a0a0a 60%,#0e0e0e 100%)',
           borderRight: '1px solid rgba(255,255,255,0.06)',
           boxShadow: expanded ? '6px 0 40px rgba(0,0,0,0.6)' : 'none',
@@ -176,8 +165,8 @@ export default function DashboardLayout() {
           {/* Brand text */}
           <div className="flex flex-col overflow-hidden"
             style={{
-              opacity: expanded || sidebarOpen ? 1 : 0,
-              width:   expanded || sidebarOpen ? 180 : 0,
+              opacity: expanded ? 1 : 0,
+              width:   expanded ? 180 : 0,
               transition: 'opacity 250ms, width 360ms cubic-bezier(0.32,0.72,0,1)',
               whiteSpace: 'nowrap',
             }}>
@@ -186,24 +175,18 @@ export default function DashboardLayout() {
               {user?.role?.replace('_', ' ')} Panel
             </span>
           </div>
-
-          {/* Mobile close */}
-          <button className="lg:hidden ml-auto w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-neutral-400 hover:text-white transition-all flex-shrink-0"
-            onClick={() => setSidebarOpen(false)}>
-            <X className="w-3.5 h-3.5" />
-          </button>
         </div>
 
         {/* ── SECTION LABEL ── */}
         <div className="px-[18px] pt-5 pb-2 flex-shrink-0 overflow-hidden h-10 flex items-center">
           <span className="text-[9px] font-black text-neutral-700 uppercase tracking-[0.2em] whitespace-nowrap"
             style={{
-              opacity: expanded || sidebarOpen ? 1 : 0,
+              opacity: expanded ? 1 : 0,
               transition: 'opacity 250ms',
             }}>
             Menu Utama
           </span>
-          {!expanded && !sidebarOpen && (
+          {!expanded && (
             <div className="w-full h-px" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.06), transparent)' }} />
           )}
         </div>
@@ -221,7 +204,7 @@ export default function DashboardLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.path === '/dashboard'}
-                onClick={() => { setSidebarOpen(false); if (item.path === '/dashboard/chat') clearChatUnread(); }}
+                onClick={() => { if (item.path === '/dashboard/chat') clearChatUnread(); }}
                 className="block group"
               >
                 {({ isActive }) => (
@@ -246,7 +229,7 @@ export default function DashboardLayout() {
                       style={{ background: `linear-gradient(135deg,${grad.from}0d,transparent)` }} />
 
                     {/* Row */}
-                    <div className={`flex items-center transition-all duration-300 ${expanded || sidebarOpen ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-2.5'}`}>
+                    <div className={`flex items-center transition-all duration-300 ${expanded ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-2.5'}`}>
                       {/* Icon pill */}
                       <span
                         className="flex-shrink-0 w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 relative"
@@ -312,7 +295,7 @@ export default function DashboardLayout() {
             onClick={handleLogout}
             onMouseEnter={(e) => showTooltip(e, 'Keluar Akun', LOGOUT_GRAD)}
             onMouseLeave={hideTooltip}
-            className={`group relative w-full flex items-center rounded-[14px] transition-all duration-300 ${expanded || sidebarOpen ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-[6px]'}`}
+            className={`group relative w-full flex items-center rounded-[14px] transition-all duration-300 ${expanded ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-[6px]'}`}
             style={{ border: '1px solid rgba(239,68,68,0.12)' }}
           >
             <span className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -327,8 +310,8 @@ export default function DashboardLayout() {
             {/* Label */}
             <span className="text-[13px] font-semibold whitespace-nowrap transition-all duration-300"
               style={{
-                opacity:  expanded || sidebarOpen ? 1 : 0,
-                maxWidth: expanded || sidebarOpen ? 160 : 0,
+                opacity:  expanded ? 1 : 0,
+                maxWidth: expanded ? 160 : 0,
                 overflow: 'hidden',
                 color: 'rgba(248,113,113,0.75)',
               }}>
@@ -352,10 +335,6 @@ export default function DashboardLayout() {
           style={{ background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
-            <button className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
-              onClick={() => setSidebarOpen(true)}>
-              <Menu className="w-4 h-4" />
-            </button>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <div className="w-1 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg,#D4AF37,#f5d778)' }} />
               <h2 className="text-[12px] sm:text-[15px] font-black text-white tracking-tight truncate">Dashboard</h2>
@@ -392,10 +371,66 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className={`flex-1 overflow-y-auto scroll-smooth ${isChatPage ? 'p-0' : 'p-3 sm:p-6 md:p-8 pb-8'}`}>
+        <div className={`flex-1 overflow-y-auto scroll-smooth ${isChatPage ? 'p-0 pb-20 sm:pb-0' : 'p-3 sm:p-6 md:p-8 pb-24 sm:pb-8'}`}>
           <Outlet />
         </div>
       </main>
+
+      {/* ══════════════════════════════════════════
+          BOTTOM NAVIGATION BAR (MOBILE ONLY)
+          ══════════════════════════════════════════ */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-2xl border-t border-white/10 safe-area-pb shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+        <div className="flex items-center overflow-x-auto hide-scrollbar px-3 py-3 gap-2">
+          {menuItems.map((item) => {
+            const grad       = MENU_GRADIENTS[item.path] || MENU_GRADIENTS['/dashboard'];
+            const Icon       = item.icon;
+            const hasBadge   = item.path === '/dashboard/verifications' && pendingKycCount > 0;
+            const hasChatBdg = item.path === '/dashboard/chat' && chatUnread > 0;
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/dashboard'}
+                onClick={() => { if (item.path === '/dashboard/chat') clearChatUnread(); }}
+                className="flex-shrink-0"
+              >
+                {({ isActive }) => (
+                  <div
+                    className="flex flex-col items-center justify-center min-w-[72px] px-3 py-2 rounded-2xl transition-all duration-300 relative"
+                    style={isActive ? {
+                      background: `linear-gradient(135deg,${grad.from}25,${grad.to}05)`,
+                      border: `1px solid ${grad.from}40`,
+                      boxShadow: `0 4px 20px ${grad.glow}30`,
+                    } : { border: '1px solid transparent' }}
+                  >
+                    <Icon className="w-6 h-6 mb-1.5 transition-all" style={{ color: isActive ? grad.from : 'rgba(255,255,255,0.4)', filter: isActive ? `drop-shadow(0 0 8px ${grad.glow})` : 'none' }} />
+                    <span className="text-[9px] font-black uppercase tracking-wider whitespace-nowrap transition-all" style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.4)' }}>
+                      {item.label.split(' ')[0]} {/* Shorten label for mobile */}
+                    </span>
+                    {(hasBadge || hasChatBdg) && (
+                      <span className="absolute top-1 right-2 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse border-2 border-[#0a0a0a] shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                    )}
+                  </div>
+                )}
+              </NavLink>
+            );
+          })}
+          
+          {/* Logout Button in Bottom Nav */}
+          <button
+            onClick={handleLogout}
+            className="flex-shrink-0 flex flex-col items-center justify-center min-w-[72px] px-3 py-2 rounded-2xl transition-all duration-300 relative border border-transparent"
+          >
+            <LogOut className="w-6 h-6 mb-1.5 transition-all text-red-500/60" />
+            <span className="text-[9px] font-black uppercase tracking-wider whitespace-nowrap transition-all text-red-500/60">
+              Keluar
+            </span>
+          </button>
+          
+          <div className="w-2 flex-shrink-0" />
+        </div>
+      </nav>
 
     </div>
   );

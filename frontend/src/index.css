@@ -97,6 +97,15 @@
     scrollbar-color: rgba(212, 175, 55, 0.4) rgba(0, 0, 0, 0.2);
     scrollbar-width: thin;
   }
+
+  /* Hide scrollbar for Horizontal Mobile Menus */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ============================================
