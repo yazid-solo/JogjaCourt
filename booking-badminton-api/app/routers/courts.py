@@ -156,7 +156,7 @@ async def check_court_availability(court_id: UUID, date_req: date, db: AsyncSess
                     if not is_avail: break
 
         # Hitung harga (simulasi dari calculate_price tanpa hit DB)
-        price = court.price_per_hour
+        price = court.price_regular
         if court.peak_hours:
             try:
                 peak_start_str, peak_end_str = court.peak_hours.split("-")
