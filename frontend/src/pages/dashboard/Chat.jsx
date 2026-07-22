@@ -596,8 +596,28 @@ export default function Chat() {
       return updated;
     });
 
+    const isFirstManualMessage = messages.filter(m => m.sender_id === user.id && !m.is_bot).length === 0;
+    
     // Send to backend via REST POST (Mendukung Push Notification & Vercel)
-    api.post('/chat/send', payload).catch(err => {
+    api.post('/chat/send', payload).then(() => {
+      if (isFirstManualMessage && payload.message_type === 'text') {
+        setTimeout(() => {
+          const handoffMsg = {
+            id: `bot-${Date.now()}`,
+            sender_id: 'system_bot',
+            sender_name: 'Asisten JogjaCourt',
+            sender_role: 'system',
+            receiver_id: user.id,
+            content: "Sistem telah meneruskan obrolan ini ke Super Admin / Tim Support kami. Pesan Anda berikutnya akan dibalas langsung oleh staf manusia. Mohon tunggu sebentar ya!",
+            created_at: new Date().toISOString(),
+            is_bot: true,
+            is_read: true
+          };
+          setMessages(prev => [...prev, handoffMsg]);
+          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        }, 1000);
+      }
+    }).catch(err => {
       console.error("Gagal mengirim pesan via API:", err);
     }).finally(() => {
       setIsSending(false);
@@ -1046,6 +1066,7 @@ export default function Chat() {
                 {[
                   { text: 'Tanya Jadwal', icon: <Calendar className="w-3.5 h-3.5" /> },
                   { text: 'Cara Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
+                  { text: 'Bicara dgn Admin', icon: <UserCircle className="w-3.5 h-3.5" /> },
                   { text: 'Butuh Bantuan', icon: <HelpCircle className="w-3.5 h-3.5" /> }
                 ].map((qr, idx) => (
                   <button
