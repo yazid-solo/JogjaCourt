@@ -37,6 +37,7 @@ export default function VenueDetail() {
   const { user } = useAuth();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [testimonials, setTestimonials] = useState([]);
 
   // Booking mode: 'hourly' | 'monthly'
@@ -117,6 +118,7 @@ export default function VenueDetail() {
         }
       } catch (error) {
         console.error('Gagal memuat detail GOR', error);
+        setErrorMsg(error.message || "Gagal menghubungi server");
       } finally {
         setLoading(false);
       }
@@ -178,10 +180,19 @@ export default function VenueDetail() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
         <h1 className="text-3xl font-black mb-4">GOR Tidak Ditemukan</h1>
+        {errorMsg && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-4 rounded-xl mb-6 max-w-md text-center">
+            <p className="font-mono text-sm">{errorMsg}</p>
+          </div>
+        )}
         <Link to="/explore" className="text-[#D4AF37] hover:underline font-bold">Kembali ke Eksplor</Link>
       </div>
     );
   }
+
+  const avgRating = testimonials.length > 0 
+    ? (testimonials.reduce((acc, t) => acc + t.rating, 0) / testimonials.length).toFixed(1)
+    : null;
 
   const toggleSlot = (slot) => {
     const now = new Date();
