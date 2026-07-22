@@ -158,18 +158,15 @@ export default function Login() {
           </div>
 
           {/* Google Login Component */}
-          <div className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:opacity-90 transition-opacity">
-            <div className="scale-110 origin-center py-1">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                theme="outline"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-                width="350"
-              />
-            </div>
+          <div className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="filled_black"
+              size="large"
+              text="signin_with"
+              shape="pill"
+            />
           </div>
 
           <div className="mt-8 text-center">
