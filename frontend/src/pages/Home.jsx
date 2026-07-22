@@ -19,17 +19,9 @@ import { CinematicFooter } from "@/components/ui/motion-footer"
 import NotificationBell from "@/components/blocks/NotificationBell"
 import { motion } from "framer-motion"
 import CardFanCarousel from "@/components/ui/card-fan-carousel"
+import api from "@/lib/api"
 
-// Fan carousel cards - local badminton images
-const FAN_CARDS = [
-  { imgUrl: "/assets/bg-badminton-1.jpg", alt: "GOR Seturan" },
-  { imgUrl: "/assets/bg-badminton-2.jpg", alt: "Depok Sport Center" },
-  { imgUrl: "/assets/bg-badminton-3.jpg", alt: "GOR Klebengan" },
-  { imgUrl: "/assets/bg-badminton-4.jpg", alt: "Tirta Sport" },
-  { imgUrl: "/assets/bg-badminton-5.jpg", alt: "GOR Lembah UGM" },
-  { imgUrl: "/assets/bg-badminton-6.jpg", alt: "Pandiga Sport" },
-  { imgUrl: "/assets/bg-badminton-7.jpg", alt: "GOR Klebengan" }
-];
+// TiltCard Animation Wrapper
 
 const TiltCard = ({ children, className, variants }) => {
   return (
@@ -47,6 +39,7 @@ const TiltCard = ({ children, className, variants }) => {
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
+  const [fanCards, setFanCards] = useState([])
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -63,6 +56,36 @@ export default function Home() {
     }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    // Memuat GOR sungguhan (Real-time) dari database, bukan data dummy!
+    const fetchVenues = async () => {
+      try {
+        const res = await api.get('/venues?is_public=true');
+        const venues = res.data.items || [];
+        
+        let cards = venues.map(v => ({
+          imgUrl: (v.foto_gor && v.foto_gor.length > 0) ? v.foto_gor[0] : "/assets/bg-badminton-1.jpg", // Gunakan foto asli jika ada
+          alt: v.nama_gor
+        }));
+        
+        // FanCarousel membutuhkan 7 kartu agar animasi terlihat penuh layaknya kipas.
+        // Jika GOR di database kurang dari 7, kita duplikasi GOR yang ada agar animasi tidak rusak.
+        if (cards.length > 0 && cards.length < 7) {
+            const originalCards = [...cards];
+            while(cards.length < 7) {
+                cards.push(...originalCards.slice(0, 7 - cards.length));
+            }
+        }
+        
+        setFanCards(cards.slice(0, 7));
+      } catch (e) {
+        console.error("Gagal memuat GOR dari database:", e);
+      }
+    };
+    
+    fetchVenues();
   }, [])
 
   const containerVariants = {
@@ -372,9 +395,9 @@ export default function Home() {
           }}
         />
 
-        {/* Fan Carousel - self-contained with GSAP animations */}
+        {/* Fan Carousel - Realtime Data dari API */}
         <div className="relative z-20 px-4 pb-8 md:pb-12">
-          <CardFanCarousel cards={FAN_CARDS} />
+          {fanCards.length > 0 && <CardFanCarousel cards={fanCards} />}
         </div>
       </section>
 
