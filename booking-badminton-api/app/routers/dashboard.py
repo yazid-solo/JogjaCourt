@@ -216,7 +216,7 @@ async def get_revenue_share(
         .join(Court, Booking.court_id == Court.id)
         .join(Venue, Court.venue_id == Venue.id)
         .outerjoin(User, Venue.owner_id == User.id)
-        .where(Payment.status == PaymentStatusEnum.paid, Payment.payout_id == None)
+        .where(Payment.status == PaymentStatusEnum.paid)
     )
     
     # Filter tanggal berdasarkan period
@@ -290,13 +290,18 @@ async def get_revenue_share(
             fee = amount
             
         stats["total_bookings"] += 1
+        
+        # Gross dan Platform Fee selalu dihitung seumur hidup (berdasarkan filter periode)
         stats["gross_revenue"] += amount
         stats["platform_fee"] += fee
-        stats["net_income"] += (amount - fee)
         
         total_gross += amount
         total_platform_fee += fee
-        total_net += (amount - fee)
+        
+        # HANYA hitung net_income (saldo tersedia) JIKA belum dicairkan (payout_id == None)
+        if payment.payout_id is None:
+            stats["net_income"] += (amount - fee)
+            total_net += (amount - fee)
 
     items = []
     for stats in owner_stats.values():
