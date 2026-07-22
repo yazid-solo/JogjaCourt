@@ -57,9 +57,9 @@ export default function Chat() {
       const res = await api.get('/chat/contacts');
       setContacts(res.data.contacts || []);
     } catch (error) {
-      console.error("Gagal mengunggah:", error);
+      console.error("Gagal memuat kontak:", error);
     } finally {
-      setUploading(false);
+      setLoadingContacts(false);
     }
   };
 
