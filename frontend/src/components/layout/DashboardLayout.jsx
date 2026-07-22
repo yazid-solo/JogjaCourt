@@ -251,8 +251,8 @@ export default function DashboardLayout() {
                       {/* Label */}
                       <span className="text-[13px] font-semibold tracking-wide whitespace-nowrap transition-all duration-300"
                         style={{
-                          opacity:   expanded || sidebarOpen ? 1 : 0,
-                          maxWidth:  expanded || sidebarOpen ? 160 : 0,
+                          opacity:   expanded ? 1 : 0,
+                          maxWidth:  expanded ? 160 : 0,
                           overflow:  'hidden',
                           color: isActive ? '#fff' : 'rgba(255,255,255,0.45)',
                         }}>
@@ -260,13 +260,13 @@ export default function DashboardLayout() {
                       </span>
 
                       {/* Expanded badges */}
-                      {(expanded || sidebarOpen) && hasBadge && (
+                      {expanded && hasBadge && (
                         <span className="ml-auto text-[8px] font-black text-white px-1.5 py-0.5 rounded-full whitespace-nowrap animate-pulse"
                           style={{ background: 'linear-gradient(135deg,#f97316,#ef4444)', boxShadow: '0 0 8px rgba(249,115,22,0.5)' }}>
                           {pendingKycCount > 9 ? '9+' : pendingKycCount}
                         </span>
                       )}
-                      {(expanded || sidebarOpen) && hasChatBdg && (
+                      {expanded && hasChatBdg && (
                         <span className="ml-auto text-[8px] font-black text-white px-1.5 py-0.5 rounded-full whitespace-nowrap animate-pulse"
                           style={{ background: 'linear-gradient(135deg,#ef4444,#ec4899)', boxShadow: '0 0 8px rgba(239,68,68,0.5)' }}>
                           {chatUnread > 9 ? '9+' : chatUnread}
@@ -274,7 +274,7 @@ export default function DashboardLayout() {
                       )}
 
                       {/* Chevron */}
-                      {isActive && (expanded || sidebarOpen) && (
+                      {isActive && expanded && (
                         <ChevronRight className="ml-auto flex-shrink-0" style={{ width: 12, height: 12, color: grad.from, opacity: .7 }} />
                       )}
                     </div>
