@@ -141,9 +141,9 @@
   }
 
   /* GLOBAL FIX: Convert all 100vh usage to 100dvh for proper mobile address bar handling */
-  .h-screen { height: 100dvh !important; }
-  .min-h-screen { min-height: 100dvh !important; }
-  .max-h-screen { max-height: 100dvh !important; }
+  .h-screen { height: 100vh !important; height: 100dvh !important; }
+  .min-h-screen { min-height: 100vh !important; min-height: 100dvh !important; }
+  .max-h-screen { max-height: 100vh !important; max-height: 100dvh !important; }
   
   /* Safe Area Utilities */
   .safe-area-pb {
@@ -176,10 +176,7 @@
 @layer components {
   /* Mobile modal positioning */
   @media (max-width: 640px) {
-    /* Ensure modals snap to bottom on mobile */
-    .fixed.inset-0 {
-      @apply items-end;
-    }
+    /* (Removed problematic fixed.inset-0 rule that broke all modals) */
   }
 }
 
