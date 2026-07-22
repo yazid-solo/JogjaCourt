@@ -15,6 +15,8 @@ export function ChatNotifProvider({ children }) {
   const [contacts, setContacts] = useState([]);
   const previousUnreadCount = useRef(0);
   const pollInterval = useRef(null);
+  const lastNotifiedTime = useRef(0);
+  const isFirstFetch = useRef(true);
   const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BBY03YcvnV2vPEOCOCD6cILSgEEcNKk1f4W16fC9YIlhWLnZnGWuyn0qyJegBYqSMg8jPMV6MS2BTP_e71S6yDo';
 
   // Function untuk merubah Base64 URL-safe VAPID key
@@ -75,10 +77,16 @@ export function ChatNotifProvider({ children }) {
 
       setUnreadCount(totalUnread);
 
-      // Jika ada pesan baru yang belum pernah di toast
-      if (totalUnread > previousUnreadCount.current && newestUnreadMsg) {
+      // Logika Notifikasi Kelas Kakap:
+      // Hanya muncul jika ada pesan yang benar-benar BARU (timestamp lebih besar)
+      if (isFirstFetch.current) {
+        // Pada saat awal load, jangan munculkan toast untuk pesan lama, cukup set baseline waktunya.
+        lastNotifiedTime.current = newestTime;
+        isFirstFetch.current = false;
+      } else if (totalUnread > 0 && newestTime > lastNotifiedTime.current && newestUnreadMsg) {
         setLatestMsg(newestUnreadMsg);
         playNotifSound();
+        lastNotifiedTime.current = newestTime;
       }
       
       previousUnreadCount.current = totalUnread;
