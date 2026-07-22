@@ -277,21 +277,19 @@ export default function FloatingChat({ forceOpen = false }) {
     if (!isoString) return '';
     return new Date(isoString).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   };
-
   if (!user || user.role !== 'customer') return null;
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Tombol Buka Chat */}
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="hidden md:flex fixed bottom-6 right-6 w-14 h-14 bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] items-center justify-center hover:scale-110 transition-transform z-[60]"
+          className="flex fixed z-40 bottom-4 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-[60px] md:h-[60px] bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] hover:scale-110 items-center justify-center transition-all duration-300"
         >
-          <MessageSquare className="w-6 h-6" />
-          {/* Badge Notifikasi Merah */}
+          <MessageSquare className="w-6 h-6 md:w-7 md:h-7" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-[#0a0a0a] animate-bounce">
+            <span className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[10px] md:text-xs font-black text-white animate-bounce shadow-lg">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -302,7 +300,7 @@ export default function FloatingChat({ forceOpen = false }) {
       {!isOpen && latestMsg && (
         <div
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="hidden md:block fixed bottom-24 right-6 z-50 max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
+          className="fixed bottom-20 right-4 md:bottom-24 md:right-6 z-50 max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
         >
           <p className="text-[11px] font-bold text-[#D4AF37] mb-0.5">💬 {latestMsg.sender_name}</p>
           <p className="text-xs text-white/80 line-clamp-2">{latestMsg.content}</p>
@@ -311,9 +309,9 @@ export default function FloatingChat({ forceOpen = false }) {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="hidden md:flex fixed bottom-6 right-6 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex-col z-50 animate-in slide-in-from-bottom-5 fade-in duration-300 overflow-hidden">
+        <div className="flex fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-[100dvh] sm:w-80 sm:h-[500px] sm:max-h-[80vh] md:w-96 bg-[#111]/90 backdrop-blur-xl sm:border border-white/10 sm:rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex-col z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300 overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-white/10 bg-black/40 flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(false)}>
+          <div className="p-4 pt-6 sm:pt-4 border-b border-white/10 bg-black/40 flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(false)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center border border-[#D4AF37]/20">
                 <UserCircle className="w-6 h-6 text-[#D4AF37]" />
