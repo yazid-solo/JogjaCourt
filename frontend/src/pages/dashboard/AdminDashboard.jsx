@@ -218,7 +218,7 @@ export default function AdminDashboard() {
             Halo, {user?.name || user?.username}! 👋
           </h1>
           <p className="text-sm sm:text-base text-neutral-400 mt-2 font-medium">
-            Performa <span className="text-[#D4AF37]">{user?.role === 'super_admin' ? 'Aplikasi JogjaCourt' : 'Mitra GOR'}</span> hari ini.
+            Ringkasan dasbor <span className="text-[#D4AF37]">{user?.role === 'super_admin' ? 'Aplikasi JogjaCourt' : 'Mitra GOR'}</span>.
           </p>
         </div>
         

@@ -104,7 +104,7 @@ export default function Users() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-24 md:pb-12 px-2 sm:px-0">
       
-      {/* Cinematic Header */}
+      {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ export default function Users() {
               Pusat Pengguna
             </h1>
             <p className="text-neutral-400 mt-3 text-sm sm:text-base max-w-lg">
-              Kontrol penuh atas seluruh identitas, level akses, dan status penangguhan (banning) dalam ekosistem JogjaCourt.
+              Kelola data pengguna, hak akses, dan status akun.
             </p>
           </div>
           

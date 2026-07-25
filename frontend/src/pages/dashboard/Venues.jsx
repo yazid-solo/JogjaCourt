@@ -261,7 +261,7 @@ export default function Venues() {
   return (
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-12 px-2 sm:px-0">
       
-      {/* Cinematic Header */}
+      {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -278,7 +278,7 @@ export default function Venues() {
               Manajemen GOR
             </h1>
             <p className="text-neutral-400 mt-3 text-sm sm:text-base max-w-lg">
-              {user?.role === 'super_admin' ? 'Pusat kendali operasional GOR, lapangan, dan harga sewa di seluruh JogjaCourt.' : 'Kelola operasional GOR, lapangan, dan pengaturan harga sewa milik Anda.'}
+              {user?.role === 'super_admin' ? 'Kelola GOR, lapangan, dan harga sewa secara keseluruhan.' : 'Kelola GOR, lapangan, dan harga sewa milik Anda.'}
             </p>
           </div>
           

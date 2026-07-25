@@ -213,7 +213,7 @@ export default function SuperAdminDashboard() {
             Halo, {user?.name || user?.username}! 👑
           </h1>
           <p className="text-sm sm:text-base text-neutral-400 mt-2 font-medium">
-            Pusat Kendali <span className="text-[#D4AF37]">Platform JogjaCourt</span> hari ini.
+            Selamat datang di Dasbor <span className="text-[#D4AF37]">Super Admin</span>.
           </p>
         </div>
         

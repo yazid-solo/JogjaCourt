@@ -328,7 +328,7 @@ export default function Bookings() {
   return (
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-12 px-2 sm:px-0">
       
-      {/* Cinematic Header */}
+      {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -345,7 +345,7 @@ export default function Bookings() {
               {user?.role === 'super_admin' ? 'Laporan Transaksi' : 'Riwayat Booking'}
             </h1>
             <p className="text-neutral-400 mt-3 text-sm sm:text-base max-w-lg">
-              {user?.role === 'super_admin' ? 'Pusat agregasi finansial dan aktivitas penyewaan seluruh GOR.' : 'Pantau riwayat pemesanan pelanggan, kelola status, dan ekspor laporan rutin.'}
+              {user?.role === 'super_admin' ? 'Data transaksi seluruh GOR' : 'Kelola riwayat pemesanan pelanggan'}
             </p>
           </div>
           
@@ -743,7 +743,7 @@ export default function Bookings() {
               <div className="flex justify-between items-center p-6 sm:p-8 border-b border-white/5 relative z-10">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-white">Buat Jadwal Rutin</h2>
-                  <p className="text-xs sm:text-sm text-[#D4AF37] mt-1 font-bold">Inject jadwal member ke dalam sistem kalender otomatis</p>
+                  <p className="text-xs sm:text-sm text-[#D4AF37] mt-1 font-bold">Tambahkan jadwal member</p>
                 </div>
                 <button onClick={() => setShowRecurringModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 hover:text-white transition-all"><X className="w-5 h-5" /></button>
               </div>

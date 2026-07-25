@@ -136,7 +136,7 @@ export default function Finance() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-24 md:pb-12 px-2 sm:px-0">
       
-      {/* Cinematic Header */}
+      {/* Header */}
       <motion.div variants={itemVariants} className="relative bg-[#111] border border-white/5 rounded-3xl p-6 sm:p-8 overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/10 rounded-full blur-[80px] pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
         
@@ -149,7 +149,7 @@ export default function Finance() {
               Keuangan & Bagi Hasil
             </h1>
             <p className="text-neutral-400 mt-3 text-sm sm:text-base max-w-lg">
-              {user?.role === 'super_admin' ? 'Pusat monitor arus kas, distribusi pendapatan, dan komisi platform.' : 'Pantau performa finansial dan saldo pendapatan bersih dari penyewaan GOR Anda.'}
+              {user?.role === 'super_admin' ? 'Pantau total pendapatan dan komisi platform.' : 'Pantau pendapatan dari penyewaan GOR Anda.'}
             </p>
           </div>
           
