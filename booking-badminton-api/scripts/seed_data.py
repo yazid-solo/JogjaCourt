@@ -43,7 +43,9 @@ async def seed():
     async with AsyncSessionLocal() as db:
         print("🌱 Mulai seed data JogjaCourt...\n")
 
+        # ──────────────────────────────────────────────
         # 1. USERS
+        # ──────────────────────────────────────────────
         users_data = [
             {
                 "name": "Super Admin",
@@ -87,7 +89,9 @@ async def seed():
             created_users[u["email"]] = user
             print(f"  ✅ User '{u['name']}' ({u['role'].value}) dibuat.")
 
+        # ──────────────────────────────────────────────
         # 2. AREAS
+        # ──────────────────────────────────────────────
         areas_data = [
             {"name": "Kota Yogyakarta", "province": "D.I. Yogyakarta", "description": "Pusat kebudayaan Jawa dengan banyak fasilitas olahraga modern."},
             {"name": "Sleman", "province": "D.I. Yogyakarta", "description": "Kabupaten yang berkembang pesat dengan banyak GOR berstandar tinggi."},
@@ -108,7 +112,9 @@ async def seed():
             created_areas[a["name"]] = area
             print(f"  ✅ Daerah '{a['name']}' dibuat.")
 
+        # ──────────────────────────────────────────────
         # 3. VENUES
+        # ──────────────────────────────────────────────
         venues_data = [
             {
                 "area_name": "Kota Yogyakarta",
@@ -169,7 +175,9 @@ async def seed():
             created_venues[v["name"]] = venue
             print(f"  ✅ Venue '{v['name']}' dibuat.")
 
+        # ──────────────────────────────────────────────
         # 4. COURTS
+        # ──────────────────────────────────────────────
         courts_data = [
             # GOR Kridosono — 2 lapangan
             {"venue_name": "GOR Kridosono", "name": "Lapangan A - Kridosono", "court_type": "single", "price_regular": 40000, "price_peak": 65000, "peak_hours": "17:00-21:00"},

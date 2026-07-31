@@ -473,6 +473,7 @@ export default function Chat() {
     }
   };
 
+  /* ================================================== */
   
   const showConfirm = (title, message, onConfirm) => {
     setDialogConfig({ isOpen: true, type: 'confirm', title, message, onConfirm });

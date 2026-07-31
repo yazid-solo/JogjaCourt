@@ -232,10 +232,12 @@ async def create_booking(db: AsyncSession, booking: BookingCreate, user_id: UUID
         is_full_access = booking.is_full_access if booking.is_full_access is not None else (len(sessions_data) == 3)
         days_of_week = booking.days_of_week
 
+    # ═══════════════════════════════════════════════════════════
     # ROW LOCKING: Kunci baris court ini di database selama proses.
     # Jika ada 2 user memesan lapangan yang sama di waktu bersamaan,
     # request ke-2 akan MENUNGGU sampai request ke-1 selesai.
     # Ini mencegah double booking secara total.
+    # ═══════════════════════════════════════════════════════════
     lock_result = await db.execute(
         select(Court).where(Court.id == booking.court_id).with_for_update()
     )
