@@ -35,13 +35,17 @@ export default function DashboardLayout() {
 
   const [expanded, setExpanded]         = useState(false);
   const [isMobile, setIsMobile]         = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingKycCount, setPendingKycCount] = useState(0);
   const [tooltip, setTooltip]           = useState(null); // { label, y, grad }
   const expandTimer  = useRef(null);
   const collapseTimer= useRef(null);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(window.innerWidth < 1024 || isMobileDevice);
+    };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -106,11 +110,21 @@ export default function DashboardLayout() {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  const actualExpanded = expanded && !isMobile;
-  const sidebarW = actualExpanded ? 256 : 68;
+  const actualExpanded = isMobile ? true : expanded;
+  const sidebarW = isMobile ? 260 : (actualExpanded ? 256 : 68);
 
   return (
-    <div className="h-screen bg-[#080808] text-white flex overflow-hidden font-sans">
+    <div className="h-screen min-h-[100dvh] bg-[#080808] text-white flex flex-row overflow-hidden font-sans w-full">
+
+      {/* ══════════════════════════════════════════
+          MOBILE OVERLAY
+          ══════════════════════════════════════════ */}
+      {isMobile && mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[90] transition-opacity duration-300"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {/* ══════════════════════════════════════════
           GLOBAL TOOLTIP (rendered outside aside)
@@ -146,7 +160,7 @@ export default function DashboardLayout() {
       <aside
         onMouseEnter={isMobile ? undefined : onSidebarEnter}
         onMouseLeave={isMobile ? undefined : onSidebarLeave}
-        className="flex inset-y-0 left-0 z-50 flex-col flex-shrink-0 transition-[width] duration-300 ease-out"
+        className={`flex inset-y-0 left-0 z-[100] flex-col flex-shrink-0 transition-all duration-300 ease-out ${isMobile ? 'fixed h-full' : 'relative'} ${isMobile && !mobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}`}
         style={{
           width: sidebarW,
           minWidth: sidebarW,
@@ -184,6 +198,15 @@ export default function DashboardLayout() {
               {user?.role?.replace('_', ' ')} Panel
             </span>
           </div>
+
+          {isMobile && (
+            <button 
+              onClick={() => setMobileMenuOpen(false)}
+              className="ml-auto flex items-center justify-center w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* ── SECTION LABEL ── */}
@@ -213,7 +236,10 @@ export default function DashboardLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.path === '/dashboard'}
-                onClick={() => { if (item.path === '/dashboard/chat') clearChatUnread(); }}
+                onClick={() => { 
+                  if (item.path === '/dashboard/chat') clearChatUnread(); 
+                  if (isMobile) setMobileMenuOpen(false);
+                }}
                 className="block group"
               >
                 {({ isActive }) => (
@@ -344,6 +370,14 @@ export default function DashboardLayout() {
           style={{ background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
+            {isMobile && (
+              <button 
+                onClick={() => setMobileMenuOpen(true)}
+                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all mr-1 sm:mr-2"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            )}
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <div className="w-1 h-4 sm:h-5 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg,#D4AF37,#f5d778)' }} />
               <h2 className="text-[12px] sm:text-[15px] font-black text-white tracking-tight truncate">Dashboard</h2>

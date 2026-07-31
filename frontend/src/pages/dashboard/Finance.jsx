@@ -180,7 +180,7 @@ export default function Finance() {
       </motion.div>
 
       {/* Stats Cards (3D Grid) */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 relative">
+      <motion.div variants={itemVariants} className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 sm:gap-6 sm:pb-0 sm:overflow-visible custom-scroll relative">
         {loading && (
           <div className="absolute inset-0 bg-black/50 z-20 backdrop-blur-sm rounded-3xl flex items-center justify-center">
             <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin" />
@@ -188,7 +188,7 @@ export default function Finance() {
         )}
         
         {/* Card 1: Saldo Utama (Highlight) */}
-        <div className="bg-gradient-to-br from-[#D4AF37] to-yellow-500 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:shadow-[0_20px_50px_rgba(212,175,55,0.3)] transition-all duration-500 sm:col-span-2 md:col-span-1 hover:-translate-y-1">
+        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-gradient-to-br from-[#D4AF37] to-yellow-500 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:shadow-[0_20px_50px_rgba(212,175,55,0.3)] transition-all duration-500 sm:col-span-2 md:col-span-1 hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-40 h-40 bg-white/20 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           <Wallet className="absolute -right-4 -bottom-4 w-32 h-32 text-black/10 rotate-12 group-hover:rotate-0 transition-transform duration-700 pointer-events-none" />
           
@@ -205,7 +205,7 @@ export default function Finance() {
         </div>
 
         {/* Card 2: Gross Revenue */}
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:border-emerald-500/30 transition-all hover:shadow-[0_15px_40px_rgba(16,185,129,0.15)] hover:-translate-y-1">
+        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:border-emerald-500/30 transition-all hover:shadow-[0_15px_40px_rgba(16,185,129,0.15)] hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           
           <div className="flex justify-between items-start mb-6">
@@ -221,7 +221,7 @@ export default function Finance() {
         </div>
         
         {/* Card 3: Platform Fee */}
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:border-red-500/30 transition-all hover:shadow-[0_15px_40px_rgba(239,68,68,0.15)] hover:-translate-y-1">
+        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group hover:border-red-500/30 transition-all hover:shadow-[0_15px_40px_rgba(239,68,68,0.15)] hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-32 h-32 bg-red-500/5 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           
           <div className="flex justify-between items-start mb-6">

@@ -175,7 +175,7 @@ export default function Areas() {
                 <motion.div 
                   layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: idx * 0.05 }}
                   key={area.id} 
-                  className="relative bg-[#0a0a0a] rounded-[2rem] p-5 sm:p-6 border border-white/5 group hover:border-blue-500/30 transition-all hover:shadow-[0_15px_40px_rgba(59,130,246,0.1)] overflow-hidden flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-6 min-h-[160px]"
+                  className="relative bg-[#0a0a0a] rounded-2xl md:rounded-[2rem] p-4 sm:p-6 border border-white/5 group hover:border-blue-500/30 transition-all hover:shadow-[0_15px_40px_rgba(59,130,246,0.1)] overflow-hidden flex flex-col xl:flex-row xl:items-center gap-4 sm:gap-6 min-h-[160px]"
                 >
                   
                   {/* Decorative Glow */}
@@ -192,7 +192,7 @@ export default function Areas() {
 
                   {/* Tengah: Deskripsi */}
                   <div className="w-full xl:flex-1 relative z-10">
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div className="bg-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/5">
                       <p className="text-[11px] text-neutral-400 leading-relaxed line-clamp-3">
                         {area.description || "Tidak ada deskripsi spesifik. Area ini berfungsi sebagai titik pusat cakupan operasional sistem."}
                       </p>

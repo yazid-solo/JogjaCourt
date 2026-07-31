@@ -22,6 +22,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { motion, useSpring, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 // --- Komponen Angka Berjalan ---
@@ -54,7 +55,7 @@ function AnimatedInteger({ value, suffix = "" }) {
 }
 
 // --- Komponen 3D Tilt Card ---
-function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 55, 0.15)" }) {
+function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 55, 0.15)", wrapperClassName = "" }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   
@@ -80,7 +81,7 @@ function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 5
         perspective: 1000,
         transformStyle: "preserve-3d"
       }}
-      className="w-full h-full"
+      className={`w-full h-full ${wrapperClassName}`}
     >
       <motion.div
         onMouseMove={handleMouse}
@@ -159,16 +160,35 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     fetchData(true);
     
-    // Polling setiap 10 detik agar realtime
+    // Supabase Realtime Listener
+    const paymentSub = supabase.channel('public:payments_super_admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+        fetchData(false);
+      }).subscribe();
+      
+    const bookingSub = supabase.channel('public:bookings_super_admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchData(false);
+      }).subscribe();
+
+    const userSub = supabase.channel('public:users_super_admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+        fetchData(false);
+      }).subscribe();
+
+    // Polling fallback
     const intervalId = setInterval(() => {
       fetchData(false);
-    }, 10000);
+    }, 15000);
 
     // Refresh data saat user kembali ke tab ini
     const handleFocus = () => fetchData(false);
     window.addEventListener('focus', handleFocus);
 
     return () => {
+      supabase.removeChannel(paymentSub);
+      supabase.removeChannel(bookingSub);
+      supabase.removeChannel(userSub);
       clearInterval(intervalId);
       window.removeEventListener('focus', handleFocus);
     };
@@ -243,7 +263,7 @@ export default function SuperAdminDashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </div>
-            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">Auto 60s</span>
+            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">Live</span>
             <AnimatePresence>
               {isUpdating && (
                 <motion.div 
@@ -260,10 +280,10 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* 3D Stats Cards (Custom for Super Admin) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:pb-0 md:overflow-visible custom-scroll">
         
         {/* Card 1: Platform Fee (Net Income) */}
-        <TiltCard highlightColor="rgba(16, 185, 129, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(16, 185, 129, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Fee Platform (Bulan Ini)</p>
@@ -283,7 +303,7 @@ export default function SuperAdminDashboard() {
         </TiltCard>
 
         {/* Card 2: Global Bookings */}
-        <TiltCard highlightColor="rgba(59, 130, 246, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(59, 130, 246, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Transaksi Global (Hari Ini)</p>
@@ -303,7 +323,7 @@ export default function SuperAdminDashboard() {
         </TiltCard>
 
         {/* Card 3: Pending KYC */}
-        <TiltCard highlightColor="rgba(249, 115, 22, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(249, 115, 22, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Verifikasi GOR Baru (KYC)</p>

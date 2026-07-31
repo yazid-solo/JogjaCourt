@@ -183,14 +183,14 @@ export default function VenueVerification() {
                 <motion.div 
                   layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: idx * 0.05 }}
                   key={req.id} 
-                  className="bg-[#0a0a0a] rounded-[2rem] p-5 sm:p-6 border border-white/5 group hover:border-orange-500/30 transition-all hover:shadow-[0_15px_40px_rgba(249,115,22,0.1)] overflow-hidden flex flex-col xl:flex-row xl:items-center gap-6 relative"
+                  className="bg-[#0a0a0a] rounded-2xl md:rounded-[2rem] p-4 sm:p-6 border border-white/5 group hover:border-orange-500/30 transition-all hover:shadow-[0_15px_40px_rgba(249,115,22,0.1)] overflow-hidden flex flex-col xl:flex-row xl:items-center gap-4 sm:gap-6 relative"
                 >
                   
                   {/* Decorative Glow */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-[40px] pointer-events-none group-hover:bg-orange-500/10 transition-colors"></div>
 
                   {/* Kiri: Nama GOR & ID */}
-                  <div className="w-full xl:w-[30%] flex justify-between items-start relative z-10 border-b xl:border-b-0 xl:border-r border-white/5 pb-5 xl:pb-0 xl:pr-6">
+                  <div className="w-full xl:w-[30%] flex justify-between items-start relative z-10 border-b xl:border-b-0 xl:border-r border-white/5 pb-4 xl:pb-0 xl:pr-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 shadow-inner flex items-center justify-center flex-shrink-0">
                         <Building2 className="w-6 h-6 sm:w-7 sm:h-7 text-orange-400" />
@@ -205,8 +205,8 @@ export default function VenueVerification() {
                   </div>
                   
                   {/* Tengah: Informasi */}
-                  <div className="w-full xl:flex-1 flex flex-col sm:flex-row gap-4 relative z-10 justify-center">
-                    <div className="flex-1 bg-white/5 p-4 rounded-2xl border border-white/5 relative">
+                  <div className="w-full xl:flex-1 flex flex-col sm:flex-row gap-3 relative z-10 justify-center">
+                    <div className="flex-1 bg-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/5 relative">
                       <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">Informasi Pemilik</p>
                       <p className="font-black text-white text-sm tracking-tight truncate">{req.nama_pemilik}</p>
                       <p className="text-[10px] text-neutral-400 font-mono mt-1 flex items-center gap-2">
@@ -215,15 +215,15 @@ export default function VenueVerification() {
                       </p>
                     </div>
 
-                    <div className="flex-1 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div className="flex-1 bg-white/5 p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/5">
                       <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">Lokasi & Alamat</p>
                       <p className="text-xs text-neutral-300 leading-relaxed line-clamp-2">{req.alamat_gor}</p>
                     </div>
                   </div>
                   
                   {/* Kanan: Aksi & Tanggal */}
-                  <div className="w-full xl:w-[25%] flex flex-col justify-center gap-3 relative z-10 pt-5 xl:pt-0 border-t xl:border-t-0 xl:border-l border-white/5 xl:pl-6">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400 justify-center xl:justify-start mb-1">
+                  <div className="w-full xl:w-[25%] flex flex-col justify-center gap-2 relative z-10 pt-4 xl:pt-0 border-t xl:border-t-0 xl:border-l border-white/5 xl:pl-6">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 justify-center xl:justify-start mb-0.5">
                       <Clock className="w-3.5 h-3.5 text-orange-400" />
                       <span className="uppercase">Diajukan: {format(new Date(req.submitted_at), 'dd MMM yyyy', {locale: id})}</span>
                     </div>

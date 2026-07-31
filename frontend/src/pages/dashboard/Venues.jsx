@@ -341,13 +341,13 @@ export default function Venues() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
                 key={venue.id} 
-                className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden group hover:border-[#D4AF37]/50 transition-all duration-500 hover:shadow-[0_15px_50px_rgba(212,175,55,0.15)] flex flex-col xl:flex-row relative"
+                className="bg-[#0a0a0a] border border-white/10 rounded-2xl md:rounded-[2rem] overflow-hidden group hover:border-[#D4AF37]/50 transition-all duration-500 hover:shadow-[0_15px_50px_rgba(212,175,55,0.15)] flex flex-col xl:flex-row relative"
               >
                 {/* 3D Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#D4AF37]/0 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
                 {/* Image Header */}
-                <div className="h-48 sm:h-56 xl:h-auto xl:w-[30%] flex-shrink-0 bg-neutral-900 relative overflow-hidden">
+                <div className="h-40 sm:h-48 xl:h-auto xl:w-[30%] flex-shrink-0 bg-neutral-900 relative overflow-hidden">
                   {venue.image_url ? (
                     <img src={venue.image_url} alt={venue.name} className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-700 ease-out" />
                   ) : (
@@ -379,14 +379,14 @@ export default function Venues() {
                 </div>
 
                 {/* Right Side Content (Desktop) */}
-                <div className="flex-1 flex flex-col xl:flex-row p-5 sm:p-6 gap-6 relative z-10 xl:-mt-0 -mt-10">
+                <div className="flex-1 flex flex-col xl:flex-row p-4 sm:p-6 gap-4 sm:gap-6 relative z-10 xl:-mt-0 -mt-8 sm:-mt-10">
                   {/* Venue Details */}
                   <div className="flex-1 flex flex-col xl:border-r border-white/5 xl:pr-6">
                     <h3 className="text-xl sm:text-2xl font-black text-white mb-3 line-clamp-2 drop-shadow-md tracking-tight">{venue.name}</h3>
                     
-                    <div className="flex flex-col gap-2.5 mb-6">
-                      <p className="text-sm text-neutral-400 flex items-start gap-2.5 line-clamp-3">
-                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#D4AF37]" />
+                    <div className="flex flex-col gap-2 mb-4 sm:mb-6">
+                      <p className="text-xs sm:text-sm text-neutral-400 flex items-start gap-2 line-clamp-3">
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0 text-[#D4AF37]" />
                       <span className="leading-snug">{venue.address}</span>
                     </p>
                     {venue.phone && (
@@ -426,7 +426,7 @@ export default function Venues() {
                       {venue.courts?.length > 0 ? (
                         <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
                           {venue.courts.map(c => (
-                            <div key={c.id} className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 bg-[#111] p-3.5 rounded-xl border border-white/5 hover:border-white/20 transition-all hover:bg-white/[0.02]">
+                            <div key={c.id} className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3 bg-[#111] p-3 sm:p-3.5 rounded-xl border border-white/5 hover:border-white/20 transition-all hover:bg-white/[0.02]">
                               <div className="flex-1 min-w-0">
                                 <span className="font-bold text-sm text-white block truncate mb-1">{c.name}</span>
                                 <div className="flex flex-wrap gap-2 items-center">

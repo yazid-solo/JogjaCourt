@@ -24,6 +24,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { motion, useSpring, useTransform, AnimatePresence, useMotionValue } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
 // --- Komponen Angka Berjalan (Animated Counter) ---
 function AnimatedNumber({ value }) {
@@ -55,7 +56,7 @@ function AnimatedInteger({ value, suffix = "" }) {
 }
 
 // --- Komponen 3D Tilt Card (Gahar & Realistis) ---
-function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 55, 0.15)" }) {
+function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 55, 0.15)", wrapperClassName = "" }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   
@@ -81,7 +82,7 @@ function TiltCard({ children, className = "", highlightColor = "rgba(212, 175, 5
         perspective: 1000,
         transformStyle: "preserve-3d"
       }}
-      className="w-full h-full"
+      className={`w-full h-full ${wrapperClassName}`}
     >
       <motion.div
         onMouseMove={handleMouse}
@@ -148,16 +149,29 @@ export default function AdminDashboard() {
     // Initial fetch
     fetchData(true);
 
-    // Polling setiap 10 detik agar realtime
+    // Supabase Realtime Listener
+    const paymentSub = supabase.channel('public:payments_admin_dash')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+        fetchData(false);
+      }).subscribe();
+      
+    const bookingSub = supabase.channel('public:bookings_admin_dash')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchData(false);
+      }).subscribe();
+
+    // Polling fallback
     const intervalId = setInterval(() => {
       fetchData(false);
-    }, 10000);
+    }, 15000);
 
     // Refresh data saat user kembali ke tab ini
     const handleFocus = () => fetchData(false);
     window.addEventListener('focus', handleFocus);
 
     return () => {
+      supabase.removeChannel(paymentSub);
+      supabase.removeChannel(bookingSub);
       clearInterval(intervalId);
       window.removeEventListener('focus', handleFocus);
     };
@@ -245,7 +259,7 @@ export default function AdminDashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </div>
-            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">Auto 60s</span>
+            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">Live</span>
             <AnimatePresence>
               {isUpdating && (
                 <motion.div 
@@ -262,10 +276,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* 3D Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:pb-0 md:overflow-visible custom-scroll">
         
         {/* Card 1: Pendapatan */}
-        <TiltCard highlightColor="rgba(212, 175, 55, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(212, 175, 55, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Total Pendapatan</p>
@@ -285,7 +299,7 @@ export default function AdminDashboard() {
         </TiltCard>
 
         {/* Card 2: Booking */}
-        <TiltCard highlightColor="rgba(59, 130, 246, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(59, 130, 246, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Booking Berhasil</p>
@@ -305,7 +319,7 @@ export default function AdminDashboard() {
         </TiltCard>
 
         {/* Card 3: Pending */}
-        <TiltCard highlightColor="rgba(249, 115, 22, 0.3)">
+        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(249, 115, 22, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Menunggu Bayar</p>

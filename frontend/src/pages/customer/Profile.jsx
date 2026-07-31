@@ -43,7 +43,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get(`/bookings?t=${Date.now()}`);
+        const res = await api.get('/bookings');
         const myBookings = res.data?.data || res.data || [];
         const completed = myBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         

@@ -285,7 +285,7 @@ export default function FloatingChat({ forceOpen = false }) {
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="flex fixed z-[102] bottom-32 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-[60px] md:h-[60px] bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] hover:scale-110 items-center justify-center transition-all duration-300"
+          className="flex fixed z-[102] bottom-24 right-4 md:bottom-6 md:right-6 w-14 h-14 md:w-[60px] md:h-[60px] bg-[#D4AF37] text-black rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] hover:scale-110 items-center justify-center transition-all duration-300"
         >
           <MessageSquare className="w-6 h-6 md:w-7 md:h-7" />
           {unreadCount > 0 && (
@@ -300,7 +300,7 @@ export default function FloatingChat({ forceOpen = false }) {
       {!isOpen && latestMsg && (
         <div
           onClick={() => { setIsOpen(true); clearUnread(); }}
-          className="fixed bottom-48 right-4 md:bottom-24 md:right-6 z-[102] max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
+          className="fixed bottom-40 right-4 md:bottom-24 md:right-6 z-[102] max-w-[260px] bg-[#1a1a1a] border border-[#D4AF37]/30 rounded-2xl p-3 shadow-2xl cursor-pointer hover:border-[#D4AF37]/60 transition-all animate-in slide-in-from-right-5 fade-in duration-300"
         >
           <p className="text-[11px] font-bold text-[#D4AF37] mb-0.5">💬 {latestMsg.sender_name}</p>
           <p className="text-xs text-white/80 line-clamp-2">{latestMsg.content}</p>
