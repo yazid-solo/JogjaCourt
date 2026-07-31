@@ -292,7 +292,7 @@ export default function ExploreVenues() {
                 
                 <div className="mt-8 relative max-w-xl mx-auto group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/50 to-transparent rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-                  <div className="relative">
+                  <div className="relative z-50">
                     <Search className="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors z-10 pointer-events-none" />
                     <input 
                       type="text" 
@@ -301,6 +301,50 @@ export default function ExploreVenues() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-full py-4 pl-14 pr-6 text-white focus:outline-none focus:border-[#D4AF37] transition-all shadow-2xl text-sm md:text-base placeholder:text-neutral-600"
                     />
+                    
+                    <AnimatePresence>
+                      {searchQuery.trim().length > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50 max-h-[300px] overflow-y-auto custom-scrollbar"
+                        >
+                          {filteredVenues.length > 0 ? (
+                            filteredVenues.map(venue => (
+                              <Link
+                                key={venue.id}
+                                to={`/venues/${venue.id}`}
+                                className="flex items-center gap-4 p-4 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 group/item"
+                              >
+                                <div className="w-12 h-12 rounded-xl bg-neutral-800 flex-shrink-0 overflow-hidden relative">
+                                  {venue.foto_gor && venue.foto_gor.length > 0 ? (
+                                    <img src={venue.foto_gor[0]} alt={venue.name} className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500" />
+                                  ) : (
+                                    <MapPin className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-500" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-white font-bold text-sm md:text-base truncate group-hover/item:text-[#D4AF37] transition-colors">{venue.name}</h4>
+                                  <p className="text-neutral-400 text-xs md:text-sm truncate mt-0.5 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                                    <span className="truncate">{venue.address}</span>
+                                  </p>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/item:bg-[#D4AF37] transition-colors flex-shrink-0">
+                                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover/item:text-black" />
+                                </div>
+                              </Link>
+                            ))
+                          ) : (
+                            <div className="p-8 text-center flex flex-col items-center justify-center text-neutral-500">
+                              <Search className="w-8 h-8 mb-3 opacity-20" />
+                              <p className="text-sm font-medium">Tidak ada GOR yang cocok dengan "{searchQuery}"</p>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
