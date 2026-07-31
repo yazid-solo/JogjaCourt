@@ -244,73 +244,43 @@ export default function DashboardLayout() {
               >
                 {({ isActive }) => (
                   <div
-                    className="relative mx-2 my-[2px] rounded-[14px] transition-all duration-300 cursor-pointer"
+                    className={`relative mx-2 my-0.5 rounded-md transition-colors duration-200 cursor-pointer ${
+                      isActive ? 'bg-white/10 text-white' : 'text-neutral-400 hover:bg-white/5 hover:text-neutral-200'
+                    }`}
                     onMouseEnter={(e) => showTooltip(e, item.label, grad)}
                     onMouseLeave={hideTooltip}
-                    style={isActive ? {
-                      background: `linear-gradient(135deg,${grad.from}18,${grad.to}08)`,
-                      border: `1px solid ${grad.from}30`,
-                      boxShadow: `0 2px 16px ${grad.glow}20`,
-                    } : { border: '1px solid transparent' }}
                   >
-                    {/* Active left bar */}
-                    {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
-                        style={{ height: '55%', background: `linear-gradient(180deg,${grad.from},${grad.to})`, boxShadow: `0 0 8px ${grad.glow}` }} />
-                    )}
-
-                    {/* Hover shimmer */}
-                    <span className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                      style={{ background: `linear-gradient(135deg,${grad.from}0d,transparent)` }} />
 
                     {/* Row */}
-                    <div className={`flex items-center transition-all duration-300 ${expanded ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-2.5'}`}>
-                      {/* Icon pill */}
-                      <span
-                        className="flex-shrink-0 w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 relative"
-                        style={isActive ? {
-                          background: `linear-gradient(135deg,${grad.from},${grad.to})`,
-                          boxShadow: `0 4px 14px ${grad.glow}`,
-                        } : {
-                          background: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(255,255,255,0.07)',
-                        }}
-                      >
-                        <Icon style={{ width: 14, height: 14, color: isActive ? '#000' : 'rgba(255,255,255,0.5)', transition: 'color .25s' }} />
+                    <div className={`flex items-center transition-all duration-300 ${actualExpanded ? 'justify-start gap-3 px-3 py-2' : 'justify-center gap-0 py-2 px-0'}`}>
+                      {/* Icon */}
+                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center relative">
+                        <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
                         {(hasBadge || hasChatBdg) && (
-                          <span className="absolute -top-1 -right-1 w-[10px] h-[10px] rounded-full border-[1.5px] border-[#0a0a0a] animate-pulse"
-                            style={{ background: hasChatBdg ? '#ef4444' : '#f97316' }} />
+                          <span className="absolute -top-1 -right-1 w-[8px] h-[8px] rounded-full bg-red-500 border-[1.5px] border-[#0a0a0a]" />
                         )}
                       </span>
 
                       {/* Label */}
-                      <span className="text-[13px] font-semibold tracking-wide whitespace-nowrap transition-all duration-300"
+                      <span className="text-[13px] tracking-wide whitespace-nowrap transition-all duration-300"
                         style={{
-                          opacity:   expanded ? 1 : 0,
-                          maxWidth:  expanded ? 160 : 0,
+                          opacity:   actualExpanded ? 1 : 0,
+                          maxWidth:  actualExpanded ? 160 : 0,
                           overflow:  'hidden',
-                          color: isActive ? '#fff' : 'rgba(255,255,255,0.45)',
                         }}>
                         {item.label}
                       </span>
 
                       {/* Expanded badges */}
-                      {expanded && hasBadge && (
-                        <span className="ml-auto text-[8px] font-black text-white px-1.5 py-0.5 rounded-full whitespace-nowrap animate-pulse"
-                          style={{ background: 'linear-gradient(135deg,#f97316,#ef4444)', boxShadow: '0 0 8px rgba(249,115,22,0.5)' }}>
-                          {pendingKycCount > 9 ? '9+' : pendingKycCount}
+                      {actualExpanded && hasBadge && (
+                        <span className="ml-auto text-[10px] font-bold bg-white/10 text-white px-2 py-0.5 rounded-md whitespace-nowrap">
+                          {pendingKycCount} Baru
                         </span>
                       )}
-                      {expanded && hasChatBdg && (
-                        <span className="ml-auto text-[8px] font-black text-white px-1.5 py-0.5 rounded-full whitespace-nowrap animate-pulse"
-                          style={{ background: 'linear-gradient(135deg,#ef4444,#ec4899)', boxShadow: '0 0 8px rgba(239,68,68,0.5)' }}>
-                          {chatUnread > 9 ? '9+' : chatUnread}
+                      {actualExpanded && hasChatBdg && (
+                        <span className="ml-auto text-[10px] font-bold bg-white/10 text-white px-2 py-0.5 rounded-md whitespace-nowrap">
+                          {chatUnread} Pesan
                         </span>
-                      )}
-
-                      {/* Chevron */}
-                      {isActive && expanded && (
-                        <ChevronRight className="ml-auto flex-shrink-0" style={{ width: 12, height: 12, color: grad.from, opacity: .7 }} />
                       )}
                     </div>
                   </div>
@@ -325,30 +295,24 @@ export default function DashboardLayout() {
           style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }} />
 
         {/* ── LOGOUT ── */}
-        <div className="p-3 flex-shrink-0">
+        <div className="p-2 flex-shrink-0">
           <button
             onClick={handleLogout}
             onMouseEnter={(e) => showTooltip(e, 'Keluar Akun', LOGOUT_GRAD)}
             onMouseLeave={hideTooltip}
-            className={`group relative w-full flex items-center rounded-[14px] transition-all duration-300 ${expanded ? 'justify-start gap-3 px-[14px] py-[10px]' : 'justify-center gap-0 p-[6px]'}`}
-            style={{ border: '1px solid rgba(239,68,68,0.12)' }}
+            className={`group relative w-full flex items-center rounded-md transition-colors duration-200 text-neutral-400 hover:bg-white/5 hover:text-neutral-200 ${actualExpanded ? 'justify-start gap-3 px-3 py-2' : 'justify-center gap-0 py-2 px-0'}`}
           >
-            <span className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-              style={{ background: 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.04))' }} />
-
             {/* Icon */}
-            <span className="flex-shrink-0 w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
-              <LogOut style={{ width: 14, height: 14, color: 'rgba(248,113,113,0.8)' }} />
+            <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center relative">
+              <LogOut className="w-[18px] h-[18px]" strokeWidth={2} />
             </span>
 
             {/* Label */}
-            <span className="text-[13px] font-semibold whitespace-nowrap transition-all duration-300"
+            <span className="text-[13px] whitespace-nowrap transition-all duration-300"
               style={{
-                opacity:  expanded ? 1 : 0,
-                maxWidth: expanded ? 160 : 0,
+                opacity:  actualExpanded ? 1 : 0,
+                maxWidth: actualExpanded ? 160 : 0,
                 overflow: 'hidden',
-                color: 'rgba(248,113,113,0.75)',
               }}>
               Keluar Akun
             </span>
