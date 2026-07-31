@@ -279,7 +279,7 @@ export default function VenueDetail() {
   };
 
   const BookingWidgetContent = () => (
-    <div className="flex flex-col h-full bg-[#111] md:bg-transparent">
+    <div className="flex flex-col flex-1 min-h-0 bg-[#111] md:bg-transparent">
       {/* Mode Selector Tabs */}
       <div className="flex border-b border-white/5 relative shrink-0 bg-[#0a0a0a]">
         {availableTypes.hourly && (
