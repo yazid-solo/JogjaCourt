@@ -588,8 +588,8 @@ export default function VenueDetail() {
               </div>
               Tentang GOR & Fasilitas
             </h2>
-            <p className="text-neutral-400 text-base leading-relaxed mb-8 relative z-10">
-              {venue.description || 'GOR Badminton premium dengan standar lapangan nasional. Dilengkapi dengan pencahayaan optimal, sirkulasi udara baik, dan fasilitas pendukung yang lengkap untuk kenyamanan bermain Anda.'}
+            <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-6 md:mb-8 relative z-10">
+              {venue.description || 'Fasilitas lapangan badminton terbaik dengan standar nasional, pencahayaan optimal, dan sirkulasi udara yang baik.'}
             </p>
             <div className="flex flex-wrap gap-3 relative z-10">
               {['Parkir Luas', 'Kantin', 'Toilet Bersih', 'Mushola', 'Jual Kok', 'Ruang Ganti'].map((f, i) => (
@@ -619,7 +619,7 @@ export default function VenueDetail() {
                       setSelectedCourt(court);
                       if (window.innerWidth < 1024) setShowMobileWidget(true);
                     }}
-                    className={`snap-start flex-shrink-0 w-64 md:w-72 p-6 rounded-3xl border text-left transition-all relative overflow-hidden ${
+                    className={`snap-start flex-shrink-0 w-56 md:w-72 p-4 md:p-6 rounded-2xl md:rounded-3xl border text-left transition-all relative overflow-hidden ${
                       isSelected
                         ? 'bg-gradient-to-br from-[#D4AF37]/20 to-black border-[#D4AF37]/50 shadow-[0_10px_30px_rgba(212,175,55,0.2)]'
                         : 'bg-[#111] border-white/10 hover:border-white/30 hover:bg-white/5'
@@ -628,10 +628,10 @@ export default function VenueDetail() {
                     {isSelected && (
                       <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/20 blur-[30px] rounded-full pointer-events-none"></div>
                     )}
-                    <div className="flex items-start justify-between mb-4 relative z-10">
+                    <div className="flex items-start justify-between mb-3 md:mb-4 relative z-10">
                       <div>
-                        <h3 className={`font-black text-xl mb-1 ${isSelected ? 'text-[#D4AF37]' : 'text-white'}`}>{court.name}</h3>
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">{court.court_type || 'Karpet BWF'}</p>
+                        <h3 className={`font-black text-lg md:text-xl mb-0.5 md:mb-1 ${isSelected ? 'text-[#D4AF37]' : 'text-white'}`}>{court.name}</h3>
+                        <p className="text-[10px] md:text-xs font-bold text-neutral-500 uppercase tracking-wider">{court.court_type || 'Karpet BWF'}</p>
                       </div>
                     </div>
 
@@ -648,17 +648,17 @@ export default function VenueDetail() {
                       ) : null}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/10 space-y-3 relative z-10">
+                    <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10 space-y-2 md:space-y-3 relative z-10">
                       {(court.rental_type === 'hourly' || court.rental_type === 'both') && (
                         <div className="flex justify-between items-end">
-                          <p className="text-xs text-neutral-400">Harga per jam</p>
-                          <p className="text-base font-black text-white">{formatIDR(court.price_regular)}</p>
+                          <p className="text-[10px] md:text-xs text-neutral-400">Harga per jam</p>
+                          <p className="text-sm md:text-base font-black text-white">{formatIDR(court.price_regular)}</p>
                         </div>
                       )}
                       {(court.rental_type === 'monthly' || court.rental_type === 'both') && (
                         <div className="flex justify-between items-end">
-                          <p className="text-xs text-neutral-400 flex items-center gap-1"><Crown className="w-3 h-3 text-[#D4AF37]" /> Harga bulanan</p>
-                          <p className="text-base font-black text-[#D4AF37]">
+                          <p className="text-[10px] md:text-xs text-neutral-400 flex items-center gap-1"><Crown className="w-3 h-3 text-[#D4AF37]" /> Harga bulanan</p>
+                          <p className="text-sm md:text-base font-black text-[#D4AF37]">
                             {court.price_monthly ? formatIDR(court.price_monthly) : '-'}
                           </p>
                         </div>

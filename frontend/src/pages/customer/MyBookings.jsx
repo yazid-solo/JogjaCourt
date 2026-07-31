@@ -201,7 +201,7 @@ export default function MyBookings() {
                 <motion.div 
                   variants={itemVariants}
                   key={booking.id} 
-                  className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-8 relative group hover:border-[#D4AF37]/30 hover:shadow-[0_15px_50px_rgba(212,175,55,0.15)] transition-all overflow-hidden flex flex-col"
+                  className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-[2rem] p-4 md:p-6 sm:p-8 relative group hover:border-[#D4AF37]/30 hover:shadow-[0_15px_50px_rgba(212,175,55,0.15)] transition-all overflow-hidden flex flex-col"
                 >
                   
                   {/* Subtle Premium Glow based on status */}
@@ -209,7 +209,7 @@ export default function MyBookings() {
                     isPaid ? 'bg-emerald-500' : isCompleted ? 'bg-white/20' : isPending ? 'bg-[#D4AF37]' : 'bg-red-500'
                   }`}></div>
 
-                  <div className="flex justify-between items-start mb-6 relative z-10">
+                  <div className="flex justify-between items-start mb-4 relative z-10">
                     <div className="w-full">
                       <div className="flex items-center justify-between mb-4">
                         <span className={`text-[10px] font-black px-3 py-1.5 rounded-md tracking-widest uppercase border flex items-center gap-1.5 ${
@@ -224,19 +224,19 @@ export default function MyBookings() {
                         <span className="text-[10px] font-mono text-neutral-500 tracking-widest uppercase">ID: {booking.id.substring(0,8)}</span>
                       </div>
                       
-                      <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 leading-tight tracking-tight drop-shadow-sm">{booking.court?.venue?.name}</h3>
-                      <p className="text-sm font-medium text-neutral-400 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-[#D4AF37]" /> 
+                      <h3 className="text-lg md:text-2xl font-black text-white mb-1 leading-tight tracking-tight drop-shadow-sm line-clamp-1">{booking.court?.venue?.name}</h3>
+                      <p className="text-xs md:text-sm font-medium text-neutral-400 flex items-center gap-1.5 line-clamp-1">
+                        <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" /> 
                         {booking.court?.name} {booking.court?.court_type ? `• ${booking.court.court_type}` : ''}
                       </p>
                     </div>
                   </div>
 
-                  <div className="bg-black/40 p-5 rounded-[1.5rem] border border-white/5 relative z-10 flex flex-col gap-4 mb-6">
+                  <div className="bg-black/40 p-3 md:p-5 rounded-xl md:rounded-[1.5rem] border border-white/5 relative z-10 flex flex-col gap-3 md:gap-4 mb-4 md:mb-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <CalendarCheck className="w-4 h-4 text-neutral-300" />
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                          <CalendarCheck className="w-3.5 h-3.5 md:w-4 md:h-4 text-neutral-300" />
                         </div>
                         <div>
                           <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mb-0.5">Tanggal</p>
@@ -255,8 +255,8 @@ export default function MyBookings() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <Clock className="w-4 h-4 text-neutral-300" />
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                          <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-neutral-300" />
                         </div>
                         <div>
                           <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mb-0.5">Waktu / Sesi</p>
@@ -268,13 +268,13 @@ export default function MyBookings() {
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-2 flex flex-col gap-5 relative z-10">
-                    <div className="flex justify-between items-end px-2">
-                      <div>
-                        <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold mb-1">Total Tagihan</p>
-                        <p className="font-black text-2xl text-white tracking-tight">{formatIDR(booking.total_price)}</p>
+                    <div className="mt-auto pt-2 flex flex-col gap-4 relative z-10">
+                      <div className="flex justify-between items-end px-1 md:px-2">
+                        <div>
+                          <p className="text-[9px] md:text-[10px] text-neutral-500 uppercase tracking-widest font-bold mb-0.5 md:mb-1">Total Tagihan</p>
+                          <p className="font-black text-xl md:text-2xl text-white tracking-tight">{formatIDR(booking.total_price)}</p>
+                        </div>
                       </div>
-                    </div>
                     
                     <div className="grid grid-cols-2 gap-3 w-full">
                       {isPaid && (

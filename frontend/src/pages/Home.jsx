@@ -245,10 +245,10 @@ export default function Home() {
               <span className="w-8 h-px bg-[#D4AF37]"></span>
             </h2>
             <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight">
-              Booking Gampang, Main Tenang
+              Booking Instan, Tanpa Ribet
             </h3>
             <p className="mt-4 sm:mt-6 text-neutral-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg">
-              Nggak perlu lagi telepon GOR satu-satu atau chat admin panjang lebar cuma buat tanya "ada slot kosong nggak?". Di sini semuanya langsung keliatan dan bisa langsung di-booking.
+              Temukan dan pesan lapangan badminton favorit Anda secara real-time. Cek jadwal kosong dan langsung booking tanpa konfirmasi manual.
             </p>
           </motion.div>
 
@@ -271,9 +271,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(59,130,246,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <MessageSquare className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Chat Langsung ke Pengelola GOR</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Chat Langsung Pengelola</h4>
                 <p className="text-neutral-400 leading-relaxed max-w-md">
-                  Mau tanya soal fasilitas, harga member, atau jadwal rutin? Tinggal chat langsung ke pengelola GOR-nya lewat aplikasi. Nggak perlu buka WhatsApp atau telepon terpisah.
+                  Tanyakan fasilitas, harga, atau jadwal rutin langsung melalui aplikasi. Komunikasi lebih cepat dan terpusat dalam satu tempat.
                 </p>
               </div>
             </TiltCard>
@@ -290,9 +290,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-rose-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(244,63,94,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <Clock className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Auto-Cancel Kalau Belum Bayar</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Sistem Pembayaran Otomatis</h4>
                 <p className="text-neutral-400 leading-relaxed">
-                  Booking-an yang nggak dibayar dalam batas waktu akan otomatis dibatalkan sistem. Jadi slot lapangan nggak pernah "digantungin" — selalu akurat dan up-to-date.
+                  Jadwal selalu terpadu dengan sistem pembatalan otomatis untuk transaksi yang belum dibayar. Tidak ada slot yang tertahan sia-sia.
                 </p>
               </div>
             </TiltCard>
@@ -309,9 +309,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <ShieldCheck className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Data Kamu Aman, Dijaga Ketat</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Keamanan Data Terjamin</h4>
                 <p className="text-neutral-400 leading-relaxed">
-                  Semua data pribadi dan transaksi dienkripsi. Akses admin, mitra, dan pelanggan dipisah jelas — jadi nggak ada yang bisa ngintip data orang lain.
+                  Transaksi dan data personal Anda dilindungi dengan enkripsi keamanan tingkat tinggi.
                 </p>
               </div>
             </TiltCard>
@@ -328,9 +328,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <LayoutDashboard className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl sm:text-3xl font-black text-white mb-4">Dashboard Lengkap buat Pemilik GOR</h4>
+                <h4 className="text-2xl sm:text-3xl font-black text-white mb-4">Kelola GOR Anda dengan Mudah</h4>
                 <p className="text-neutral-300 leading-relaxed max-w-lg text-base sm:text-lg">
-                  Kalau kamu punya GOR, di sini kamu bisa atur harga, kelola jadwal lapangan, lihat siapa aja yang booking, sampai cek laporan pendapatan harian. Semua dari satu tempat.
+                  Atur harga, kelola jadwal lapangan, pantau pemesanan, dan cek laporan pendapatan harian secara otomatis. Solusi lengkap untuk bisnis GOR Anda.
                 </p>
                 <div className="mt-8">
                   <Link to="/mitra-register" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:text-white transition-colors">
