@@ -293,7 +293,7 @@ export default function ExploreVenues() {
                 <div className="mt-8 relative max-w-xl mx-auto group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/50 to-transparent rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                   <div className="relative">
-                    <Search className="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors" />
+                    <Search className="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-[#D4AF37] transition-colors z-10 pointer-events-none" />
                     <input 
                       type="text" 
                       placeholder="Cari nama spesifik GOR..." 
