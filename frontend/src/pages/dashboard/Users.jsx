@@ -31,8 +31,22 @@ export default function Users() {
   };
 
   useEffect(() => {
+    let intervalId;
+    
     if (user?.role === 'super_admin') {
       fetchUsers(page);
+      
+      intervalId = setInterval(() => {
+        fetchUsers(page);
+      }, 10000);
+
+      const handleFocus = () => fetchUsers(page);
+      window.addEventListener('focus', handleFocus);
+      
+      return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('focus', handleFocus);
+      };
     } else {
       setLoading(false);
     }

@@ -79,9 +79,19 @@ export default function Bookings() {
         fetchBookings(page);
       }).subscribe();
 
+    // Fallback polling dan focus listener
+    const intervalId = setInterval(() => {
+      fetchBookings(page);
+    }, 15000);
+    
+    const handleFocus = () => fetchBookings(page);
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       supabase.removeChannel(paymentSub);
       supabase.removeChannel(bookingSub);
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [page]);
 

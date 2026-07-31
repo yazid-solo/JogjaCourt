@@ -148,12 +148,19 @@ export default function AdminDashboard() {
     // Initial fetch
     fetchData(true);
 
-    // Silent Polling setiap 60 detik (Real-time pseudo)
-    const interval = setInterval(() => {
+    // Polling setiap 10 detik agar realtime
+    const intervalId = setInterval(() => {
       fetchData(false);
-    }, 60000);
+    }, 10000);
 
-    return () => clearInterval(interval);
+    // Refresh data saat user kembali ke tab ini
+    const handleFocus = () => fetchData(false);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   if (loading) {

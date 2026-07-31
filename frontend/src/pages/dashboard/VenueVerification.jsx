@@ -43,6 +43,18 @@ export default function VenueVerification() {
 
   useEffect(() => {
     fetchKycRequests();
+    
+    const intervalId = setInterval(() => {
+      fetchKycRequests();
+    }, 10000);
+
+    const handleFocus = () => fetchKycRequests();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const handleApprove = async () => {

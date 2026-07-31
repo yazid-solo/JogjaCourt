@@ -158,10 +158,20 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     fetchData(true);
-    const interval = setInterval(() => {
+    
+    // Polling setiap 10 detik agar realtime
+    const intervalId = setInterval(() => {
       fetchData(false);
-    }, 60000);
-    return () => clearInterval(interval);
+    }, 10000);
+
+    // Refresh data saat user kembali ke tab ini
+    const handleFocus = () => fetchData(false);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   if (loading) {

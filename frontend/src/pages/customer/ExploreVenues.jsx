@@ -98,6 +98,13 @@ export default function ExploreVenues() {
 
   useEffect(() => {
     fetchVenues();
+    
+    const handleFocus = () => fetchVenues();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const handleSelectRegion = (region) => {

@@ -47,9 +47,19 @@ export default function Finance() {
         fetchFinance();
       }).subscribe();
 
+    // Fallback polling dan focus listener
+    const intervalId = setInterval(() => {
+      fetchFinance();
+    }, 15000);
+    
+    const handleFocus = () => fetchFinance();
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       supabase.removeChannel(paymentSub);
       supabase.removeChannel(bookingSub);
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [period]);
 
