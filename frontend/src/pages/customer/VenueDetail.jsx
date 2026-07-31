@@ -508,7 +508,7 @@ export default function VenueDetail() {
       `}</style>
 
       {/* Hero */}
-      <div className="relative h-56 sm:h-80 md:h-[480px] bg-neutral-900 overflow-hidden">
+      <div className="relative min-h-[340px] sm:min-h-[400px] md:h-[480px] bg-neutral-900 overflow-hidden flex flex-col justify-end">
         {venue.image_url ? (
           <motion.img 
             initial={{ scale: 1.1 }}
@@ -523,23 +523,23 @@ export default function VenueDetail() {
             <MapPin className="w-24 h-24 text-neutral-800" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
 
         {/* Back Button */}
-        <div className="absolute top-6 left-4 sm:left-6 z-20">
-          <Link to="/explore" className="w-12 h-12 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10 hover:bg-white/20 transition-colors group">
-            <ArrowLeft className="w-5 h-5 text-white group-hover:-translate-x-1 transition-transform" />
+        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
+          <Link to="/explore" className="w-10 h-10 sm:w-12 sm:h-12 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10 hover:bg-white/20 transition-colors group">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:-translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        {/* Hero Text — wrapper fills full width, content constrained inside */}
-        <div className="absolute inset-x-0 bottom-0 z-10">
+        {/* Hero Text — wrapper ensures it never overlaps with the back button */}
+        <div className="relative z-10 w-full pt-20">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 md:pb-14"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 md:pb-14"
           >
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="bg-[#D4AF37] text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(212,175,55,0.4)]">Mitra GOR Resmi</span>
@@ -568,7 +568,7 @@ export default function VenueDetail() {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="lg:col-span-2 space-y-6 md:space-y-8 mb-24 lg:mb-0"
+          className="lg:col-span-2 space-y-6 md:space-y-8 mb-32 lg:mb-0"
         >
           {/* Fasilitas */}
           <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
