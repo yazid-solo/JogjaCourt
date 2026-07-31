@@ -16,7 +16,7 @@ export default function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await api.get('/notifications/');
+      const res = await api.get('/notifications/', { params: { t: new Date().getTime() } });
       setNotifications(res.data);
       setUnreadCount(res.data.filter(n => !n.is_read).length);
     } catch (err) {

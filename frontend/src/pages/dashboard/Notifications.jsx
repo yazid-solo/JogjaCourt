@@ -14,7 +14,7 @@ export default function Notifications() {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/notifications/');
+      const res = await api.get('/notifications/', { params: { t: new Date().getTime() } });
       setNotifications(res.data);
     } catch (err) {
       console.error(err);
