@@ -276,10 +276,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* 3D Stats Cards */}
-      <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:pb-0 md:overflow-visible custom-scroll">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Card 1: Pendapatan */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(212, 175, 55, 0.3)">
+        <TiltCard wrapperClassName="w-full" highlightColor="rgba(212, 175, 55, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Total Pendapatan</p>
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
         </TiltCard>
 
         {/* Card 2: Booking */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(59, 130, 246, 0.3)">
+        <TiltCard wrapperClassName="w-full" highlightColor="rgba(59, 130, 246, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Booking Berhasil</p>
@@ -318,8 +318,8 @@ export default function AdminDashboard() {
           </div>
         </TiltCard>
 
-        {/* Card 3: Pending */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(249, 115, 22, 0.3)">
+        {/* Card 3: Konversi */}
+        <TiltCard wrapperClassName="w-full sm:col-span-2 lg:col-span-1" highlightColor="rgba(16, 185, 129, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Menunggu Bayar</p>

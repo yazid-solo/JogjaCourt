@@ -384,9 +384,9 @@ export default function Bookings() {
       {/* Stats Cards Dashboard */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 sm:overflow-visible custom-scroll"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
       >
-        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
+        <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/10 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 mb-4 group-hover:scale-110 transition-transform">
             <Receipt className="w-6 h-6 text-blue-500" />
@@ -395,7 +395,7 @@ export default function Bookings() {
           <h3 className="text-3xl font-black text-white">{filteredBookings.length} <span className="text-lg text-neutral-500 font-medium tracking-normal">Sesi Main</span></h3>
         </div>
 
-        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
+        <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mb-4 group-hover:scale-110 transition-transform">
             <CheckCircle className="w-6 h-6 text-emerald-500" />
@@ -404,7 +404,7 @@ export default function Bookings() {
           <h3 className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">{formatIDR(totalRevenue)}</h3>
         </div>
 
-        <div className="snap-start shrink-0 w-[85vw] sm:w-auto bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
+        <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-white/10 transition-all hover:shadow-2xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/10 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-700"></div>
           <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 mb-4 group-hover:scale-110 transition-transform">
             <Clock className="w-6 h-6 text-orange-500" />

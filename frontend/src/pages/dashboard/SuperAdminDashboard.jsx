@@ -280,10 +280,10 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* 3D Stats Cards (Custom for Super Admin) */}
-      <div className="flex gap-4 overflow-x-auto pb-4 snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:pb-0 md:overflow-visible custom-scroll">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Card 1: Platform Fee (Net Income) */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(16, 185, 129, 0.3)">
+        <TiltCard wrapperClassName="w-full" highlightColor="rgba(16, 185, 129, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Fee Platform (Bulan Ini)</p>
@@ -303,7 +303,7 @@ export default function SuperAdminDashboard() {
         </TiltCard>
 
         {/* Card 2: Global Bookings */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(59, 130, 246, 0.3)">
+        <TiltCard wrapperClassName="w-full" highlightColor="rgba(59, 130, 246, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Transaksi Global (Hari Ini)</p>
@@ -323,7 +323,7 @@ export default function SuperAdminDashboard() {
         </TiltCard>
 
         {/* Card 3: Pending KYC */}
-        <TiltCard wrapperClassName="snap-start shrink-0 w-[85vw] md:w-auto" highlightColor="rgba(249, 115, 22, 0.3)">
+        <TiltCard wrapperClassName="w-full sm:col-span-2 lg:col-span-1" highlightColor="rgba(249, 115, 22, 0.3)">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-neutral-400 font-bold text-xs uppercase tracking-wider mb-1">Verifikasi GOR Baru (KYC)</p>
