@@ -133,8 +133,8 @@ const INJECTED_STYLES = `
 
   .floating-ui-badge {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
-      backdrop-filter: blur(24px); 
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(12px); 
+      -webkit-backdrop-filter: blur(12px);
       box-shadow: 
           0 0 0 1px rgba(255, 255, 255, 0.1),
           0 25px 50px -12px rgba(0, 0, 0, 0.8),
@@ -282,7 +282,11 @@ export function CinematicHero({
       gsap.set(".parallax-bg-layer", { scale: 1.15, autoAlpha: 0 });
       gsap.set(".text-track", { autoAlpha: 0, y: 60, scale: 0.9, rotationX: -15 });
       gsap.set(".text-days", { autoAlpha: 1, clipPath: "inset(0 100% 0 0)" });
-      gsap.set(".main-card", { y: window.innerHeight + 200, autoAlpha: 1 });
+      gsap.set(".main-card", { 
+        y: window.innerHeight + 200, 
+        autoAlpha: 1,
+        clipPath: isMobile ? "inset(4vh 4vw round 32px)" : "inset(7.5vh 7.5vw round 40px)"
+      });
       gsap.set([".card-left-text", ".card-right-text", ".mockup-scroll-wrapper", ".floating-badge", ".phone-widget"], { autoAlpha: 0 });
       gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.9 });
 
@@ -316,8 +320,8 @@ export function CinematicHero({
         .fromTo(".parallax-wrapper-1", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 0.8)
         .fromTo(".parallax-wrapper-2", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 1.0)
         .fromTo(".parallax-wrapper-3", { autoAlpha: 1 }, { autoAlpha: 0, ease: "power1.out", duration: 1.8, immediateRender: false }, 1.2)
-        // Expand card seamlessly
-        .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power2.inOut", duration: 1.2 }, 1.0)
+        // Expand card seamlessly using GPU accelerated clip-path
+        .to(".main-card", { clipPath: "inset(0vh 0vw round 0px)", ease: "power2.inOut", duration: 1.2 }, 1.0)
         // Content fades in as the card expands! No blank delay!
         .fromTo(".mockup-scroll-wrapper",
           { y: 150, autoAlpha: 0, scale: 0.85 },
@@ -337,9 +341,7 @@ export function CinematicHero({
           autoAlpha: 0, ease: "power2.in", duration: 0.8,
         })
         .to(".main-card", { 
-          width: isMobile ? "92vw" : "85vw", 
-          height: isMobile ? "92vh" : "85vh", 
-          borderRadius: isMobile ? "32px" : "40px", 
+          clipPath: isMobile ? "inset(4vh 4vw round 32px)" : "inset(7.5vh 7.5vw round 40px)",
           ease: "power2.inOut", 
           duration: 1.4 
         }, "pullback") 
@@ -456,7 +458,7 @@ export function CinematicHero({
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
-          className="main-card premium-depth-card relative gsap-reveal flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] h-[92vh] md:h-[85vh] rounded-[32px] md:rounded-[40px]"
+          className="main-card premium-depth-card relative gsap-reveal flex items-center justify-center pointer-events-auto w-full h-[100dvh]"
         >
           <div className="card-sheen" aria-hidden="true" />
 
