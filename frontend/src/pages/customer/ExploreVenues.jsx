@@ -352,56 +352,60 @@ export default function ExploreVenues() {
                   </p>
                 </motion.div>
               ) : (
-                <motion.div 
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="show"
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-                >
-                  {filteredVenues.map((venue) => (
-                    <motion.div key={venue.id} variants={itemVariants}>
-                      <Link 
-                        to={`/explore/${venue.id}`} 
-                        className="bg-gradient-to-br from-[#111] to-black border border-white/10 rounded-3xl overflow-hidden group hover:border-[#D4AF37]/50 hover:shadow-[0_10px_40px_rgba(212,175,55,0.15)] transition-all duration-500 block flex flex-col h-full transform hover:-translate-y-2"
-                      >
-                        <div className="h-48 md:h-56 bg-neutral-900 relative overflow-hidden shrink-0">
-                          {venue.image_url ? (
-                            <img src={venue.image_url} alt={venue.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-neutral-600 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
-                              <Building2 className="w-12 h-12" />
+                  <motion.div 
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8"
+                  >
+                    {filteredVenues.map((venue) => (
+                      <motion.div key={venue.id} variants={itemVariants} className="h-full">
+                        <Link 
+                          to={`/explore/${venue.id}`} 
+                          className="bg-gradient-to-br from-[#111] to-black border border-white/10 rounded-2xl md:rounded-3xl overflow-hidden group hover:border-[#D4AF37]/50 hover:shadow-[0_10px_40px_rgba(212,175,55,0.15)] transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1 md:hover:-translate-y-2"
+                        >
+                          <div className="h-32 sm:h-40 md:h-48 relative overflow-hidden shrink-0">
+                            {(venue.foto_gor && venue.foto_gor.length > 0) || venue.image_url ? (
+                              <img src={venue.foto_gor?.[0] || venue.image_url} alt={venue.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-neutral-600 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+                                <Building2 className="w-8 h-8 md:w-12 md:h-12" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            
+                            {/* Badge */}
+                            <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-full flex items-center gap-1 md:gap-2 shadow-lg">
+                              <Star className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                              <span className="text-[9px] md:text-xs font-bold text-white tracking-wide">Mitra</span>
                             </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                          
-                          {/* Badge */}
-                          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-                            <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
-                            <span className="text-xs font-bold text-white tracking-wide">Mitra Resmi</span>
-                          </div>
-                        </div>
-                        
-                        <div className="p-6 md:p-8 flex flex-col flex-grow relative">
-                          <div className="absolute -top-10 right-6 w-12 h-12 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                            <ChevronRight className="w-6 h-6 text-black" />
                           </div>
                           
-                          <h3 className="text-xl md:text-2xl font-black text-white mb-3 group-hover:text-[#D4AF37] transition-colors line-clamp-1">{venue.name}</h3>
-                          <div className="flex items-start gap-2 text-neutral-400 text-sm mb-6 flex-grow">
-                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#D4AF37]" />
-                            <p className="line-clamp-2 leading-relaxed">{venue.address}</p>
+                          <div className="p-3 sm:p-4 md:p-6 flex flex-col flex-grow relative">
+                            <div className="hidden md:flex absolute -top-8 right-4 w-12 h-12 bg-[#D4AF37] rounded-full items-center justify-center shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
+                              <ChevronRight className="w-6 h-6 text-black" />
+                            </div>
+                            
+                            <h3 className="text-xs sm:text-sm md:text-xl font-bold text-white mb-1.5 md:mb-3 group-hover:text-[#D4AF37] transition-colors line-clamp-2 leading-snug md:leading-tight">{venue.name}</h3>
+                            <div className="flex items-start gap-1 md:gap-2 text-neutral-400 text-[10px] sm:text-xs md:text-sm mb-3 md:mb-6 flex-grow">
+                              <MapPin className="w-3 h-3 md:w-4 md:h-4 mt-0.5 flex-shrink-0 text-[#D4AF37]" />
+                              <p className="line-clamp-2 leading-relaxed">{venue.address}</p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-white/10 shrink-0 mt-auto">
+                              <span className="text-[9px] sm:text-[10px] md:text-xs text-neutral-500 font-bold uppercase tracking-widest hidden sm:block">Pesan Sekarang</span>
+                              <span className="text-[10px] text-[#D4AF37] font-bold block sm:hidden">Cek Jadwal</span>
+                              <div className="hidden sm:block h-px flex-1 bg-gradient-to-r from-white/10 to-transparent mx-2 md:mx-4"></div>
+                              <span className="text-[#D4AF37] text-xs md:text-sm font-bold opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:-translate-x-2 md:group-hover:translate-x-0 duration-300">
+                                <ChevronRight className="w-4 h-4 md:hidden inline-block" />
+                                <span className="hidden md:inline-block">GO</span>
+                              </span>
+                            </div>
                           </div>
-                          
-                          <div className="flex items-center justify-between pt-5 border-t border-white/10 shrink-0">
-                            <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">Pesan Sekarang</span>
-                            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent mx-4"></div>
-                            <span className="text-[#D4AF37] text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">GO</span>
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </motion.div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </motion.div>
               )}
             </motion.div>
           )}
