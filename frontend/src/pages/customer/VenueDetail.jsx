@@ -501,7 +501,6 @@ export default function VenueDetail() {
                 )}
               </div>
             )}
-            </div>
           </motion.div>
         </AnimatePresence>
       </div>
