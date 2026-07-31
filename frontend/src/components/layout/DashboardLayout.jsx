@@ -34,10 +34,18 @@ export default function DashboardLayout() {
   const isChatPage = location.pathname === '/dashboard/chat';
 
   const [expanded, setExpanded]         = useState(false);
+  const [isMobile, setIsMobile]         = useState(false);
   const [pendingKycCount, setPendingKycCount] = useState(0);
   const [tooltip, setTooltip]           = useState(null); // { label, y, grad }
   const expandTimer  = useRef(null);
   const collapseTimer= useRef(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (user?.role === 'super_admin') {
@@ -98,7 +106,8 @@ export default function DashboardLayout() {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  const sidebarW = expanded ? 256 : 68;
+  const actualExpanded = expanded && !isMobile;
+  const sidebarW = actualExpanded ? 256 : 68;
 
   return (
     <div className="h-screen bg-[#080808] text-white flex overflow-hidden font-sans">
@@ -106,7 +115,7 @@ export default function DashboardLayout() {
       {/* ══════════════════════════════════════════
           GLOBAL TOOLTIP (rendered outside aside)
           ══════════════════════════════════════════ */}
-      {tooltip && !expanded && (
+      {tooltip && !actualExpanded && (
         <div
           className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-xl text-[12px] font-bold text-white whitespace-nowrap"
           style={{
@@ -135,15 +144,15 @@ export default function DashboardLayout() {
           SIDEBAR
           ══════════════════════════════════════════ */}
       <aside
-        onMouseEnter={onSidebarEnter}
-        onMouseLeave={onSidebarLeave}
-        className="hidden lg:flex lg:static inset-y-0 left-0 z-50 flex-col flex-shrink-0 transition-[width] duration-300 ease-out"
+        onMouseEnter={isMobile ? undefined : onSidebarEnter}
+        onMouseLeave={isMobile ? undefined : onSidebarLeave}
+        className="flex inset-y-0 left-0 z-50 flex-col flex-shrink-0 transition-[width] duration-300 ease-out"
         style={{
           width: sidebarW,
           minWidth: sidebarW,
           background: 'linear-gradient(180deg,#0e0e0e 0%,#0a0a0a 60%,#0e0e0e 100%)',
           borderRight: '1px solid rgba(255,255,255,0.06)',
-          boxShadow: expanded ? '6px 0 40px rgba(0,0,0,0.6)' : 'none',
+          boxShadow: actualExpanded ? '6px 0 40px rgba(0,0,0,0.6)' : 'none',
           overflow: 'hidden',
         }}
       >
@@ -165,8 +174,8 @@ export default function DashboardLayout() {
           {/* Brand text */}
           <div className="flex flex-col overflow-hidden"
             style={{
-              opacity: expanded ? 1 : 0,
-              width:   expanded ? 180 : 0,
+              opacity: actualExpanded ? 1 : 0,
+              width:   actualExpanded ? 180 : 0,
               transition: 'opacity 250ms, width 360ms cubic-bezier(0.32,0.72,0,1)',
               whiteSpace: 'nowrap',
             }}>
@@ -181,12 +190,12 @@ export default function DashboardLayout() {
         <div className="px-[18px] pt-5 pb-2 flex-shrink-0 overflow-hidden h-10 flex items-center">
           <span className="text-[9px] font-black text-neutral-700 uppercase tracking-[0.2em] whitespace-nowrap"
             style={{
-              opacity: expanded ? 1 : 0,
+              opacity: actualExpanded ? 1 : 0,
               transition: 'opacity 250ms',
             }}>
             Menu Utama
           </span>
-          {!expanded && (
+          {!actualExpanded && (
             <div className="w-full h-px" style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.06), transparent)' }} />
           )}
         </div>
@@ -371,67 +380,10 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className={`flex-1 overflow-y-auto scroll-smooth ${isChatPage ? 'p-0 pb-20 sm:pb-0' : 'p-3 sm:p-6 md:p-8 pb-24 sm:pb-8'}`}>
+        <div className={`flex-1 overflow-y-auto scroll-smooth ${isChatPage ? 'p-0' : 'p-3 sm:p-6 md:p-8 pb-8'}`}>
           <Outlet />
         </div>
       </main>
-
-      {/* ══════════════════════════════════════════
-          BOTTOM NAVIGATION BAR (MOBILE ONLY)
-          ══════════════════════════════════════════ */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-2xl border-t border-white/10 safe-area-pb shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
-        <div className="flex items-center overflow-x-auto hide-scrollbar px-3 py-3 gap-2">
-          {menuItems.map((item) => {
-            const grad       = MENU_GRADIENTS[item.path] || MENU_GRADIENTS['/dashboard'];
-            const Icon       = item.icon;
-            const hasBadge   = item.path === '/dashboard/verifications' && pendingKycCount > 0;
-            const hasChatBdg = item.path === '/dashboard/chat' && chatUnread > 0;
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/dashboard'}
-                onClick={() => { if (item.path === '/dashboard/chat') clearChatUnread(); }}
-                className="flex-shrink-0"
-              >
-                {({ isActive }) => (
-                  <div
-                    className="flex flex-col items-center justify-center min-w-[72px] px-3 py-2 rounded-2xl transition-all duration-300 relative"
-                    style={isActive ? {
-                      background: `linear-gradient(135deg,${grad.from}25,${grad.to}05)`,
-                      border: `1px solid ${grad.from}40`,
-                      boxShadow: `0 4px 20px ${grad.glow}30`,
-                    } : { border: '1px solid transparent' }}
-                  >
-                    <Icon className="w-6 h-6 mb-1.5 transition-all" style={{ color: isActive ? grad.from : 'rgba(255,255,255,0.4)', filter: isActive ? `drop-shadow(0 0 8px ${grad.glow})` : 'none' }} />
-                    <span className="text-[9px] font-black uppercase tracking-wider whitespace-nowrap transition-all" style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.4)' }}>
-                      {item.label.split(' ')[0]} {/* Shorten label for mobile */}
-                    </span>
-                    {(hasBadge || hasChatBdg) && (
-                      <span className="absolute top-1 right-2 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse border-2 border-[#0a0a0a] shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-                    )}
-                  </div>
-                )}
-              </NavLink>
-            );
-          })}
-          
-          {/* Logout Button in Bottom Nav */}
-          <button
-            onClick={handleLogout}
-            className="flex-shrink-0 flex flex-col items-center justify-center min-w-[72px] px-3 py-2 rounded-2xl transition-all duration-300 relative border border-transparent"
-          >
-            <LogOut className="w-6 h-6 mb-1.5 transition-all text-red-500/60" />
-            <span className="text-[9px] font-black uppercase tracking-wider whitespace-nowrap transition-all text-red-500/60">
-              Keluar
-            </span>
-          </button>
-          
-          <div className="w-2 flex-shrink-0" />
-        </div>
-      </nav>
-
     </div>
   );
 }
