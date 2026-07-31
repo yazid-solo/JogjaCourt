@@ -312,7 +312,7 @@ export default function MonthlySessionSelector({
       </div>
 
       {/* ── MONTHLY STICKY FOOTER ── */}
-      <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 p-4 md:p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-50">
+      <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 p-4 pb-8 md:p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-50">
         {/* Summary Box */}
         <div className="bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl p-4 md:p-5 mb-4 border border-white/5 space-y-3">
           <div className="flex justify-between text-xs sm:text-sm">
