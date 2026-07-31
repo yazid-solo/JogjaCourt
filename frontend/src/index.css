@@ -75,9 +75,7 @@
   }
 }
 
-/* ============================================
    CUSTOM SCROLLBAR STYLES - Mobile Optimized
-   ============================================ */
 @layer components {
   /* Custom scrollbar for webkit browsers (Chrome, Safari, Edge) */
   .custom-scrollbar::-webkit-scrollbar {
@@ -108,9 +106,7 @@
   }
 }
 
-/* ============================================
    MOBILE OPTIMIZATIONS
-   ============================================ */
 @layer components {
   /* Better touch targets on mobile */
   @media (max-width: 768px) {
@@ -179,9 +175,7 @@
   }
 }
 
-/* ============================================
    MODAL RESPONSIVENESS
-   ============================================ */
 @layer components {
   /* Mobile modal positioning */
   @media (max-width: 640px) {
@@ -189,9 +183,7 @@
   }
 }
 
-/* ============================================
    ANIMATION IMPROVEMENTS
-   ============================================ */
 @layer utilities {
   /* Smooth transitions for better feel */
   .transition-smooth {
@@ -212,9 +204,7 @@
   }
 }
 
-/* ============================================
    SCROLL PERFORMANCE OPTIMIZATIONS
-   ============================================ */
 @layer utilities {
   /* Optimize images for scroll performance */
   img {
