@@ -43,7 +43,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get('/bookings');
+        const res = await api.get(`/bookings?t=${Date.now()}`);
         const myBookings = res.data?.data || res.data || [];
         const completed = myBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         
@@ -54,19 +54,28 @@ export default function Profile() {
           completed: completed.length,
           total_spent: totalSpent
         });
-        
-        if (user) {
-          setEditForm({ name: user.name || '', phone: user.phone || '' });
-        }
       } catch (error) {
         console.error("Gagal memuat riwayat", error);
       } finally {
         setLoading(false);
       }
     };
+    let intervalId;
     if (user) {
+      setEditForm({ name: user.name || '', phone: user.phone || '' });
       fetchStats();
+      
+      // Auto-refresh setiap 5 detik agar realtime
+      intervalId = setInterval(fetchStats, 5000);
+      
+      // Auto-refresh saat user kembali ke tab ini
+      window.addEventListener('focus', fetchStats);
     }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      window.removeEventListener('focus', fetchStats);
+    };
   }, [user]);
 
   const handleLogout = () => {
