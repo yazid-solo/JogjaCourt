@@ -770,7 +770,7 @@ export default function VenueDetail() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 right-0 h-[85dvh] bg-[#111] border-t border-white/10 rounded-t-3xl z-[101] lg:hidden overflow-hidden flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+                className="fixed bottom-0 left-0 right-0 top-[15vh] bg-[#111] border-t border-white/10 rounded-t-3xl z-[101] lg:hidden overflow-hidden flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
               >
                 <div className="flex justify-between items-center p-4 border-b border-white/5 shrink-0 bg-[#0a0a0a]">
                   <h3 className="font-black text-lg">Pesan Lapangan</h3>
