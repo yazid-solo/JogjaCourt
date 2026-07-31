@@ -245,10 +245,10 @@ export default function Home() {
               <span className="w-8 h-px bg-[#D4AF37]"></span>
             </h2>
             <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight">
-              Sistem Cerdas, Efisiensi Waktu
+              Booking Gampang, Main Tenang
             </h3>
             <p className="mt-4 sm:mt-6 text-neutral-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg">
-              Infrastruktur digital yang dirancang khusus untuk memodernisasi ekosistem badminton di Yogyakarta. Menyelesaikan permasalahan double-booking dan bentrok jadwal secara presisi.
+              Nggak perlu lagi telepon GOR satu-satu atau chat admin panjang lebar cuma buat tanya "ada slot kosong nggak?". Di sini semuanya langsung keliatan dan bisa langsung di-booking.
             </p>
           </motion.div>
 
@@ -271,9 +271,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(59,130,246,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <MessageSquare className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Komunikasi Langsung dengan Pengelola</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Chat Langsung ke Pengelola GOR</h4>
                 <p className="text-neutral-400 leading-relaxed max-w-md">
-                  Tersedia fitur pesan terintegrasi untuk menanyakan fasilitas, ketersediaan jadwal rutin, atau negosiasi harga secara langsung kepada pihak pengelola tanpa perlu beralih aplikasi.
+                  Mau tanya soal fasilitas, harga member, atau jadwal rutin? Tinggal chat langsung ke pengelola GOR-nya lewat aplikasi. Nggak perlu buka WhatsApp atau telepon terpisah.
                 </p>
               </div>
             </TiltCard>
@@ -290,9 +290,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-rose-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(244,63,94,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <Clock className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Sistem Booking Terotomatisasi</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Auto-Cancel Kalau Belum Bayar</h4>
                 <p className="text-neutral-400 leading-relaxed">
-                  Jadwal yang telah dibooking akan otomatis dibatalkan oleh sistem jika melewati batas waktu pembayaran, memastikan ketersediaan lapangan selalu akurat secara real-time.
+                  Booking-an yang nggak dibayar dalam batas waktu akan otomatis dibatalkan sistem. Jadi slot lapangan nggak pernah "digantungin" — selalu akurat dan up-to-date.
                 </p>
               </div>
             </TiltCard>
@@ -309,9 +309,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <ShieldCheck className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">Privasi & Keamanan Terjamin</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">Data Kamu Aman, Dijaga Ketat</h4>
                 <p className="text-neutral-400 leading-relaxed">
-                  Dilengkapi enkripsi standar industri dan pemisahan arsitektur akses antara pengguna reguler dan mitra pengelola untuk menjamin integritas data Anda.
+                  Semua data pribadi dan transaksi dienkripsi. Akses admin, mitra, dan pelanggan dipisah jelas — jadi nggak ada yang bisa ngintip data orang lain.
                 </p>
               </div>
             </TiltCard>
@@ -328,13 +328,13 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform duration-300">
                   <LayoutDashboard className="text-black w-7 h-7" />
                 </div>
-                <h4 className="text-2xl sm:text-3xl font-black text-white mb-4">Manajemen GOR Komprehensif</h4>
+                <h4 className="text-2xl sm:text-3xl font-black text-white mb-4">Dashboard Lengkap buat Pemilik GOR</h4>
                 <p className="text-neutral-300 leading-relaxed max-w-lg text-base sm:text-lg">
-                  Bagi mitra pengelola, sistem kami menyediakan dashboard terpusat untuk mengatur harga, ketersediaan lapangan, hingga rekapitulasi laporan pendapatan secara otomatis.
+                  Kalau kamu punya GOR, di sini kamu bisa atur harga, kelola jadwal lapangan, lihat siapa aja yang booking, sampai cek laporan pendapatan harian. Semua dari satu tempat.
                 </p>
                 <div className="mt-8">
                   <Link to="/mitra-register" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:text-white transition-colors">
-                    Pelajari Fitur Mitra <span className="text-xl">→</span>
+                    Daftarkan GOR Kamu <span className="text-xl">→</span>
                   </Link>
                 </div>
               </div>
@@ -360,10 +360,10 @@ export default function Home() {
               <span className="text-xs font-bold tracking-widest uppercase text-white">Cara Booking</span>
             </div>
             <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-              Reservasi Mudah <br/><span className="text-[#D4AF37]">dalam 3 Tahapan</span>
+              Booking Lapangan <br/><span className="text-[#D4AF37]">Cuma 3 Langkah</span>
             </h3>
             <p className="text-neutral-400 text-base sm:text-lg lg:text-xl leading-relaxed">
-              Lupakan proses pemesanan manual yang memakan waktu. Ekosistem digital kami mengotomatisasi seluruh alur reservasi Anda dalam hitungan detik.
+              Nggak ribet, nggak perlu nunggu konfirmasi manual. Pilih GOR, pilih jam, bayar — selesai. Lapangan langsung atas nama kamu.
             </p>
           </motion.div>
           
@@ -379,9 +379,9 @@ export default function Home() {
               className="space-y-12 relative z-10"
             >
               {[
-                { icon: Search, color: "text-[#D4AF37]", bg: "bg-[#D4AF37]/10", border: "border-[#D4AF37]/30", title: "1. Eksplorasi & Bandingkan GOR", desc: "Temukan lapangan terbaik di Yogyakarta dengan informasi transparan meliputi ketersediaan, harga aktual, ulasan, hingga dokumentasi fasilitas." },
-                { icon: CalendarCheck, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "2. Pilih Waktu Secara Real-Time", desc: "Sistem sinkronisasi kami menampilkan ketersediaan jadwal secara langsung (live). Tidak perlu lagi konfirmasi manual untuk mengecek slot kosong." },
-                { icon: CreditCard, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "3. Selesaikan Pembayaran Instan", desc: "Konfirmasi pesanan dengan berbagai metode pembayaran aman. Jadwal akan terenkripsi atas nama Anda—cukup tunjukkan bukti reservasi di lokasi." }
+                { icon: Search, color: "text-[#D4AF37]", bg: "bg-[#D4AF37]/10", border: "border-[#D4AF37]/30", title: "1. Cari GOR yang Cocok", desc: "Buka halaman eksplor, bandingkan harga, lihat foto lapangan, cek rating dari pemain lain. Semua info-nya transparan." },
+                { icon: CalendarCheck, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "2. Pilih Jam yang Kosong", desc: "Jadwal lapangan ter-update otomatis. Kalau warnanya hijau berarti masih kosong — tinggal klik, nggak perlu telepon dulu." },
+                { icon: CreditCard, color: "text-white", bg: "bg-white/10", border: "border-white/20", title: "3. Bayar dan Langsung Main", desc: "Upload bukti bayar, tunggu konfirmasi dari pemilik GOR, dan lapangan sudah resmi atas nama kamu. Sampai di lokasi tinggal tunjukkin tiket digital." }
               ].map((step, idx) => (
                 <motion.div key={idx} variants={itemVariants} className="flex gap-6 sm:gap-8 items-start group">
                   <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ${step.bg} border ${step.border} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
@@ -415,7 +415,7 @@ export default function Home() {
           
           <ContainerAnimated className="mt-6 mb-4">
             <p className="leading-relaxed tracking-tight text-neutral-400 max-w-2xl mx-auto text-lg sm:text-xl">
-              Lihat slot jam yang tersedia, pilih lapangan, lalu bayar — selesai. Nggak perlu WA admin atau datang dulu ke tempat buat nanya jadwal.
+              Lihat jam yang masih kosong, pilih lapangan, bayar — beres. Nggak perlu WA admin atau datang ke GOR dulu cuma buat nanya jadwal.
             </p>
           </ContainerAnimated>
         </ContainerStagger>

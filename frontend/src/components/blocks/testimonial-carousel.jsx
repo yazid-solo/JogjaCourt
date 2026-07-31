@@ -143,10 +143,10 @@ export function TestimonialCarousel() {
       <div className="container mx-auto px-4 mb-16 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Kepercayaan <span className="text-[#D4AF37]">Komunitas</span>
+            Kata Mereka yang <span className="text-[#D4AF37]">Sudah Pakai</span>
           </h2>
           <p className="text-neutral-400 mb-6 leading-relaxed">
-            Bergabung dengan ribuan atlet dan pegiat olahraga di Yogyakarta yang telah mengandalkan infrastruktur reservasi kami untuk setiap pertandingan mereka.
+            Bukan klaim sepihak — ini cerita nyata dari pemain dan komunitas badminton di Jogja yang udah pakai JogjaCourt buat booking lapangan mereka.
           </p>
           <button 
             onClick={handleWriteReview}

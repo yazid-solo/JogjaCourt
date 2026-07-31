@@ -243,11 +243,11 @@ MagneticButton.displayName = "MagneticButton";
 // -------------------------------------------------------------------------
 const MarqueeItem = () => (
   <div className="flex items-center space-x-12 px-6">
-    <span>Booking Real-time</span> <span className="text-[#D4AF37]">✦</span>
-    <span>Booking Instan</span> <span className="text-white/60">✦</span>
-    <span>Jadwal Terpusat</span> <span className="text-[#D4AF37]">✦</span>
-    <span>Manajemen Mitra GOR</span> <span className="text-white/60">✦</span>
-    <span>Terpercaya di Jogja</span> <span className="text-[#D4AF37]">✦</span>
+    <span>Booking Langsung</span> <span className="text-[#D4AF37]">✦</span>
+    <span>Tanpa Ribet</span> <span className="text-white/60">✦</span>
+    <span>Jadwal Akurat</span> <span className="text-[#D4AF37]">✦</span>
+    <span>Buat Pemilik GOR</span> <span className="text-white/60">✦</span>
+    <span>Asli dari Jogja</span> <span className="text-[#D4AF37]">✦</span>
   </div>
 );
 
@@ -356,12 +356,12 @@ export function CinematicFooter() {
               ref={headingRef}
               className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter mb-4 text-center uppercase flex items-center justify-center gap-2 md:gap-4"
             >
-              <span className="footer-text-glow pr-1 md:pr-2">MULAI</span> 
-              <span className="text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">RESERVASI?</span>
+              <span className="footer-text-glow pr-1 md:pr-2">SIAP</span> 
+              <span className="text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">MAIN?</span>
             </h2>
             
             <p className="text-neutral-400 max-w-2xl text-center mb-8 text-sm md:text-lg leading-relaxed">
-              Tinggalkan metode pemesanan manual yang tidak efisien. Optimalkan waktu Anda dengan ekosistem penjadwalan cerdas kami. <span className="text-white font-bold">Daftar sekarang!</span>
+              Udah nggak jaman telepon GOR satu-satu. Daftar sekarang, cari lapangan yang pas, dan booking dalam hitungan detik. <span className="text-white font-bold">Gratis, tanpa biaya tambahan.</span>
             </p>
 
             {/* Interactive Magnetic Pills Layout */}
