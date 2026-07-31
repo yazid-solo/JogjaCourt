@@ -194,6 +194,7 @@ async def xendit_webhook(request: Request, background_tasks: BackgroundTasks, db
 
     if status == 'PAID' or status == 'SETTLED':
         payment.status = PaymentStatusEnum.paid
+        payment.confirmed_at = datetime.utcnow()
         payment.booking.status = BookingStatusEnum.confirmed
         
         # Load user and venue data for notification

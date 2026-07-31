@@ -38,7 +38,7 @@ async def get_dashboard_stats(
 
     # Total Revenue
     r_stmt = select(func.coalesce(func.sum(Payment.amount), 0)).where(
-        func.date(Payment.confirmed_at) == today,
+        func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) == today,
         Payment.status == PaymentStatusEnum.paid
     )
     if is_admin:
@@ -77,24 +77,24 @@ async def get_revenue(
     now_date = datetime.utcnow().date()
     is_admin = current_user.role == RoleEnum.admin
 
-    stmt = select(Payment.confirmed_at, Payment.amount).where(
+    stmt = select(func.coalesce(Payment.confirmed_at, Payment.created_at).label('confirmed_at'), Payment.amount).where(
         Payment.status == PaymentStatusEnum.paid,
-        Payment.confirmed_at != None
+        func.coalesce(Payment.confirmed_at, Payment.created_at) != None
     )
 
     if is_admin:
         stmt = stmt.join(Booking, Payment.booking_id == Booking.id).join(Court, Booking.court_id == Court.id).join(Venue, Court.venue_id == Venue.id).where(Venue.owner_id == current_user.id)
 
     if period == "today":
-        stmt = stmt.where(func.date(Payment.confirmed_at) == now_date)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) == now_date)
     elif period == "this_month":
         first_day = now_date.replace(day=1)
-        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) >= first_day)
     elif period == "last_month":
         first_day_this_month = now_date.replace(day=1)
         last_day_last_month = first_day_this_month - timedelta(days=1)
         first_day_last_month = last_day_last_month.replace(day=1)
-        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day_last_month, func.date(Payment.confirmed_at) <= last_day_last_month)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) >= first_day_last_month, func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) <= last_day_last_month)
 
     res = await db.execute(stmt)
     rows = res.all()
@@ -136,7 +136,7 @@ async def get_weekly_revenue_alias(
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
         stmt = select(func.coalesce(func.sum(Payment.amount), 0)).where(
-            func.date(Payment.confirmed_at) == day,
+            func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) == day,
             Payment.status == PaymentStatusEnum.paid
         )
         if is_admin:
@@ -222,15 +222,15 @@ async def get_revenue_share(
     # Filter tanggal berdasarkan period
     now_date = datetime.utcnow().date()
     if period == "today":
-        stmt = stmt.where(func.date(Payment.confirmed_at) == now_date)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) == now_date)
     elif period == "this_month":
         first_day = now_date.replace(day=1)
-        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) >= first_day)
     elif period == "last_month":
         first_day_this_month = now_date.replace(day=1)
         last_day_last_month = first_day_this_month - timedelta(days=1)
         first_day_last_month = last_day_last_month.replace(day=1)
-        stmt = stmt.where(func.date(Payment.confirmed_at) >= first_day_last_month, func.date(Payment.confirmed_at) <= last_day_last_month)
+        stmt = stmt.where(func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) >= first_day_last_month, func.date(func.coalesce(Payment.confirmed_at, Payment.created_at)) <= last_day_last_month)
     
     if current_user.role == RoleEnum.admin:
         stmt = stmt.where(Venue.owner_id == current_user.id)
