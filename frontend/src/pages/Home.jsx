@@ -12,7 +12,9 @@ import {
   CalendarCheck,
   CreditCard,
   LogOut,
-  UserCircle
+  UserCircle,
+  Menu,
+  X
 } from "lucide-react"
 import { TestimonialCarousel } from "@/components/blocks/testimonial-carousel"
 import { CinematicFooter } from "@/components/ui/motion-footer"
@@ -40,6 +42,7 @@ const TiltCard = ({ children, className, variants }) => {
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [fanCards, setFanCards] = useState([])
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -186,8 +189,36 @@ export default function Home() {
                 </Link>
               </>
             )}
+            
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="md:hidden w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 py-6 px-6 flex flex-col gap-6 shadow-2xl z-50"
+          >
+            <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold text-base transition-colors">Fitur Unggulan</a>
+            <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-white hover:text-[#D4AF37] font-bold text-base transition-colors">Cara Kerja</a>
+            <Link 
+              to={user ? "/explore" : "/login"} 
+              state={!user ? { from: { pathname: '/explore' } } : undefined}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-[#D4AF37] font-bold text-base"
+            >
+              Eksplor GOR
+            </Link>
+          </motion.div>
+        )}
       </motion.nav>
 
       {/* 2. HERO SECTION (3D Cinematic) */}
