@@ -308,69 +308,53 @@ export default function MonthlySessionSelector({
         </div>
       )}
 
-      {/* Summary Box */}
-      <div className="bg-black/50 rounded-xl p-4 mb-5 border border-white/5 space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-neutral-400">Lapangan:</span>
-          <span className="font-bold text-white">{selectedCourt.name}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-neutral-400">Periode:</span>
-          <span className="font-bold text-white text-right">30 Hari</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-neutral-400">Sesi Dipilih:</span>
-          <span className="font-bold text-emerald-400">{selectedSessions.length} Sesi ({selectedSessions.length * 5} jam/hari)</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-neutral-400">Hari Akses:</span>
-          <span className="font-bold text-emerald-400 text-right">
-            {selectedDays.length === 7 ? 'Setiap Hari' : selectedDays.map(d => DAYS.find(x => x.value === d).label).join(', ')}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-neutral-400">Akses Harian:</span>
-          <div className="text-right">
-            {selectedSessions.map(sessionId => {
-              const session = SESSIONS.find(s => s.id === sessionId);
-              return (
-                <div key={sessionId} className="text-xs text-emerald-400 font-mono">
-                  {session.time}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className="border-t border-white/10 pt-3 flex justify-between items-center">
-          <span className="text-neutral-400 text-sm">Total Pembayaran:</span>
-          <div className="text-right">
-            <span className="font-bold text-[#D4AF37] text-xl">{formatIDR(totalPrice)}</span>
-          </div>
-        </div>
-        <p className="text-[10px] text-neutral-600 text-center">
-          * Harga dihitung berdasarkan jumlah sesi yang dipilih
-        </p>
       </div>
 
-      {/* CTA Button */}
-      <button
-        onClick={handleCheckout}
-        disabled={selectedSessions.length === 0 || selectedDays.length === 0}
-        className={`w-full font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 ${
-          (selectedSessions.length === 0 || selectedDays.length === 0)
-            ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-white/10'
-            : 'bg-gradient-to-r from-[#D4AF37] to-yellow-500 text-black shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:to-yellow-400 hover:scale-[1.02] active:scale-[0.98]'
-        }`}
-      >
-        <Crown className="w-5 h-5" />
-        {selectedSessions.length === 0 ? 'Pilih Minimal 1 Sesi' : selectedDays.length === 0 ? 'Pilih Minimal 1 Hari' : `Daftar Member (30 Hari)`}
-        {(selectedSessions.length > 0 && selectedDays.length > 0) && <ChevronRight className="w-5 h-5" />}
-      </button>
+      {/* ── MONTHLY STICKY FOOTER ── */}
+      <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 p-4 md:p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-50">
+        {/* Summary Box */}
+        <div className="bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl p-4 md:p-5 mb-4 border border-white/5 space-y-3">
+          <div className="flex justify-between text-xs sm:text-sm">
+            <span className="text-neutral-400">Lapangan:</span>
+            <span className="font-bold text-white">{selectedCourt.name}</span>
+          </div>
+          <div className="flex justify-between text-xs sm:text-sm">
+            <span className="text-neutral-400">Periode:</span>
+            <span className="font-bold text-white text-right">30 Hari</span>
+          </div>
+          <div className="flex justify-between text-xs sm:text-sm">
+            <span className="text-neutral-400">Akses:</span>
+            <span className="font-bold text-emerald-400 text-right">
+              {selectedSessions.length} Sesi ({selectedDays.length === 7 ? 'Tiap Hari' : `${selectedDays.length} Hari`})
+            </span>
+          </div>
+          
+          <div className="h-px bg-white/5 my-2"></div>
+          
+          <div className="flex justify-between items-center">
+            <span className="text-neutral-400 text-xs sm:text-sm">Total:</span>
+            <div className="text-right">
+              <span className="font-black text-[#D4AF37] text-xl sm:text-2xl">{formatIDR(totalPrice)}</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Helper Text */}
-      <p className="text-center text-[10px] text-neutral-600 mt-3">
-        💡 Anda bisa mengubah pilihan sesi sebelum checkout
-      </p>
+        {/* CTA Button */}
+        <button
+          onClick={handleCheckout}
+          disabled={selectedSessions.length === 0 || selectedDays.length === 0}
+          className={`w-full font-bold py-3 sm:py-4 text-base sm:text-lg rounded-2xl transition-all flex justify-center items-center gap-2 ${
+            (selectedSessions.length === 0 || selectedDays.length === 0)
+              ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-white/10'
+              : 'bg-[#D4AF37] text-black shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] active:scale-[0.98]'
+          }`}
+        >
+          <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
+          {selectedSessions.length === 0 ? 'Pilih 1 Sesi' : selectedDays.length === 0 ? 'Pilih 1 Hari' : `Daftar Member`}
+          {(selectedSessions.length > 0 && selectedDays.length > 0) && <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />}
+        </button>
+      </div>
     </>
   );
 }

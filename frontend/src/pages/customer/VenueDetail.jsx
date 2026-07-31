@@ -312,7 +312,7 @@ export default function VenueDetail() {
         )}
       </div>
 
-      <div className="p-6 flex-1 overflow-y-auto custom-scroll">
+      <div className="flex-1 overflow-y-auto custom-scroll relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={bookingMode}
@@ -320,22 +320,26 @@ export default function VenueDetail() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
+            className="flex flex-col min-h-full"
           >
             {/* Show info badge if only one type is available */}
-            {(availableTypes.hourly && !availableTypes.monthly) && (
-              <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-300">
-                ✓ Sewa per jam tersedia untuk lapangan ini
-              </div>
-            )}
-            {(availableTypes.monthly && !availableTypes.hourly) && (
-              <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-300">
-                ✓ Sewa member bulanan tersedia untuk lapangan ini
-              </div>
-            )}
+            <div className="px-4 md:px-6 pt-4 md:pt-6 shrink-0">
+              {(availableTypes.hourly && !availableTypes.monthly) && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-300">
+                  ✓ Sewa per jam tersedia untuk lapangan ini
+                </div>
+              )}
+              {(availableTypes.monthly && !availableTypes.hourly) && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-300">
+                  ✓ Sewa member bulanan tersedia untuk lapangan ini
+                </div>
+              )}
+            </div>
 
             {bookingMode === 'hourly' && availableTypes.hourly ? (
               /* ── HOURLY BOOKING WIDGET ── */
               <>
+              <div className="p-4 md:p-6 flex-1 flex flex-col">
                 <div className="mb-6">
                   <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Tanggal Main</label>
                   <div className="relative group">
@@ -401,16 +405,19 @@ export default function VenueDetail() {
                     </div>
                   )}
                 </div>
+              </div>
 
-                <div className="bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl p-5 mb-6 border border-white/5">
+              {/* ── HOURLY STICKY FOOTER ── */}
+              <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 p-4 md:p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-50">
+                <div className="bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl p-4 md:p-5 mb-4 border border-white/5">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-neutral-400 text-sm">Durasi Bermain:</span>
-                    <span className="font-bold text-white text-sm bg-white/10 px-3 py-1 rounded-full">{selectedSlots.length} Jam</span>
+                    <span className="text-neutral-400 text-xs sm:text-sm">Durasi Bermain:</span>
+                    <span className="font-bold text-white text-xs sm:text-sm bg-white/10 px-3 py-1 rounded-full">{selectedSlots.length} Jam</span>
                   </div>
                   <div className="h-px bg-white/5 my-3"></div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-400 text-sm">Total Bayar:</span>
-                    <span className="font-black text-[#D4AF37] text-2xl tracking-tight">
+                    <span className="text-neutral-400 text-xs sm:text-sm">Total Bayar:</span>
+                    <span className="font-black text-[#D4AF37] text-xl sm:text-2xl tracking-tight">
                       {formatIDR(selectedSlots.reduce((sum, s) => sum + Number(s.price), 0))}
                     </span>
                   </div>
@@ -421,19 +428,21 @@ export default function VenueDetail() {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCheckoutHourly}
                   disabled={selectedSlots.length === 0}
-                  className="w-full relative overflow-hidden bg-[#D4AF37] text-black font-black text-lg py-4 rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-2 group"
+                  className="w-full relative overflow-hidden bg-[#D4AF37] text-black font-black text-base sm:text-lg py-3 sm:py-4 rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-2 group"
                 >
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-                  <Zap className="w-5 h-5 relative z-10" />
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
                   <span className="relative z-10">Pesan Sekarang</span>
-                  <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
-              </>
+              </div>
+            </>
             ) : bookingMode === 'monthly' && availableTypes.monthly ? (
               /* ── MONTHLY BOOKING WIDGET ── */
               selectedCourt ? (
                 <>
-                  {/* Info Card Member */}
+                  <div className="p-4 md:p-6 flex-1 flex flex-col">
+                    {/* Info Card Member */}
                   <div className="bg-gradient-to-br from-[#D4AF37]/10 to-yellow-600/5 border border-[#D4AF37]/20 rounded-2xl p-5 mb-6 shadow-lg shadow-[#D4AF37]/5">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center shrink-0">
@@ -450,17 +459,17 @@ export default function VenueDetail() {
                     </div>
                   </div>
 
-                  {/* SESSION SELECTOR - 3 SESI */}
-                  <MonthlySessionSelector 
-                    selectedCourt={selectedCourt}
-                    onCheckout={handleCheckoutMonthly}
-                    selectedDate={selectedDate}
-                    setSelectedDate={setSelectedDate}
-                    formatIDR={formatIDR}
-                  />
+                    <MonthlySessionSelector 
+                      selectedCourt={selectedCourt}
+                      onCheckout={handleCheckoutMonthly}
+                      selectedDate={selectedDate}
+                      setSelectedDate={setSelectedDate}
+                      formatIDR={formatIDR}
+                    />
+                  </div>
                 </>
               ) : (
-                <div className="text-center py-12">
+                <div className="text-center py-12 flex-1">
                   <MapPin className="w-12 h-12 text-neutral-600 mx-auto mb-4 opacity-50" />
                   <p className="font-bold text-white">Pilih Lapangan Dahulu</p>
                   <p className="text-neutral-500 text-sm mt-1">Silakan pilih lapangan di panel sebelah kiri.</p>
@@ -468,7 +477,7 @@ export default function VenueDetail() {
               )
             ) : (
               /* ── MODE NOT AVAILABLE ── */
-              <div className="text-center py-16 px-4 bg-[#1a1a1a] rounded-3xl border border-white/5">
+              <div className="text-center py-16 px-4 bg-[#1a1a1a] rounded-3xl border border-white/5 flex-1 m-4 md:m-6">
                 <Info className="w-16 h-16 text-neutral-700 mx-auto mb-4" />
                 <p className="text-white font-bold text-lg mb-2">Mode Sewa Tidak Tersedia</p>
                 <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
@@ -479,19 +488,20 @@ export default function VenueDetail() {
                     onClick={() => setBookingMode('hourly')}
                     className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-full transition-colors"
                   >
-                    Kembali ke Sewa Per Jam
+                    Beralih ke Per Jam
                   </button>
                 )}
                 {availableTypes.monthly && (
                   <button
                     onClick={() => setBookingMode('monthly')}
-                    className="inline-flex items-center gap-2 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#D4AF37] font-bold px-6 py-3 rounded-full transition-colors"
+                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-full transition-colors"
                   >
-                    Kembali ke Member Bulanan
+                    Beralih ke Bulanan
                   </button>
                 )}
               </div>
             )}
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
