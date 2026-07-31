@@ -1,89 +1,168 @@
-# 📄 Laporan Lengkap Pembaruan & Perbaikan Sistem JogjaCourt
+<div align="center">
+  
+# LAPORAN PROYEK AKHIR REKAYASA WEB
+## SISTEM INFORMASI BOOKING LAPANGAN BADMINTON (JOGJACOURT)
 
-**Tanggal Laporan:** 26 Juli 2026  
-**Status Eksekusi:** ✅ Selesai & Telah di-Deploy  
-**Target Perbaikan:** Akurasi Keuangan, Logika Dasbor Super Admin, dan Penyempurnaan Antarmuka (UI).
+**Mata Kuliah:** Rekayasa Web (INF-2218/B)  
+**Dosen Pengampu:** Andri Heru Saputra, S. Kom., M. Kom.  
 
----
+<br>
 
-## 📑 Daftar Isi
+**Disusun Oleh:**
+[Nama Anda] 
+[NIM Anda]
+Informatika - Angkatan 2024
+
+<br>
+
+**UNIVERSITAS NAHDLATUL ULAMA YOGYAKARTA**  
+**TAHUN AKADEMIK 2025/2026 GENAP**
+
+</div>
+
+<div style="page-break-after: always;"></div>
+
+## DAFTAR ISI
+
 1. [Pendahuluan](#1-pendahuluan)
-2. [Perbaikan Sistem Inti (Backend)](#2-perbaikan-sistem-inti-backend)
-3. [Perbaikan Visual & Antarmuka (Frontend)](#3-perbaikan-visual--antarmuka-frontend)
-4. [Penjelasan Kesamaan Data Admin & Super Admin](#4-penjelasan-kesamaan-data-admin--super-admin)
-5. [Daftar File yang Diperbarui](#5-daftar-file-yang-diperbarui)
-6. [Kesimpulan](#6-kesimpulan)
+2. [Analisis Kebutuhan dan Arsitektur Sistem](#2-analisis-kebutuhan-dan-arsitektur-sistem)
+3. [Perancangan Basis Data](#3-perancangan-basis-data)
+4. [Implementasi Sistem](#4-implementasi-sistem)
+5. [Implementasi CRUD](#5-implementasi-crud)
+6. [Pengujian Sistem](#6-pengujian-sistem)
+7. [Penutup](#7-penutup)
+8. [Daftar Pustaka](#8-daftar-pustaka)
 
----
+<div style="page-break-after: always;"></div>
 
 ## 1. Pendahuluan
-Laporan ini memuat penjelasan mendetail mengenai penyelesaian masalah (*bug fixes*) dan peningkatan kualitas sistem pada aplikasi JogjaCourt. Tujuan utama dari pembaruan ini adalah untuk memastikan seluruh **perhitungan uang (bagi hasil)** berjalan 100% akurat, memperbaiki **grafik dan data yang hilang** di dasbor pusat, serta memastikan **tata bahasa aplikasi** terlihat profesional, ramah pengguna, dan tidak terlihat seperti robot (*AI Slop*) maupun data tiruan (*dummy*).
+
+### 1.1. Latar Belakang
+Olahraga bulu tangkis merupakan salah satu olahraga terpopuler di Indonesia, khususnya di wilayah Yogyakarta. Namun, proses pemesanan (booking) lapangan di berbagai Gelanggang Olahraga (GOR) mayoritas masih dilakukan secara manual melalui pesan singkat (WhatsApp) atau datang langsung ke lokasi. Hal ini sering menimbulkan masalah berupa bentrok jadwal (*double booking*), kesulitan mencari ketersediaan lapangan secara *real-time*, dan pencatatan keuangan GOR yang tidak rapi. Oleh karena itu, dibutuhkan sebuah platform terpusat yang dapat menjembatani pelanggan dan pemilik GOR.
+
+### 1.2. Rumusan Masalah
+1. Bagaimana merancang sistem reservasi lapangan badminton yang mampu menampilkan jadwal ketersediaan secara *real-time*?
+2. Bagaimana membangun arsitektur sistem berbasis *RESTful API* yang aman untuk menghubungkan antarmuka pelanggan dengan basis data GOR?
+
+### 1.3. Tujuan Pengembangan Sistem
+Membangun platform "JogjaCourt", sebuah aplikasi *booking* lapangan badminton berbasis *web* yang memfasilitasi tiga pihak utama: Pelanggan (User), Pemilik GOR (Mitra Admin), dan Pengelola Platform (Super Admin) secara terintegrasi.
+
+### 1.4. Manfaat Sistem
+*   **Bagi Pelanggan:** Memudahkan pencarian, pengecekan jadwal kosong, dan pembayaran lapangan tanpa harus datang ke lokasi.
+*   **Bagi Mitra GOR:** Mendapatkan sistem manajemen kasir otomatis, manajemen ketersediaan lapangan, dan perhitungan bagi hasil (*revenue share*) yang transparan.
 
 ---
 
-## 2. Perbaikan Sistem Inti (Backend)
-Bagian ini berkaitan dengan perbaikan logika di balik layar, terutama mengenai bagaimana sistem menghitung uang pendapatan.
+## 2. Analisis Kebutuhan dan Arsitektur Sistem
 
-### A. Memperbaiki Hilangnya Data Riwayat Pendapatan
-*   **Masalah Sebelumnya:** Ketika Mitra GOR mencairkan dananya (*payout*), seluruh riwayat pendapatan kotor dan potongan admin di dasbor tiba-tiba menghilang atau menjadi Rp 0. 
-*   **Penyebab Masalah:** Sistem secara keliru menyembunyikan transaksi yang sudah dicairkan. Sistem hanya mau menghitung transaksi yang "belum dicairkan" ke dalam riwayat pendapatan.
-*   **Solusi yang Diterapkan:** Kami memisahkan cara menghitungnya. Sekarang, sistem akan tetap menghitung **semua transaksi yang pernah terjadi** untuk ditampilkan di grafik riwayat (sepanjang waktu), terlepas dari apakah uang tersebut sudah ditarik atau belum.
-*   **Hasil Akhir:** Grafik Tren Pendapatan dan Total Omset kini tampil akurat, tidak akan pernah hilang meskipun dana telah sukses ditransfer ke rekening pemilik GOR.
+### 2.1. Deskripsi Kebutuhan Sistem
+Sistem membutuhkan spesifikasi fungsional berdasarkan *Role-Based Access Control* (RBAC):
+*   **User:** Mampu melakukan registrasi, mencari GOR, memilih jadwal, melakukan *booking*, mengunggah bukti pembayaran, dan mengirim pesan (*chat*) ke Mitra.
+*   **Mitra Admin:** Mampu mendaftarkan GOR baru, menambah lapangan, memvalidasi pembayaran pelanggan, menarik dana pendapatan (*payout*), dan membalas *chat*.
+*   **Super Admin:** Mampu memantau seluruh transaksi GOR, memverifikasi KYC mitra, dan mengelola pembagian komisi *platform*.
 
-### B. Menambahkan Indikator "Saldo Belum Dicairkan" (`unpaid_balance`)
-*   **Masalah Sebelumnya:** Sistem mencampuradukkan antara "Total Uang Keseluruhan" dengan "Uang yang Bisa Ditarik Hari Ini", sehingga membingungkan pemilik GOR.
-*   **Solusi yang Diterapkan:** Menambahkan variabel khusus bernama `unpaid_balance` di dalam penyimpanan data (*database*) API.
-*   **Hasil Akhir:** Dasbor sekarang memiliki pemisah yang sangat jelas. Nominal saldo yang **benar-benar bisa ditarik** akan ditampilkan terpisah dari nominal total omset keseluruhan.
+### 2.2. Arsitektur Sistem
+Sistem ini dibangun menggunakan arsitektur *Client-Server* modern yang dipisahkan secara tegas (Decoupled Architecture) dengan pendekatan *RESTful API*.
 
----
-
-## 3. Perbaikan Visual & Antarmuka (Frontend)
-Bagian ini berkaitan dengan apa yang dilihat langsung oleh pengguna di layar (Dasbor Admin dan Super Admin).
-
-### A. Perbaikan Fitur "Cairkan Dana" (Halaman Keuangan)
-*   **Masalah Sebelumnya:** Tombol "Cairkan Dana" masih mengambil patokan angka dari Total Pendapatan, bukan dari sisa saldo.
-*   **Solusi yang Diterapkan:** Tombol dikunci dan dihubungkan langsung ke variabel `unpaid_balance` (Saldo Belum Dicairkan) yang baru saja dibuat di *backend*.
-*   **Hasil Akhir:** Tombol "Cairkan Dana" kini beroperasi dengan cerdas. Jika sisa saldo yang belum dicairkan adalah Rp 0, maka tombol akan dinonaktifkan secara otomatis.
-
-### B. Mengatasi Tampilan "Kosong/Dummy" pada Dasbor Super Admin
-*   **Masalah Sebelumnya:** Di halaman utama Super Admin, bagian **"Top Mitra GOR"** (Peringkat GOR Terbaik) selalu kosong dan memunculkan teks *"Belum ada data kontribusi mitra bulan ini"*, padahal jelas-jelas ada banyak transaksi yang masuk. Ini membuat aplikasi terkesan rusak atau menggunakan data *dummy* (simulasi).
-*   **Penyebab Masalah:** Terdapat salah panggil nama data pada kode sistem. Sistem mencari keranjang data bernama `owner_stats`, padahal data aslinya bernama `items`.
-*   **Solusi yang Diterapkan:** Memperbaiki jalur pemanggilan data tersebut di dalam kode `SuperAdminDashboard.jsx`.
-*   **Hasil Akhir:** Daftar Top Mitra GOR kini langsung muncul secara otomatis dan mampu menyusun peringkat GOR berdasarkan kontribusi pendapatan tertingginya ke *platform*.
-
-### C. Menghapus Bahasa Kaku & Berlebihan (*AI Slop*)
-*   **Masalah Sebelumnya:** Banyak judul dan deskripsi di dasbor yang bahasanya terlalu dramatis, kaku, dan seperti mesin terjemahan/AI (Contoh: *"Cinematic Header"*, *"Inject jadwal"*, *"Pusat agregasi finansial"*).
-*   **Solusi yang Diterapkan:** Mengubah dan menyederhanakan seluruh teks (*copywriting*) di semua halaman dasbor menjadi bahasa Indonesia yang lebih natural, lugas, profesional, dan mudah dicerna oleh pengguna awam.
-*   **Hasil Akhir:** Tampilan aplikasi terasa jauh lebih rapi, nyaman dibaca, dan memenuhi standar profesionalisme perangkat lunak komersial B2B (*Business-to-Business*).
+*   **Frontend (Client-Side):** Dibangun menggunakan **React.js** (Vite) dengan styling **Tailwind CSS**. Frontend bertanggung jawab penuh atas rendering antarmuka pengguna (UI), *state management*, dan memanggil API dari server.
+*   **Backend (Server-Side):** Dibangun menggunakan **FastAPI (Python)**. Bertindak sebagai penyedia layanan *RESTful API*, memvalidasi token JWT (*JSON Web Token*), mengeksekusi logika bisnis (seperti pengecekan bentrok jadwal), dan berkomunikasi dengan database.
+*   **Database:** Menggunakan **PostgreSQL** yang di-host di layanan **Supabase**.
+*   **Alur Komunikasi:** Frontend (React) mengirimkan HTTP Request (GET/POST/PUT/DELETE) dalam format JSON ke Backend (FastAPI). Backend memvalidasi *request*, melakukan query ORM (*Object-Relational Mapping*) menggunakan SQLAlchemy ke PostgreSQL, lalu mengembalikan HTTP Response (JSON) beserta *Status Code* ke Frontend.
 
 ---
 
-## 4. Penjelasan Kesamaan Data Admin & Super Admin
-Sempat muncul keraguan bahwa dasbor Super Admin dan Admin Mitra menampilkan grafik serta angka yang 100% sama persis. Hal ini menimbulkan kesan bahwa sistem menggunakan logika yang sama (*error*) atau hanya sekadar memutar simulasi data (*dummy*).
+## 3. Perancangan Basis Data
 
-**Fakta Teknis yang Sebenarnya:**
-1. **Tidak Ada Data Dummy:** Kami menjamin bahwa **seluruh data yang tampil adalah 100% data asli** dari rekam jejak transaksi di *database*. Tidak ada simulasi apa pun.
-2. **Mengapa Angkanya Sama Persis?**
-   * Dasbor **Super Admin** bertugas menampilkan = **TOTAL GABUNGAN** (Seluruh GOR se-JogjaCourt).
-   * Dasbor **Admin Mitra** bertugas menampilkan = **TOTAL INDIVIDU** (Hanya GOR miliknya saja).
-   * Saat ini, di dalam sistem **baru ada SATU Mitra GOR yang aktif melakukan transaksi** (yaitu `Admin_Mitra_Gor`). 
-   * Karena total GOR yang menghasilkan uang baru ada 1, maka secara logika matematika: **(Total Gabungan) = (Total Individu)**. Itulah mengapa grafik dan angkanya terlihat sama persis.
-3. **Kapan Dasbor Akan Berbeda?** Begitu ada Mitra GOR kedua (contoh: GOR B) yang mendaftar dan mulai menerima pemesanan (*booking*), Dasbor Super Admin akan langsung berubah wujud karena ia akan menjumlahkan omset dari GOR A dan GOR B, sementara Dasbor Admin Mitra hanya akan menampilkan GOR miliknya saja.
+Sistem JogjaCourt dikelola menggunakan basis data relasional. Berikut adalah struktur inti tabel yang dirancang:
 
----
+### 3.1. Struktur Tabel Utama
+1.  **Tabel `users`**: Menyimpan data autentikasi dan profil pengguna (termasuk *role*: user, mitra_admin, super_admin).
+2.  **Tabel `venues`**: Menyimpan data identitas GOR (Pemilik, Nama, Alamat, Fasilitas, dan Status Verifikasi). Berelasi *One-to-Many* dengan tabel `users` (Satu mitra bisa memiliki banyak GOR).
+3.  **Tabel `courts`**: Menyimpan data lapangan spesifik di dalam suatu GOR (Jenis Lapangan, Harga per Jam). Berelasi dengan `venues`.
+4.  **Tabel `bookings`**: Tabel inti transaksi. Menyimpan tanggal, jam mulai, jam selesai, status (*pending/confirmed*), dan total harga. Berelasi dengan `users`, `venues`, dan `courts`.
+5.  **Tabel `payments`**: Menyimpan data pembayaran dari `bookings`.
+6.  **Tabel `chat_messages`**: Menyimpan log percakapan *real-time* antar pengguna.
 
-## 5. Daftar File yang Diperbarui
-Berikut adalah catatan teknis (*log*) *file* kode sumber yang telah direvisi secara saksama dan telah diunggah ke repositori GitHub:
-1. `backend/app/routers/dashboard.py` *(Perbaikan logika Query Revenue Share)*
-2. `backend/app/schemas/dashboard.py` *(Penambahan parameter unpaid_balance)*
-3. `frontend/src/pages/dashboard/Finance.jsx` *(Perbaikan Tombol Pencairan & Teks Slop)*
-4. `frontend/src/pages/dashboard/SuperAdminDashboard.jsx` *(Perbaikan Bug Top Mitra GOR & Teks Slop)*
-5. `frontend/src/pages/dashboard/AdminDashboard.jsx` *(Penyederhanaan Teks)*
-6. `frontend/src/pages/dashboard/Bookings.jsx` *(Penyederhanaan Teks)*
-7. `frontend/src/pages/dashboard/Users.jsx` *(Penyederhanaan Teks)*
-8. `frontend/src/pages/dashboard/Venues.jsx` *(Penyederhanaan Teks)*
+### 3.2. Fitur Basis Data Lanjutan
+*   **Row-Level Security (RLS):** Diterapkan langsung di PostgreSQL untuk memastikan Mitra A tidak dapat membaca/memanipulasi data transaksi dari Mitra B di level *database*.
+*   **Supabase Realtime (CDC):** Digunakan pada tabel `chat_messages` dan `bookings` untuk melakukan *push notification* via WebSockets (pembaruan data tanpa *refresh* layar).
 
 ---
 
-## 6. Kesimpulan
-Aplikasi JogjaCourt kini berada dalam kondisi **sangat sehat dan siap pakai**. Perhitungan keuangan antar pihak dijamin akurat 100%, seluruh daftar dan grafik data berfungsi dengan semestinya, dan bahasa komunikasinya sudah jauh lebih berkelas (profesional). Sistem juga terbukti membagi keamanan hak akses (*roles*) dengan benar, siap untuk menyambut mitra GOR baru dalam jumlah besar.
+## 4. Implementasi Sistem
+
+### 4.1. Teknologi dan Framework yang Digunakan
+*   **Bahasa Pemrograman:** JavaScript/JSX (Frontend), Python 3.10+ (Backend), SQL.
+*   **Frontend Framework:** React 18, Vite, Tailwind CSS, Framer Motion (untuk animasi UI/UX).
+*   **Backend Framework:** FastAPI (Asynchronous API), SQLAlchemy (ORM), Pydantic (Validasi Skema).
+*   **Database & Auth:** Supabase PostgreSQL, JWT (PyJWT).
+
+### 4.2. Struktur Folder Proyek
+Proyek dibagi menjadi dua repositori utama di dalam satu *monorepo*:
+```text
+JogjaCourt/
+├── booking-badminton-api/     (Direktori Backend)
+│   ├── app/
+│   │   ├── routers/           (Endpoints API: users.py, bookings.py, dll)
+│   │   ├── schemas/           (Validasi Pydantic)
+│   │   ├── models/            (SQLAlchemy Database Models)
+│   │   └── services/          (Logika Bisnis Core)
+│   └── main.py                (Entry point FastAPI)
+└── frontend/                  (Direktori Frontend)
+    ├── src/
+    │   ├── components/        (UI Reusable: Card, Button, Navbar)
+    │   ├── pages/             (Halaman: Dasbor, Login, VenueDetail)
+    │   └── utils/             (Helper koneksi API, Auth Token)
+    └── index.html
+```
+
+---
+
+## 5. Implementasi CRUD
+
+Fitur *Create, Read, Update, Delete* (CRUD) merupakan pondasi utama dari aplikasi JogjaCourt, diimplementasikan secara komprehensif melalui *RESTful API*.
+
+1.  **Create (Tambah Data)**
+    *   **Contoh:** Pendaftaran GOR baru oleh Mitra. Frontend mengirim form (Nama GOR, Fasilitas, Alamat) melalui metode `POST /api/venues`. Backend memvalidasi kelengkapan data menggunakan Pydantic, lalu menyimpannya ke database PostgreSQL.
+2.  **Read (Lihat Data)**
+    *   **Contoh:** Menampilkan daftar GOR di halaman utama (*Explore*). Frontend melakukan `GET /api/venues/public`. Backend akan melakukan *Query Select* ke tabel venues dan mengembalikan array JSON yang langsung di-*render* menjadi komponen *Card* di React.
+3.  **Update (Ubah Data)**
+    *   **Contoh:** Mitra menyetujui pesanan (*booking*) yang masuk. Frontend mengirim perintah `PUT /api/bookings/{id}/status` dengan *payload* `{"status": "confirmed"}`. Backend mengubah baris data di database.
+4.  **Delete (Hapus Data)**
+    *   **Contoh:** Pelanggan membatalkan pesanan yang belum dibayar. Frontend mengirim `DELETE /api/bookings/{id}`. Backend menghapus data secara permanen (*hard delete*) atau mengubah statusnya menjadi dibatalkan (*soft delete*).
+
+---
+
+## 6. Pengujian Sistem
+
+### 6.1. Pengujian Responsive Web
+Aplikasi telah diuji pada tiga breakpoint utama: **Desktop (Layar Lebar), Tablet, dan Mobile (Ponsel)**.
+*   **Teknik yang Digunakan:** Kami menggunakan utilitas *Mobile-First* bawaan Tailwind CSS (`sm:`, `md:`, `lg:`).
+*   **Hasil:** Pada tampilan Desktop, navigasi menggunakan *Sidebar* di sebelah kiri. Namun ketika dibuka di Ponsel, *Sidebar* secara otomatis disembunyikan dan diubah menjadi *Hamburger Drawer Menu* yang ringkas, serta struktur kartu statistik (*grid*) yang tadinya menyamping akan menumpuk ke bawah (*stack*) agar mudah digulir (scroll) dengan ibu jari.
+
+### 6.2. Pengujian RESTful API
+Seluruh rute (*endpoints*) diuji menggunakan Swagger UI bawaan dari FastAPI (terdokumentasi secara otomatis di `/docs`).
+1.  **GET `/api/bookings`**: Menghasilkan *Status Code* `200 OK` (Berhasil mengambil data).
+2.  **POST `/api/bookings`**: Menghasilkan *Status Code* `201 Created` saat pesanan berhasil disimpan.
+3.  **Error Handling (Validasi):** Apabila pengguna mencoba *booking* di jam yang sudah dipesan orang lain, API dengan tegas menolak dan memberikan *Status Code* `400 Bad Request` dengan pesan error JSON yang spesifik.
+
+---
+
+## 7. Penutup
+
+### 7.1. Kendala yang Dihadapi
+Selama proses pengembangan, tantangan terbesar adalah menangani *Race Condition* (ketika dua orang menekan tombol *booking* lapangan yang sama di detik yang persis sama). Selain itu, mengintegrasikan fitur obrolan *real-time* yang bebas penundaan (*zero-latency*) tanpa memberatkan server juga menjadi tantangan.
+
+### 7.2. Solusi yang Diterapkan
+Untuk masalah *Race Condition*, kami mengimplementasikan teknik *Row-Level Locking* (`WITH FOR UPDATE`) pada PostgreSQL di backend FastAPI. Hal ini memaksa sistem memproses satu transaksi secara antre sebelum transaksi lain di detik yang sama dieksekusi. Untuk obrolan *real-time*, kami memanfaatkan Supabase WebSockets (CDC) agar pesan terkirim langsung dari database ke *client* tanpa harus melakukan *polling* manual.
+
+### 7.3. Pengembangan Mendatang
+Pada pengembangan selanjutnya, sistem direncanakan untuk diintegrasikan secara langsung dengan Payment Gateway pihak ketiga (seperti Midtrans atau Xendit) agar proses validasi pembayaran lapangan dapat berjalan 100% otomatis tanpa campur tangan Admin Mitra untuk mengecek bukti transfer secara manual.
+
+---
+
+## 8. Daftar Pustaka
+1. *FastAPI Documentation*. (2025). Diakses dari https://fastapi.tiangolo.com/
+2. *React Official Documentation*. (2025). Diakses dari https://react.dev/
+3. *Tailwind CSS Utility-First Framework*. (2025). Diakses dari https://tailwindcss.com/
+4. *Supabase Realtime & PostgreSQL*. (2025). Diakses dari https://supabase.com/docs
