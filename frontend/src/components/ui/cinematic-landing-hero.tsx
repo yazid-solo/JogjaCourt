@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from '@studio-freight/lenis';
 import { cn } from "@/lib/utils";
+import { Search, Building2 } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -434,18 +435,14 @@ export function CinematicHero({
         </p>
         <div className="flex flex-col sm:flex-row gap-6">
           <a href="/explore" className="btn-modern-light flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2">
-            <svg className="w-8 h-8 transition-transform group-hover:scale-105 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
-            </svg>
+            <Search className="w-7 h-7 transition-transform group-hover:scale-105 text-[#D4AF37]" strokeWidth={2.5} aria-hidden="true" />
             <div className="text-left">
               <div className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase mb-[-2px]">Tersedia Sekarang</div>
               <div className="text-xl font-bold leading-none tracking-tight">Cari Lapangan</div>
             </div>
           </a>
           <a href="/mitra-register" className="btn-modern-dark flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] group focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:ring-offset-2 focus:ring-offset-background">
-            <svg className="w-7 h-7 transition-transform group-hover:scale-105 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-               <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-11v6h2v-6h-2zm0-4v2h2V7h-2z"/>
-            </svg>
+            <Building2 className="w-7 h-7 transition-transform group-hover:scale-105 text-[#D4AF37]" strokeWidth={2} aria-hidden="true" />
             <div className="text-left">
               <div className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase mb-[-2px]">Gabung Menjadi</div>
               <div className="text-xl font-bold leading-none tracking-tight">Mitra GOR</div>
