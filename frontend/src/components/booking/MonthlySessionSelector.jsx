@@ -308,9 +308,6 @@ export default function MonthlySessionSelector({
         </div>
       )}
 
-        </div>
-      </div>
-
       {/* ── MONTHLY STICKY FOOTER ── */}
       <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 p-4 pb-8 md:p-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-50">
         {/* Summary Box */}
