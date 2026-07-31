@@ -1,7 +1,6 @@
--- ========================================================================================
 -- SISTEM BOOKING LAPANGAN BADMINTON (JOGJACOURT)
 -- FULL DATABASE SCHEMA & REALTIME CONFIGURATION (SUPABASE POSTGRES)
--- ========================================================================================
+
 -- File ini dibuat khusus untuk referensi lengkap dan realistis dari struktur database.
 -- Mencakup Tables, Enums, Foreign Keys, Triggers, RLS Policies, dan Realtime configs.
 
@@ -135,9 +134,8 @@ CREATE TABLE public.kyc_verifications (
 );
 
 
--- ========================================================================================
 -- 4. TRIGGERS (Auto Update Timestamp)
--- ========================================================================================
+
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -154,9 +152,7 @@ CREATE TRIGGER update_payments_modtime BEFORE UPDATE ON public.payments FOR EACH
 CREATE TRIGGER update_kyc_modtime BEFORE UPDATE ON public.kyc_verifications FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 
--- ========================================================================================
 -- 5. REALTIME PUBLICATION CONFIGURATION (Supabase WebSockets)
--- ========================================================================================
 -- Ini yang membuat sistem dasbor menjadi REALTIME OTOMATIS tanpa perlu refresh (Live Updates)
 DROP PUBLICATION IF EXISTS supabase_realtime;
 CREATE PUBLICATION supabase_realtime FOR TABLE 
@@ -167,9 +163,7 @@ CREATE PUBLICATION supabase_realtime FOR TABLE
     public.venues;
 
 
--- ========================================================================================
 -- 6. ROW LEVEL SECURITY (RLS) POLICIES
--- ========================================================================================
 -- Mengamankan database secara ketat agar tiap user/mitra hanya bisa mengakses data mereka sendiri
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.venues ENABLE ROW LEVEL SECURITY;
@@ -209,6 +203,4 @@ CREATE POLICY "Users can send chats" ON public.chat_messages FOR INSERT WITH CHE
 CREATE POLICY "Users can read own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own notifications (mark read)" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
--- ========================================================================================
 -- END OF SCHEMA
--- ========================================================================================
